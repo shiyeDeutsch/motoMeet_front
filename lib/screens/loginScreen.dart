@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 import '../routing/routes.dart';
+import '../services/authService.dart';
+import '../services/isar_service.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -16,8 +19,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
-
   final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -40,58 +43,87 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               height: 5,
             ),
-      
-
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: <Widget>[     
-                  CustomTextFromField(
-                    suffixIcon: const Icon(
-                      Icons.mail,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: <Widget>[
+                    CustomTextFromField(
+                      validator: (value) {
+                        if (value?.isEmpty ?? false) {
+                          return 'Please enter an email address';
+                        } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value!)) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                      suffixIcon: const Icon(
+                        Icons.mail,
+                      ),
+                      hintText: 'email',
+                      controller: emailController,
+                      onChanged: (string) => setState(() {}),
                     ),
-                    hintText: 'email',
-                    controller: emailController,
-                    onChanged: (string) => setState(() {}),
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  CustomTextFromField(
-                    isPassword: true,
-                    suffixIcon: const Icon(
-                      Icons.lock,
+                    SizedBox(
+                      height: 15,
                     ),
-                    hintText: 'password',
-                    controller: passwordController,
-                    onChanged: (string) => setState(() {}),
-                  ),
-                  Text(
-                    emailController.text,
-                    style: TextStyle(color: Colors.blueAccent),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('Log in'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(Routes.signUp);
-                    },
-                    child: const Text('Sign up'),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Forgot your password?'),
-                  ),
-                  const Divider(),
-                  TextButton.icon(
-                    icon: const Icon(Icons.login),
-                    label: const Text('Or sign in with Google'),
-                    onPressed: () {},
-                  ),
-                ],
+                    CustomTextFromField(
+                      validator: (value) {
+                        if (value?.isEmpty ?? false) {
+                          return 'Please enter a password';
+                        } else {
+                          return null;
+                        }
+                      },
+                      isPassword: true,
+                      suffixIcon: const Icon(
+                        Icons.lock,
+                      ),
+                      hintText: 'password',
+                      controller: passwordController,
+                      onChanged: (string) => setState(() {}),
+                    ),
+                    Text(
+                      emailController.text,
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          final auth = GetIt.I<AuthenticationService>();
+                          var user = await auth.login(
+                              emailController.text, passwordController.text);
+
+                          if (user != null) {
+                            final isarService = GetIt.I<IsarService>();
+                            await isarService.addUser(user);
+                             Navigator.of(context).pushNamed(Routes.homePage);
+                          }
+                        }
+                      },
+                      child: const Text('Log in'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(Routes.signUp);
+                      },
+                      child: const Text('Sign up'),
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text('Forgot your password?'),
+                    ),
+                    const Divider(),
+                    TextButton.icon(
+                      icon: const Icon(Icons.login),
+                      label: const Text('Or sign in with Google'),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -99,6 +131,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
- 
 }

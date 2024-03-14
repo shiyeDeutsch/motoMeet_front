@@ -7,7 +7,9 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/userModel.dart';
 
+import '../routing/routes.dart';
 import '../services/authService.dart';
+import '../services/isar_service.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -31,7 +33,7 @@ class _Step1ScreenState extends State<Step1Screen> {
   final dateController = TextEditingController();
   final auth = GetIt.I<AuthenticationService>();
   DateTime selectedDate = DateTime.now();
-
+  final _formKey = GlobalKey<FormState>();
   late int countryId;
   String data = '';
   List<DropdownMenuItem> menuItems = <DropdownMenuItem<dynamic>>[];
@@ -46,24 +48,44 @@ class _Step1ScreenState extends State<Step1Screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(),
-        title: const Text('register'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             CustomTextFromField(
-                controller: fNameController, hintText: 'first name'),
+                validator: (value) {
+                  if (value?.isEmpty ?? false) {
+                    return 'Please enter a first name ';
+                  } else {
+                    return null;
+                  }
+                },
+                controller: fNameController,
+                hintText: 'first name'),
             const SizedBox(height: 16),
             CustomTextFromField(
-                controller: lNameController, hintText: 'Last name'),
+                validator: (value) {
+                  if (value?.isEmpty ?? false) {
+                    return 'Please enter a last name ';
+                  } else {
+                    return null;
+                  }
+                },
+                controller: lNameController,
+                hintText: 'Last name'),
             const SizedBox(height: 16),
 
             CustomTextFromField(
+              validator: (value) {
+                if (value?.isEmpty ?? false) {
+                  return 'Please enter your date of birth';
+                } else {
+                  return null;
+                }
+              },
               controller: dateController,
               readOnly: true,
               hintText: 'Tap to select date',
@@ -138,16 +160,23 @@ class _Step1ScreenState extends State<Step1Screen> {
   }
 
   Future<void> regist() async {
-    var user = UserInfo(
-      email: widget.email,
-      password: widget.password,
-      firstName: fNameController.text,
-      lastName: lNameController.text,
-      age: 0,
-      countryId: countryId,
-    );
-    final int? id = await auth.register(user);
-    var registerdUser=user.copyWith(id: id);
-    
+    if (_formKey.currentState!.validate()) {
+      var user = UserInfo(
+        email: widget.email,
+        password: widget.password,
+        firstName: fNameController.text,
+        lastName: lNameController.text,
+        age: 0,
+        countryId: countryId,
+      );
+      final newUser = await auth.register(user);
+
+      if (newUser != null) {
+        final isarService = GetIt.I<IsarService>();
+        await isarService.addUser(newUser);
+
+        Navigator.of(context).pushNamed(Routes.homePage);
+      }
+    }
   }
 }

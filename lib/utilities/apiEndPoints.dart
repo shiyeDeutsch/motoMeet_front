@@ -8,7 +8,13 @@ class EndPoints {
   static Uri register = Uri(
     scheme: scheme,
     host: host,
-    path: 'api/register',
+    path: 'api/auth/register',
+    port: port,
+  );
+  static Uri login = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/auth/login',
     port: port,
   );
 }
