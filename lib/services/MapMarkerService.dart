@@ -3,28 +3,35 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 // import '../models/mapMarker.dart';
+import '../stateProvider.dart';
 import 'loctionService.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+ 
 class MapMarkerService {
-  MapMarkerService()  {
-      getMarkers();
+  MapMarkerService( ) {
+  //  getMarkers(ref);
   }
-  List<Marker> markers = [];
 
-  Future<List<Marker>> getMarkers( ) async {
-    var loction = await LocationService.getCurrentLocation();
-    markers.add(
-      Marker(
-        point: loction ?? LatLng(0.0, 0.0),
-        width: 80.0,
-        height: 80.0,
-        builder: (BuildContext ctx) => const Tooltip(
-          message: 'current location ',
-          child: Icon(color: Colors.red, Icons.location_on_rounded),
-        ),
+
+  void getMarkers(WidgetRef ref) async {
+    var location = await LocationService.getCurrentLocation();
+    
+    var locationMarker = Marker(
+      point: location ?? LatLng(0.0, 0.0),
+      width: 80.0,
+      height: 80.0,
+      child:  const Tooltip(
+        message: 'Current location',
+        child: Icon(Icons.location_on_rounded, color: Colors.red),
       ),
     );
-
-    return markers;
+    
+   print ("marker added");
+    ref.read(markerListProvider.notifier).addMarker(locationMarker);
   }
 }
+

@@ -88,40 +88,126 @@
 //     return matrix;
 //   }
 // }
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_it/get_it.dart';
-import 'package:latlong2/latlong.dart' as latLng;
-import '../models/mapMarker.dart';
+import 'package:latlong2/latlong.dart';
 import '../services/MapMarkerService.dart';
-import '../utilities/appIcons.dart';
+import '../services/loctionService.dart';
+import '../stateProvider.dart';
+import '../widgets/bottomNavigation.dart';
+import '../widgets/mapButtons.dart';
 
-class MyMapWidget extends StatelessWidget {
-//  final LocationService locationService;
-  final markerService = GetIt.I<MapMarkerService>();
-  MyMapWidget({
-    Key? key,
-  }) : super(key: key);
+class MapMarkerScreen extends ConsumerStatefulWidget {
+  @override
+  _MapMarkerScreenState createState() => _MapMarkerScreenState();
+}
+
+class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
+    with TickerProviderStateMixin {
+  MapController mapController = MapController();
+  late final _animatedMapController =
+      AnimatedMapController(vsync: this, mapController: mapController);
+  double rotation = 0;
+  bool _useTransformer = true;
+  static const _useTransformerId = 'useTransformerId';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Delay the marker fetching slightly to avoid issues with context and ref not being fully ready.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final mapMarkerService = GetIt.I<MapMarkerService>();
+      mapMarkerService.getMarkers(ref);
+      setState(() {});
+    });
+
+    // Geolocator.getPositionStream().listen((Position position) {
+    //   // rotation=rotation+20;
+    //   setState(() {
+    //     // Rotate the map based on the heading
+    //     //  rotation = position.heading ;
+
+    //     print(rotation);
+    //     // Update the map center to the new position
+    //     mapController.moveAndRotate(
+    //         LatLng(position.latitude, position.longitude),
+    //         mapController.zoom,
+    //         rotation);
+    //   });
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return
-        // When we have the location, use it as the center for the map.
-        FlutterMap(
-      options: MapOptions(  
-        center: markerService.markers.length > 1
-            ? markerService.markers[0].point
-            : null,
-        zoom: 14.0,
-      ),
+    // ref.listen<List<Marker>>(markerListProvider, (_, newMarkers) {
+    //   if (newMarkers.isNotEmpty) {
+    //     mapController.move(newMarkers[0].point, mapController.zoom);
+    //   }
+    // });
+    final markers = ref.watch(markerListProvider);
+
+    return Stack(fit : StackFit.expand,
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.app',
+        FlutterMap(
+          mapController: _animatedMapController.mapController,
+          options: MapOptions(
+              //center: markers.isNotEmpty ? markers[0].point : LatLng(0, 0),
+              zoom: 13.0,
+              rotation: rotation),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            ),
+            MarkerLayer(
+              markers: markers,
+            ),
+          ],
         ),
-        MarkerLayer(markers: markerService.markers),
+        MapButtons(
+          onChangeMapType: () => {},
+          onShowRouteDetails: () => {},
+          onRecordNewRoute: () => {},
+          onLiveTrackingShare: () => {},
+          onPauseStopRecording: () => {},
+          onAddWaypoints: () => {},
+          onSearch: () => {},
+          onZoomIn: _zoomIn,
+          onZoomOut: _zoomOut,
+          onCurrentLocation: _goToCurrentLocation,
+          onRouteOptions: () => {},
+          onBackToDiscover: () => {},
+        ),
+        Align(alignment : Alignment.bottomCenter,child: BottomNavigation(),)
       ],
     );
+  }
+
+  void _zoomIn() {
+    _animatedMapController.animatedZoomIn(
+      customId: _useTransformer ? _useTransformerId : null,
+    );
+  }
+
+  void _zoomOut() {
+    _animatedMapController.animatedZoomOut(
+      customId: _useTransformer ? _useTransformerId : null,
+    );
+  }
+
+  void _goToCurrentLocation() async {
+    // Dummy location - replace with actual location data, e.g., from a GPS sensor
+    LatLng? currentLocation = await LocationService.getCurrentLocation();
+    if (currentLocation != null) {
+      _animatedMapController.animateTo(
+        dest: currentLocation,
+        zoom: 13.5,
+      );
+    }
   }
 }

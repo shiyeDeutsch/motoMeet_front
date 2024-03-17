@@ -10,17 +10,19 @@ dependencies:
   flutter:
     sdk: flutter
   get_it: ^7.6.0
-  http: ^0.13.6
+  http: ^1.2.1
   intl: ^0.17.0
   isar: ^3.1.0+1
   isar_flutter_libs: ^3.1.0+1
   path_provider: ^2.1.1
   dot_navigation_bar: ^1.0.2
-  flutter_map: ^4.0.0
-  huawei_map: ^6.11.2+301
+  flutter_map: ^6.0.1
+  
   map: ^2.0.2
-  vector_map_tiles: ^4.0.0
+ 
   geolocator: ^11.0.0
+  flutter_riverpod: ^2.5.1
+  flutter_map_animations: ^0.5.3
   
 
 

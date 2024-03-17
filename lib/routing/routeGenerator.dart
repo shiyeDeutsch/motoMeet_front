@@ -23,7 +23,7 @@ class RouteGenerator {
         screen = Step1Screen(email: args!['email'], password: args['password']);
         break;
       case Routes.homePage:
-        screen = MyMapWidget();
+        screen = MapMarkerScreen();
         break;
 
       default:
@@ -32,11 +32,11 @@ class RouteGenerator {
     }
     return MaterialPageRoute(
       builder: (_) => Scaffold(
-          bottomNavigationBar: Builder(
-            builder: (BuildContext context) {
-              return RouteService.showBottomNav(context);
-            },
-          ),
+          // bottomNavigationBar: Builder(
+          //   builder: (BuildContext context) {
+             // return RouteService.showBottomNav(context);
+          //   },
+          // ),
           body: screen),
     );
   }
