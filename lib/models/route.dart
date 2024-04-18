@@ -1,18 +1,27 @@
 import 'dart:math';
 import 'dart:convert';
 
-class NewRoute {
-    String name;
-    String description;
-    GeoPoint startPoint;
-    GeoPoint endPoint;
-    RouteType routeType;
-    double length;
-    Duration duration;
-    DifficultyLevel difficultyLevel;
-    List<RoutePoint> routePoints;
-    List<RouteTag> routeTags;
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 
+import 'enum.dart';
+
+class NewRoute {
+  String name;
+  String? description;
+  GeoPoint startPoint;
+  GeoPoint? endPoint;
+  RouteType? routeType;
+  double? length;
+  Duration duration;
+  // DifficultyLevel difficultyLevel;
+  List<GeoPoint>? routePoints;
+  List<TagEnum> routeTags;
+  bool isActive;
+  bool isComplited;
+  DateTime startDate;
+  DateTime? endDate;
   NewRoute({
     required this.name,
     required this.description,
@@ -21,36 +30,89 @@ class NewRoute {
     required this.routeType,
     required this.length,
     required this.duration,
-    required this.difficultyLevel,
+    //   required this.difficultyLevel,
     required this.routePoints,
     required this.routeTags,
+    required this.isActive,
+    required this.isComplited,
+    required this.startDate,
+    required this.endDate,
   });
 
   factory NewRoute.fromJson(Map<String, dynamic> json) => NewRoute(
         name: json['name'],
+        startDate: json['startDate'],
+        endDate: json['endDate'],
+        isActive: json['isActive'],
+        isComplited: json['isComplited'],
         description: json['description'],
         startPoint: GeoPoint.fromJson(json['startPoint']),
         endPoint: GeoPoint.fromJson(json['endPoint']),
         routeType: RouteType.fromJson(json['routeType']),
         length: json['length'].toDouble(),
-        duration: Duration(minutes: json['duration'] as int), // Assuming duration is in minutes
-        difficultyLevel: DifficultyLevel.fromJson(json['difficultyLevel']),
-        routePoints: List<RoutePoint>.from(json['routePoints'].map((x) => RoutePoint.fromJson(x))),
-        routeTags: List<RouteTag>.from(json['routeTags'].map((x) => RouteTag.fromJson(x))),
+        duration: Duration(
+            minutes:
+                json['duration'] as int), // Assuming duration is in minutes
+        // difficultyLevel: DifficultyLevel.fromJson(json['difficultyLevel']),
+        routePoints: List<GeoPoint>.from(
+            json['routePoints'].map((x) => RoutePoint.fromJson(x))),
+        routeTags: List<TagEnum>.from(
+            json['routeTags'].map((x) => TageEnumExtension.fromString(x))),
       );
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'description': description,
+
+        'startDate': startDate.toIso8601String(),
+        'endDate': endDate?.toIso8601String(),
+        'isComplited': isComplited,
+        'isActive': isActive,
+
         'startPoint': startPoint.toJson(),
-        'endPoint': endPoint.toJson(),
-        'routeType': routeType.toJson(),
+        'endPoint': endPoint?.toJson(),
+        'routeType': routeType?.toJson(),
         'length': length,
-        'duration': duration.inMinutes, // Assuming you want to store duration in minutes
-        'difficultyLevel': difficultyLevel.toJson(),
-        'routePoints': List<dynamic>.from(routePoints.map((x) => x.toJson())),
-        'routeTags': List<dynamic>.from(routeTags.map((x) => x.toJson())),
+        'duration': duration.toString(),
+        //'difficultyLevel': difficultyLevel.toJson(),
+        'routePoints': routePoints != null
+            ? List<dynamic>.from(routePoints!.map((x) => x.toJson()))
+            : null,
+        'routeTags': List<String>.from(routeTags.map((x) => x.name)),
       };
+  NewRoute copyWith({
+    String? name,
+    String? description,
+    GeoPoint? startPoint,
+    GeoPoint? endPoint,
+    RouteType? routeType,
+    double? length,
+    Duration? duration,
+    DifficultyLevel? difficultyLevel,
+    List<GeoPoint>? routePoints,
+    List<TagEnum>? routeTags,
+    bool? isActive,
+    bool? isComplited,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return NewRoute(
+      name: name ?? this.name,
+      isComplited: isComplited ?? this.isComplited,
+      endDate: endDate ?? this.endDate,
+      startDate: startDate ?? this.startDate,
+      isActive: isActive ?? this.isActive,
+      description: description ?? this.description,
+      startPoint: startPoint ?? this.startPoint,
+      endPoint: endPoint ?? this.endPoint,
+      routeType: routeType ?? this.routeType,
+      length: length ?? this.length,
+      duration: duration ?? this.duration,
+      // difficultyLevel: difficultyLevel ?? this.difficultyLevel,
+      routePoints: routePoints ?? this.routePoints,
+      routeTags: routeTags ?? this.routeTags,
+    );
+  }
 }
 
 class Route {
@@ -224,22 +286,22 @@ class Review {
 }
 
 class RouteType {
-  final int id;
-  final String name;
+  // final int id;
+  final RouteTypeEnum name;
 
   RouteType({
-    required this.id,
+    //  required this.id,
     required this.name,
   });
   factory RouteType.fromJson(Map<String, dynamic> json) => RouteType(
-        id: json['id'],
+        //    id: json['id'],
         name: json['name'],
       );
 
   // Method for converting a RouteType instance to a map
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
+        //   'id': id,
+        'name': name.name,
       };
 }
 
@@ -308,19 +370,29 @@ class Tag {
 class GeoPoint {
   final double latitude;
   final double longitude;
+  final double? altitude;
 
   GeoPoint({
     required this.latitude,
     required this.longitude,
+    required this.altitude,
   });
   factory GeoPoint.fromJson(Map<String, dynamic> json) => GeoPoint(
         latitude: json['latitude'].toDouble(),
         longitude: json['longitude'].toDouble(),
+        altitude: json['altitude'].toDouble() ?? false,
       );
-
+  factory GeoPoint.fromLatLng(LatLng latLng, double? altitude) => GeoPoint(
+      latitude: latLng.latitude,
+      longitude: latLng.longitude,
+      altitude: altitude);
   // Method for converting a GeoPoint instance to a map
   Map<String, dynamic> toJson() => {
         'latitude': latitude,
         'longitude': longitude,
+        'altitude': altitude,
       };
+  LatLng toLatLng() {
+    return LatLng(latitude, longitude);
+  }
 }

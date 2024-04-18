@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'selecetMapProvider.dart';
+
 class MapButtons extends StatelessWidget {
   // Callback functions for each button
   final VoidCallback onChangeMapType;
@@ -10,7 +12,7 @@ class MapButtons extends StatelessWidget {
   final VoidCallback onPauseStopRecording;
   final VoidCallback onAddWaypoints;
   final VoidCallback onSearch;
-  final VoidCallback onCurrentLocation;
+  final VoidCallback onCurrentLocation ;
   final VoidCallback onZoomIn;
   final VoidCallback onZoomOut;
   final VoidCallback onRouteOptions;

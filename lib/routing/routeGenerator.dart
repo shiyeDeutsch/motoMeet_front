@@ -3,6 +3,7 @@ import 'package:motomeetfront/screens/loginScreen.dart';
 import 'package:motomeetfront/screens/singupScreen.dart';
 import '../screens/homeScreen.dart';
 import '../screens/mapScreen.dart';
+import '../screens/saveRouteScreen.dart';
 import '../screens/step1.dart';
 import 'InitialRoute.dart';
 import 'routes.dart';
@@ -24,6 +25,9 @@ class RouteGenerator {
         break;
       case Routes.homePage:
         screen = MapMarkerScreen();
+        break;
+         case Routes.saveRoute:
+        screen = SaveRouteScreen(route: args!['newRoute']);
         break;
 
       default:

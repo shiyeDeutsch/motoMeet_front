@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +10,9 @@ import 'routing/InitialRoute.dart';
 import 'routing/routeGenerator.dart';
 // import 'routing/routes.dart';
 import 'services/isar_service.dart';
- 
+import 'stateProvider.dart';
+
+final providerContainer = ProviderContainer();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,11 +20,16 @@ void main() async {
   // Initialize Isar
   IsarService isarService = IsarService();
   await isarService.initIsar();
-  setupLocator(isarService);
+
+  // Create a ProviderContainer for your app
+  setupLocator(
+    isarService,
+  );
 
   // Determine the initial route
   String initialRoute = await RouteService.getInitialRoute();
-  runApp(ProviderScope(child: MyApp(initialRoute: initialRoute)));
+  runApp(ProviderScope(
+      parent: providerContainer, child: MyApp(initialRoute: initialRoute)));
 }
 
 class MyApp extends StatelessWidget {
@@ -29,8 +38,9 @@ class MyApp extends StatelessWidget {
   const MyApp({required this.initialRoute});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner :false,
-      home: Scaffold(  
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
         body: Navigator(
           initialRoute: initialRoute,
           onGenerateRoute: RouteGenerator.generateRoute,
@@ -38,6 +48,4 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-
-
 }

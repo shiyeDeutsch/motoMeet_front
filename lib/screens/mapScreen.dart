@@ -89,6 +89,8 @@
 //   }
 // }
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
@@ -96,13 +98,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:latlong2/latlong.dart';
+import '../main.dart';
+import '../models/enum.dart';
+import '../models/route.dart';
+import '../models/route.dart';
+import '../routing/routes.dart';
 import '../services/MapMarkerService.dart';
 import '../services/loctionService.dart';
+import '../services/routeService.dart';
 import '../stateProvider.dart';
 import '../widgets/bottomNavigation.dart';
+import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/mapButtons.dart';
+import '../widgets/selecetMapProvider.dart';
+import '../widgets/dialogs/stopRoutedialog.dart';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
+  const MapMarkerScreen({super.key});
+
   @override
   _MapMarkerScreenState createState() => _MapMarkerScreenState();
 }
@@ -115,32 +128,43 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   double rotation = 0;
   bool _useTransformer = true;
   static const _useTransformerId = 'useTransformerId';
+  List<LatLng> routePoints = <LatLng>[];
+  LatLng? lastLocation;
+  final routeService = GetIt.I<RouteService>();
 
+  NewRoute? newRoute;
+  List<Marker> markers = [];
+  Marker? userLocationMarker;
+
+  AnimationController? _animationController;
+  Animation<double>? _animation;
+  bool isExpanded = false;
+  StreamSubscription<Position>? locationUpdatesSubscription;
+  // for gps data purpose
+  Position? currentPosition;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var location = await LocationService.getCurrentLocation();
+      userLocationMarker = Marker(
+        point: location ?? LatLng(0.0, 0.0),
+        width: 80.0,
+        height: 80.0,
+        child: const Tooltip(
+          message: 'Current location',
+          child: Icon(Icons.location_on_rounded, color: Colors.red),
+        ),
+      );
+      _animatedMapController.animateTo(dest: location, zoom: 13.5, rotation: 0);
 
-    // Delay the marker fetching slightly to avoid issues with context and ref not being fully ready.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final mapMarkerService = GetIt.I<MapMarkerService>();
-      mapMarkerService.getMarkers(ref);
       setState(() {});
     });
-
-    // Geolocator.getPositionStream().listen((Position position) {
-    //   // rotation=rotation+20;
-    //   setState(() {
-    //     // Rotate the map based on the heading
-    //     //  rotation = position.heading ;
-
-    //     print(rotation);
-    //     // Update the map center to the new position
-    //     mapController.moveAndRotate(
-    //         LatLng(position.latitude, position.longitude),
-    //         mapController.zoom,
-    //         rotation);
-    //   });
-    // });
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500),
+    )..repeat(reverse: true);
+    _animation = Tween(begin: 10.0, end: 14.0).animate(_animationController!);
   }
 
   @override
@@ -150,40 +174,89 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     //     mapController.move(newMarkers[0].point, mapController.zoom);
     //   }
     // });
-    final markers = ref.watch(markerListProvider);
 
-    return Stack(fit : StackFit.expand,
+    newRoute = ref.watch(routeStateProvider);
+    markers = ref.watch(markerListProvider);
+    // print(_animatedMapController.mapController.zoom);
+    return Stack(
+      alignment: AlignmentDirectional.topCenter,
+      // fit: StackFit.expand,
       children: [
         FlutterMap(
           mapController: _animatedMapController.mapController,
           options: MapOptions(
-              //center: markers.isNotEmpty ? markers[0].point : LatLng(0, 0),
-              zoom: 13.0,
-              rotation: rotation),
+              initialCenter:
+                  markers.isNotEmpty ? markers[0].point : const LatLng(0, 0),
+              initialZoom: 13.0,
+              initialRotation: rotation),
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             ),
+            PolylineLayer(
+              polylines: [
+                Polyline(
+                  points: lastLocation == null
+                      ? routePoints
+                      : [...routePoints, lastLocation!],
+                  strokeWidth: 8.0,
+                  color: Colors.green,
+                ),
+              ],
+            ),
             MarkerLayer(
-              markers: markers,
+              markers: userLocationMarker == null
+                  ? markers
+                  : [userLocationMarker!, ...markers],
             ),
           ],
         ),
         MapButtons(
           onChangeMapType: () => {},
           onShowRouteDetails: () => {},
-          onRecordNewRoute: () => {},
+          onRecordNewRoute: _startNewRoute,
           onLiveTrackingShare: () => {},
           onPauseStopRecording: () => {},
           onAddWaypoints: () => {},
           onSearch: () => {},
           onZoomIn: _zoomIn,
           onZoomOut: _zoomOut,
-          onCurrentLocation: _goToCurrentLocation,
+          onCurrentLocation: () => {_goToCurrentLocation(null)},
           onRouteOptions: () => {},
           onBackToDiscover: () => {},
         ),
-        Align(alignment : Alignment.bottomCenter,child: BottomNavigation(),)
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: BottomNavigation(),
+        ),
+        SizedBox(
+          height: 20,
+          width: 20,
+          // child: FloatingActionButton(
+          //   onPressed: () {
+          //     x=x+10;
+          //     y=y+10;
+          //       setState(() {
+          //         // Add the new location to the route points
+          //         routePoints.add(LatLng(x,y));
+          //         // Update user's location marker
+          //         // userLocationMarker = Marker(
+          //         //   point: newLocation,
+          //         //   child: Icon(Icons.location_pin,
+          //         //       color: Colors.red), // Customize as needed
+          //         // );
+          //         // _animatedMapController.animateTo(
+          //         //     dest: newLocation, zoom: 13.5, rotation: 0);
+
+          //     });
+
+          //     print("tate has been updated");
+          //   },
+          //   tooltip: 'set State ',
+          //   child: Icon(Icons.restart_alt),
+          // ),
+        ),
+        activeRouteDetails(context)
       ],
     );
   }
@@ -200,14 +273,216 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     );
   }
 
-  void _goToCurrentLocation() async {
+  void _goToCurrentLocation(double? zoom) async {
     // Dummy location - replace with actual location data, e.g., from a GPS sensor
     LatLng? currentLocation = await LocationService.getCurrentLocation();
     if (currentLocation != null) {
       _animatedMapController.animateTo(
-        dest: currentLocation,
-        zoom: 13.5,
+          dest: currentLocation, zoom: zoom ?? 13.5, rotation: 0);
+    }
+  }
+
+  void _startNewRoute() async {
+    RouteTypeEnum? selectedRouteType = await showRouteTypeEnumDialog(context);
+    if (selectedRouteType != null) {
+      _goToCurrentLocation(19);
+      LocationService.startListening();
+      routeService.startNewRoute(selectedRouteType,
+          GeoPoint.fromLatLng(userLocationMarker!.point, null));
+
+      // Subscribe to the global location updates stream from LocationService
+      locationUpdatesSubscription = LocationService.locationUpdates.listen(
+        (Position newLocation) {
+          currentPosition = newLocation;
+          double distance = 0;
+          if (routePoints.isNotEmpty) {
+            distance = routeService.calculateDistanceInMeters(routePoints.last,
+                LatLng(newLocation.latitude, newLocation.longitude));
+          }
+          if (routePoints.isEmpty || (distance > 1.5)) {
+            setState(() {
+              if (distance > routeService.distanceFactor ||
+                  routePoints.isEmpty) {
+                routePoints
+                    .add(LatLng(newLocation.latitude, newLocation.longitude));
+                lastLocation = null;
+              } else {
+                lastLocation =
+                    LatLng(newLocation.latitude, newLocation.longitude);
+              }
+              userLocationMarker = Marker(
+                point: LatLng(newLocation.latitude, newLocation.longitude),
+                child: const Icon(Icons.location_pin, color: Colors.red),
+              );
+            });
+            print("tate has been updated");
+          }
+        },
+        onError: (error) {
+          // Handle any errors that occur during listening
+          print('Error listening to location updates: $error');
+        },
       );
     }
+  }
+
+  Widget activeRouteDetails(BuildContext context) {
+    return (newRoute?.isActive ?? false) == false
+        ? Container()
+        : Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 30),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                        offset: Offset(0, 4), // changes position of shadow
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        //  onTap: _toggleExpanded,
+                        onVerticalDragUpdate: (DragUpdateDetails details) {
+                          if (details.primaryDelta! < 0 && !isExpanded) {
+                            _toggleExpanded();
+                          }
+                
+                          // User is swiping down
+                          if (details.primaryDelta! > 0 && isExpanded) {
+                            _toggleExpanded();
+                          }
+                        },
+                
+                        child: Container(
+                          height: 4.0,
+                          width: 100,
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 300),
+                        height: isExpanded ? 110 : 0,
+                        width: 300,
+                        curve: Curves.fastOutSlowIn,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: ListTile(
+                                      leading: const Icon(Icons.speed),
+                                      title: Text('Speed'),
+                                      subtitle: Text(
+                                          '${currentPosition?.speed ?? 'non'} km/h'),
+                                      dense: true,
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: ListTile(
+                                      leading: const Icon(Icons.terrain),
+                                      title: const Text('Elevation'),
+                                      subtitle: Text(
+                                          ' ${currentPosition?.speed ?? 'non'} m'),
+                                      dense: true,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  IconButton(
+                                    onPressed: () async {
+                                      bool? stop = await showStopDialog(context);
+                                      if (stop ?? false) {
+                                       
+                                        Navigator.of(context).pushNamed(
+                                          Routes.saveRoute,
+                                          arguments: {
+                                            'newRoute': newRoute,
+                                          },
+                                        );
+                                        // locationUpdatesSubscription?.cancel();
+                                        
+                                      }
+                                    },
+                                    icon: Icon(Icons.pause),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: StadiumBorder(),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.share),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: StadiumBorder(),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      // Handle add waypoint
+                                    },
+                                    icon: Icon(Icons.add_location),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: StadiumBorder(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize
+                            .min, // To make the container wrap its content
+                        children: [
+                          // Record animation
+                
+                          Icon(Icons.timer, color: Colors.grey[700]),
+                          SizedBox(width: 8), // Spacing between the icon and text
+                          Text(
+                            '${newRoute!.duration.inHours > 0 ? "${newRoute!.duration.inHours}h," : ""}${(newRoute!.duration.inMinutes % 60).toString().padLeft(2, '0')}m',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                
+                          SizedBox(
+                              width: 16), // Spacing between duration and length
+                          Icon(Icons.alt_route, color: Colors.grey[700]),
+                          SizedBox(width: 8),
+                          Text(
+                            '${((newRoute!.length ?? 0) / 1000).toStringAsFixed(3)} km',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
+                
+                      // The widget showing the hours and length would be here or above the GestureDetector
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+  }
+
+  void _onChangeMapType() {}
+  void _toggleExpanded() {
+    setState(() {
+      isExpanded = !isExpanded;
+    });
   }
 }

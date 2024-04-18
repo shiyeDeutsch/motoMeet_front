@@ -17,4 +17,10 @@ class EndPoints {
     path: 'api/auth/login',
     port: port,
   );
+    static Uri addNewRoute = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/routes',
+    port: port,
+  );
 }

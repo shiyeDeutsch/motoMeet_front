@@ -32,7 +32,7 @@ class _Step1ScreenState extends State<Step1Screen> {
   final lNameController = TextEditingController();
   final dateController = TextEditingController();
   final auth = GetIt.I<AuthenticationService>();
-  DateTime selectedDate = DateTime.now();
+  DateTime selectedDate = DateTime.now() ;
   final _formKey = GlobalKey<FormState>();
   late int countryId;
   String data = '';
