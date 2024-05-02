@@ -17,7 +17,8 @@ import 'dart:math' show cos, sqrt, sin, asin;
 
 import '../stateProvider.dart';
 import '../utilities/apiEndPoints.dart';
-import 'isar_service.dart';
+import 'isar/isar_user_info.dart';
+import 'isar/reposetory_provider.dart';
 import 'loctionService.dart';
 
 class RouteService {
@@ -39,8 +40,8 @@ class RouteService {
   late Position endPoint;
   Future<NewRoute?> saveRoute(
       String name, String? description, List<TagEnum>? tags) async {
-    final isarService = GetIt.I<IsarService>();
-    var user = isarService.getUserAsync();
+      final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
+    var user = isarService.getLastSync();
     NewRoute? route = routeState.saveRoute(name, description, tags);
     var json = route!.toJson();
     json["startPointArray"] = json.remove("startPoint");

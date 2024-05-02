@@ -11,6 +11,7 @@ class AuthenticationService {
 
   Future<UserInfo?> register(UserInfo user) async {
     try {
+      print(user.toJson());
       final response = await HttpClient.post(
         uri: EndPoints.register,
         body: jsonEncode(user.toJson()),

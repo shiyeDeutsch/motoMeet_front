@@ -4,9 +4,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
-
+import 'package:isar/isar.dart';
+import '../utilities/isarConverters.dart';
 import 'enum.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+// part 'new_route.g.dart'; // Ensure this part directive is included for generated code
+
+@collection
 class NewRoute {
   String name;
   String? description;
@@ -14,9 +19,10 @@ class NewRoute {
   GeoPoint? endPoint;
   RouteType? routeType;
   double? length;
-  Duration duration;
+  int durationMinutes;
   // DifficultyLevel difficultyLevel;
   List<GeoPoint>? routePoints;
+  @Enumerated(EnumType.name)
   List<TagEnum> routeTags;
   bool isActive;
   bool isComplited;
@@ -29,15 +35,20 @@ class NewRoute {
     required this.endPoint,
     required this.routeType,
     required this.length,
-    required this.duration,
-    //   required this.difficultyLevel,
+    required Duration duration, //   required this.difficultyLevel,
     required this.routePoints,
     required this.routeTags,
     required this.isActive,
     required this.isComplited,
     required this.startDate,
     required this.endDate,
-  });
+  }) : durationMinutes = duration.inMinutes;
+  @Ignore()
+  Duration get duration => Duration(minutes: durationMinutes);
+
+  set duration(Duration duration) {
+    durationMinutes = duration.inMilliseconds;
+  }
 
   factory NewRoute.fromJson(Map<String, dynamic> json) => NewRoute(
         name: json['name'],
@@ -285,8 +296,10 @@ class Review {
   });
 }
 
+@embedded
 class RouteType {
   // final int id;
+  @Enumerated(EnumType.name)
   final RouteTypeEnum name;
 
   RouteType({
@@ -367,6 +380,7 @@ class Tag {
       };
 }
 
+@embedded
 class GeoPoint {
   final double latitude;
   final double longitude;

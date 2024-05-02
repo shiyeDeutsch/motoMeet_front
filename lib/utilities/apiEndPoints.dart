@@ -1,8 +1,8 @@
 class EndPoints {
   EndPoints();
 
-  static const String scheme = 'https';
-  static const String host = 'localhost';
+  static const String scheme = 'http';
+  static const String host = '10.0.2.2';
   static const int port = 7004;
 
   static Uri register = Uri(

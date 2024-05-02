@@ -9,7 +9,9 @@ import 'package:motomeetfront/models/userModel.dart';
 
 import '../routing/routes.dart';
 import '../services/authService.dart';
-import '../services/isar_service.dart';
+import '../services/isar/isar_user_info.dart';
+import '../services/isar/reposetory_provider.dart';
+import '../utilities/assetLoader.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -32,18 +34,18 @@ class _Step1ScreenState extends State<Step1Screen> {
   final lNameController = TextEditingController();
   final dateController = TextEditingController();
   final auth = GetIt.I<AuthenticationService>();
-  DateTime selectedDate = DateTime.now() ;
+  DateTime selectedDate = DateTime.now();
   final _formKey = GlobalKey<FormState>();
   late int countryId;
-  String data = '';
+  List<dynamic>? countries = [];
   List<DropdownMenuItem> menuItems = <DropdownMenuItem<dynamic>>[];
 
   final cityController = TextEditingController();
   @override
   void initState() {
-    String filePath =
-        'C:\\src\\Flutter\\motoMeetFront\\motomeetfront\\assets\\country.json';
-    data = File(filePath).readAsStringSync();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      countries = await AssetLoader.loadCountryData();
+    });
   }
 
   @override
@@ -114,9 +116,9 @@ class _Step1ScreenState extends State<Step1Screen> {
   Widget conutry() {
     menuItems.clear();
 
-    List<dynamic> countries = json.decode(data);
+//    List<dynamic> countries = json.decode(data);
 
-    for (var element in countries) {
+    for (var element in countries??[]) {
       menuItems.add(
         DropdownMenuItem(
           value: element['Id'] as int,
@@ -172,8 +174,8 @@ class _Step1ScreenState extends State<Step1Screen> {
       final newUser = await auth.register(user);
 
       if (newUser != null) {
-        final isarService = GetIt.I<IsarService>();
-        await isarService.addUser(newUser);
+        final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
+        await isarService.add(newUser);
 
         Navigator.of(context).pushNamed(Routes.homePage);
       }

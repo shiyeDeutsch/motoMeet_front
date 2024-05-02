@@ -18,7 +18,7 @@ class HttpClient {
   }
 
   // Read - GET
-  Future<http.Response> get(Uri uri) async {
+  static Future<http.Response> get(Uri uri) async {
     return await client.get(
       uri,
       headers: {'Content-Type': 'application/json'},

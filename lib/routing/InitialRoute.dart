@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/routing/routes.dart';
 
-import '../services/isar_service.dart';
+import '../services/isar/isar_user_info.dart';
 
  
+import '../services/isar/reposetory_provider.dart';
 import '../widgets/bottomNavigation.dart';
  
 class RouteService{
 static Future<String> getInitialRoute() async {
   
-  final isarService = GetIt.I<IsarService>();
+  final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
    // await isarService.clearUser();
   final token = await isarService.getToken();
-   print(isarService.getallSync());
+   print(isarService.getAll());
   return token != null ? Routes.homePage : Routes.login;
 }
  static Widget  showBottomNav(BuildContext context) {

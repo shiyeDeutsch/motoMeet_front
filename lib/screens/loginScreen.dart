@@ -6,7 +6,8 @@ import 'package:get_it/get_it.dart';
 
 import '../routing/routes.dart';
 import '../services/authService.dart';
-import '../services/isar_service.dart';
+import '../services/isar/isar_user_info.dart';
+import '../services/isar/reposetory_provider.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -98,8 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               emailController.text, passwordController.text);
 
                           if (user != null) {
-                            final isarService = GetIt.I<IsarService>();
-                            await isarService.addUser(user);
+                           final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
+                            await isarService.add(user);
                              Navigator.of(context).pushNamed(Routes.homePage);
                           }
                         }

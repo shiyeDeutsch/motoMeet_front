@@ -104,6 +104,7 @@ import '../models/route.dart';
 import '../models/route.dart';
 import '../routing/routes.dart';
 import '../services/MapMarkerService.dart';
+import '../services/isar/reposetory_provider.dart';
 import '../services/loctionService.dart';
 import '../services/routeService.dart';
 import '../stateProvider.dart';
@@ -131,7 +132,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   List<LatLng> routePoints = <LatLng>[];
   LatLng? lastLocation;
   final routeService = GetIt.I<RouteService>();
-
+  final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
   NewRoute? newRoute;
   List<Marker> markers = [];
   Marker? userLocationMarker;
@@ -182,6 +183,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       alignment: AlignmentDirectional.topCenter,
       // fit: StackFit.expand,
       children: [
+        FloatingActionButton(onPressed: () => isarService.deleteAll()),
         FlutterMap(
           mapController: _animatedMapController.mapController,
           options: MapOptions(
@@ -335,7 +337,8 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
             right: 0,
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 30),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 30),
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   decoration: BoxDecoration(
@@ -358,13 +361,13 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                           if (details.primaryDelta! < 0 && !isExpanded) {
                             _toggleExpanded();
                           }
-                
+
                           // User is swiping down
                           if (details.primaryDelta! > 0 && isExpanded) {
                             _toggleExpanded();
                           }
                         },
-                
+
                         child: Container(
                           height: 4.0,
                           width: 100,
@@ -402,13 +405,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                                 ],
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   IconButton(
                                     onPressed: () async {
-                                      bool? stop = await showStopDialog(context);
+                                      bool? stop =
+                                          await showStopDialog(context);
                                       if (stop ?? false) {
-                                       
                                         Navigator.of(context).pushNamed(
                                           Routes.saveRoute,
                                           arguments: {
@@ -416,7 +420,6 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                                           },
                                         );
                                         // locationUpdatesSubscription?.cancel();
-                                        
                                       }
                                     },
                                     icon: Icon(Icons.pause),
@@ -451,14 +454,15 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                             .min, // To make the container wrap its content
                         children: [
                           // Record animation
-                
+
                           Icon(Icons.timer, color: Colors.grey[700]),
-                          SizedBox(width: 8), // Spacing between the icon and text
+                          SizedBox(
+                              width: 8), // Spacing between the icon and text
                           Text(
                             '${newRoute!.duration.inHours > 0 ? "${newRoute!.duration.inHours}h," : ""}${(newRoute!.duration.inMinutes % 60).toString().padLeft(2, '0')}m',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
-                
+
                           SizedBox(
                               width: 16), // Spacing between duration and length
                           Icon(Icons.alt_route, color: Colors.grey[700]),
@@ -469,7 +473,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                           ),
                         ],
                       ),
-                
+
                       // The widget showing the hours and length would be here or above the GestureDetector
                     ],
                   ),
