@@ -105,7 +105,7 @@ class _SaveRouteScreenState extends State<SaveRouteScreen> {
                               leading: const Icon(Icons.timer),
                               title: const Text('Duration'),
                               subtitle:
-                                  Text(formatDuration(widget.route.duration)),
+                                  Text(formatDuration(widget.route.routeDuration!)),
                             ),
                             ListTile(
                               leading: const Icon(Icons.date_range),

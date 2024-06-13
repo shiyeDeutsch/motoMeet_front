@@ -183,7 +183,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       alignment: AlignmentDirectional.topCenter,
       // fit: StackFit.expand,
       children: [
-        FloatingActionButton(onPressed: () => isarService.deleteAll()),
+      
         FlutterMap(
           mapController: _animatedMapController.mapController,
           options: MapOptions(
@@ -227,38 +227,13 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
           onRouteOptions: () => {},
           onBackToDiscover: () => {},
         ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: BottomNavigation(),
-        ),
-        SizedBox(
-          height: 20,
-          width: 20,
-          // child: FloatingActionButton(
-          //   onPressed: () {
-          //     x=x+10;
-          //     y=y+10;
-          //       setState(() {
-          //         // Add the new location to the route points
-          //         routePoints.add(LatLng(x,y));
-          //         // Update user's location marker
-          //         // userLocationMarker = Marker(
-          //         //   point: newLocation,
-          //         //   child: Icon(Icons.location_pin,
-          //         //       color: Colors.red), // Customize as needed
-          //         // );
-          //         // _animatedMapController.animateTo(
-          //         //     dest: newLocation, zoom: 13.5, rotation: 0);
-
-          //     });
-
-          //     print("tate has been updated");
-          //   },
-          //   tooltip: 'set State ',
-          //   child: Icon(Icons.restart_alt),
-          // ),
-        ),
-        activeRouteDetails(context)
+        // Align(
+        //   alignment: Alignment.bottomCenter,
+        //   child: BottomNavigation(),
+        // ),
+          
+        activeRouteDetails(context),
+      //    FloatingActionButton(child:Container(height: 30,width:  30), onPressed: () => isarService.deleteAll()),
       ],
     );
   }
@@ -332,7 +307,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     return (newRoute?.isActive ?? false) == false
         ? Container()
         : Positioned(
-            bottom: 80,
+            bottom: 15,
             left: 0,
             right: 0,
             child: Center(
@@ -459,7 +434,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                           SizedBox(
                               width: 8), // Spacing between the icon and text
                           Text(
-                            '${newRoute!.duration.inHours > 0 ? "${newRoute!.duration.inHours}h," : ""}${(newRoute!.duration.inMinutes % 60).toString().padLeft(2, '0')}m',
+                            '${(newRoute!.routeDuration?.inHours ??0)> 0 ? "${newRoute!.routeDuration?.inHours}h," : ""}${(newRoute!.routeDuration?.inMinutes ??0 % 60).toString().padLeft(2, '0')}m',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
 

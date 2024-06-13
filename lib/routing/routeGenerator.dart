@@ -26,7 +26,7 @@ class RouteGenerator {
       case Routes.homePage:
         screen = MapMarkerScreen();
         break;
-         case Routes.saveRoute:
+      case Routes.saveRoute:
         screen = SaveRouteScreen(route: args!['newRoute']);
         break;
 
@@ -38,10 +38,10 @@ class RouteGenerator {
       builder: (_) => Scaffold(
           // bottomNavigationBar: Builder(
           //   builder: (BuildContext context) {
-             // return RouteService.showBottomNav(context);
+          // return RouteService.showBottomNav(context);
           //   },
           // ),
-          body: screen),
+          body: SafeArea(child: screen)),
     );
   }
 

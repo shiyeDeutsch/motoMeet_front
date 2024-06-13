@@ -12,6 +12,7 @@ import 'package:motomeetfront/models/userModel.dart';
 import 'package:motomeetfront/routing/routes.dart';
 import 'package:motomeetfront/services/service_locator.dart';
 import 'package:motomeetfront/services/httpClient.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'routing/InitialRoute.dart';
 import 'routing/routeGenerator.dart';
@@ -29,8 +30,9 @@ void main() async {
     SecurityContext context = SecurityContext.defaultContext;
     context.setTrustedCertificatesBytes(data.buffer.asUint8List());
   }
-
-    final isar = await Isar.open([UserInfoSchema], directory: 'path_to_directory');
+// Get the appropriate directory for storing the database
+    final dir = await getApplicationDocumentsDirectory();
+    final isar = await Isar.open([UserInfoSchema], directory: dir.path);
 
   // Create a ProviderContainer for your app
   setupLocator(

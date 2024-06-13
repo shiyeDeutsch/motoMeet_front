@@ -5,21 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:isar/isar.dart';
+import 'package:motomeetfront/models/enum.dart';
 import '../utilities/isarConverters.dart';
 import 'enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-// part 'new_route.g.dart'; // Ensure this part directive is included for generated code
+//  part 'new_route.g.dart'; // Ensure this part directive is included for generated code
+part 'route.g.dart';
 
 @collection
 class NewRoute {
+  Id? isarId;
   String name;
   String? description;
   GeoPoint startPoint;
   GeoPoint? endPoint;
   RouteType? routeType;
   double? length;
-  int durationMinutes;
+  int? durationMinutes;
   // DifficultyLevel difficultyLevel;
   List<GeoPoint>? routePoints;
   @Enumerated(EnumType.name)
@@ -28,29 +31,36 @@ class NewRoute {
   bool isComplited;
   DateTime startDate;
   DateTime? endDate;
+  List<Waypoint>? pointOfInterest;
   NewRoute({
+    required this.isarId,
     required this.name,
     required this.description,
     required this.startPoint,
     required this.endPoint,
     required this.routeType,
     required this.length,
-    required Duration duration, //   required this.difficultyLevel,
+    required this.durationMinutes,
     required this.routePoints,
     required this.routeTags,
     required this.isActive,
     required this.isComplited,
     required this.startDate,
     required this.endDate,
-  }) : durationMinutes = duration.inMinutes;
+    required this.pointOfInterest,
+  });
   @Ignore()
-  Duration get duration => Duration(minutes: durationMinutes);
+  Duration? get routeDuration {
+    if (durationMinutes != null) return Duration(minutes: durationMinutes!);
+    return null;
+  }
 
-  set duration(Duration duration) {
-    durationMinutes = duration.inMilliseconds;
+  set routeDuration(Duration? duration) {
+    durationMinutes = duration!.inMilliseconds;
   }
 
   factory NewRoute.fromJson(Map<String, dynamic> json) => NewRoute(
+        isarId: json['isarId'],
         name: json['name'],
         startDate: json['startDate'],
         endDate: json['endDate'],
@@ -61,14 +71,15 @@ class NewRoute {
         endPoint: GeoPoint.fromJson(json['endPoint']),
         routeType: RouteType.fromJson(json['routeType']),
         length: json['length'].toDouble(),
-        duration: Duration(
-            minutes:
-                json['duration'] as int), // Assuming duration is in minutes
+        durationMinutes:
+            json['durationMinutes'], // Assuming duration is in minutes
         // difficultyLevel: DifficultyLevel.fromJson(json['difficultyLevel']),
         routePoints: List<GeoPoint>.from(
             json['routePoints'].map((x) => RoutePoint.fromJson(x))),
         routeTags: List<TagEnum>.from(
             json['routeTags'].map((x) => TageEnumExtension.fromString(x))),
+        pointOfInterest:List<Waypoint>.from(
+            json['pointOfInterest'].map((x) => Waypoint.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -84,7 +95,7 @@ class NewRoute {
         'endPoint': endPoint?.toJson(),
         'routeType': routeType?.toJson(),
         'length': length,
-        'duration': duration.toString(),
+        'durationMinutes': durationMinutes,
         //'difficultyLevel': difficultyLevel.toJson(),
         'routePoints': routePoints != null
             ? List<dynamic>.from(routePoints!.map((x) => x.toJson()))
@@ -106,8 +117,12 @@ class NewRoute {
     bool? isComplited,
     DateTime? startDate,
     DateTime? endDate,
+    int? durationMinutes,
+    Id? isarId,
+    List<Waypoint>?pointOfInterest,
   }) {
     return NewRoute(
+      isarId: isarId ?? this.isarId,
       name: name ?? this.name,
       isComplited: isComplited ?? this.isComplited,
       endDate: endDate ?? this.endDate,
@@ -118,12 +133,52 @@ class NewRoute {
       endPoint: endPoint ?? this.endPoint,
       routeType: routeType ?? this.routeType,
       length: length ?? this.length,
-      duration: duration ?? this.duration,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
       // difficultyLevel: difficultyLevel ?? this.difficultyLevel,
       routePoints: routePoints ?? this.routePoints,
       routeTags: routeTags ?? this.routeTags,
+      pointOfInterest: pointOfInterest ?? this.pointOfInterest,
     );
   }
+}
+
+@embedded
+class Waypoint {
+  final GeoPoint? location;
+  final String imageUrl;
+  final String name;
+  final String description;
+  @Enumerated(EnumType.name)
+  final WaypointType? type;
+  Waypoint({
+    this.location,
+    this.imageUrl = '',
+    this.name = '',
+    this.description = '',
+    this.type,
+  });
+
+  // Method for converting a Waypoint instance to a map
+  Map<String, dynamic> toJson() => {
+        'location': location?.toJson(),
+        'imageUrl': imageUrl,
+        'name': name,
+        'description': description,
+        'type': type!.name,
+      };
+
+  // Factory constructor for creating a Waypoint instance from a map
+  factory Waypoint.fromJson(Map<String, dynamic> json) => Waypoint(
+        location: json['location'] != null
+            ? GeoPoint.fromJson(json['location'])
+            : null,
+        imageUrl: json['imageUrl'] ?? '',
+        name: json['name'] ?? '',
+        description: json['description'] ?? '',
+        type: json['type'] != null
+            ? json['type'].map((x) => WaypointTypeExtension.fromString(x))
+            : null,
+      );
 }
 
 class Route {
@@ -300,21 +355,21 @@ class Review {
 class RouteType {
   // final int id;
   @Enumerated(EnumType.name)
-  final RouteTypeEnum name;
+  final RouteTypeEnum? type;
 
   RouteType({
     //  required this.id,
-    required this.name,
+    this.type,
   });
   factory RouteType.fromJson(Map<String, dynamic> json) => RouteType(
         //    id: json['id'],
-        name: json['name'],
+        type: json['type'],
       );
 
   // Method for converting a RouteType instance to a map
   Map<String, dynamic> toJson() => {
         //   'id': id,
-        'name': name.name,
+        'name': type?.name,
       };
 }
 
@@ -382,14 +437,14 @@ class Tag {
 
 @embedded
 class GeoPoint {
-  final double latitude;
-  final double longitude;
+  final double? latitude;
+  final double? longitude;
   final double? altitude;
 
   GeoPoint({
-    required this.latitude,
-    required this.longitude,
-    required this.altitude,
+    this.latitude,
+    this.longitude,
+    this.altitude,
   });
   factory GeoPoint.fromJson(Map<String, dynamic> json) => GeoPoint(
         latitude: json['latitude'].toDouble(),
@@ -407,6 +462,6 @@ class GeoPoint {
         'altitude': altitude,
       };
   LatLng toLatLng() {
-    return LatLng(latitude, longitude);
+    return LatLng(latitude!, longitude!);
   }
 }

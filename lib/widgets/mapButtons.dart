@@ -12,7 +12,7 @@ class MapButtons extends StatelessWidget {
   final VoidCallback onPauseStopRecording;
   final VoidCallback onAddWaypoints;
   final VoidCallback onSearch;
-  final VoidCallback onCurrentLocation ;
+  final VoidCallback onCurrentLocation;
   final VoidCallback onZoomIn;
   final VoidCallback onZoomOut;
   final VoidCallback onRouteOptions;
@@ -36,81 +36,80 @@ class MapButtons extends StatelessWidget {
   }) : super(key: key);
 
   @override
- Widget build(BuildContext context) {
-  return Row(   mainAxisAlignment:  MainAxisAlignment.spaceBetween, 
-  
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(height: 30,
-            width: 30,
-              child: FloatingActionButton(
-                onPressed: onChangeMapType,
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildCustomButton(
+                icon: Icons.arrow_back,
                 tooltip: 'Change Map Type',
-                child: Icon(Icons.map),
+                onPressed: onChangeMapType,
               ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(height: 30,
-            width: 30,
-              child: FloatingActionButton(
-                onPressed: onShowRouteDetails,
+              SizedBox(height: 8),
+              _buildCustomButton(
+                icon: Icons.details,
                 tooltip: 'Show Route Details',
-                child: Icon(Icons.details),
+                onPressed: onShowRouteDetails,
               ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(height: 30,
-            width: 30,
-              child: FloatingActionButton(
-                onPressed: onRecordNewRoute,
+              SizedBox(height: 8),
+              _buildCustomButton(
+                icon: Icons.add_location_alt,
                 tooltip: 'Record New Route',
-                child: Icon(Icons.add_location_alt),
+                onPressed: onRecordNewRoute,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-         
-          children: [
-            SizedBox(height: 30,
-            width: 30,
-              child: FloatingActionButton(
-                onPressed: onCurrentLocation,
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              _buildCustomButton(
+                icon: Icons.my_location,
                 tooltip: 'Current Location',
-                child: Icon(Icons.my_location),
+                onPressed: onCurrentLocation,
               ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(height: 30,
-            width: 30,
-              child: FloatingActionButton(
-                onPressed: onZoomIn,
-                tooltip: 'Zoom In',
-                child: Icon(Icons.zoom_in),
-              ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(height: 30,
-            width: 30,
-              child: FloatingActionButton(
-                onPressed: onZoomOut,
-                tooltip: 'Zoom Out',
-                child: Icon(Icons.zoom_out),
-              ),
-            ),
-          ],
+              // SizedBox(height: 8),
+              // _buildCustomButton(
+              //   icon: Icons.zoom_in,
+              //   tooltip: 'Zoom In',
+              //   onPressed: onZoomIn,
+              // ),
+              // SizedBox(height: 8),
+              // _buildCustomButton(
+              //   icon: Icons.zoom_out,
+              //   tooltip: 'Zoom Out',
+              //   onPressed: onZoomOut,
+              // ),
+            ],
+          ),
         ),
-      ),
-      
-    ],
-  );
-}
+      ],
+    );
+  }
 
+  Widget _buildCustomButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      height: 50,
+      width: 50,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5), // Semi-transparent
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        //  tooltip: tooltip,
+        onPressed: onPressed,
+      ),
+    );
+  }
 }

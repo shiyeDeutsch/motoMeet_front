@@ -14,7 +14,7 @@ static Future<String> getInitialRoute() async {
   final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
    // await isarService.clearUser();
   final token = await isarService.getToken();
-   print(isarService.getAll());
+  //  print(isarService.getAll());
   return token != null ? Routes.homePage : Routes.login;
 }
  static Widget  showBottomNav(BuildContext context) {
