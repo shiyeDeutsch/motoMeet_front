@@ -101,7 +101,7 @@ extension TageEnumExtension on TagEnum {
   }
 }
 
-enum WaypointCategory { NaturalWaypoint, InformativeWaypoint, WarningWaypoint }
+enum WaypointCategory { Natural, Informative, Warning }
 
 // Enum holding all possible waypoint types
 enum WaypointType {
@@ -129,7 +129,7 @@ enum WaypointType {
   EducationalTrail,
   ParkOffice,
 
-  // Warning Waypoints
+  //   Warning Waypoints
   SteepDrop,
   SlipperyPath,
   HighTide,
@@ -141,49 +141,48 @@ enum WaypointType {
 
 // Interface for Waypoint Enums
 extension WaypointTypeExtension on WaypointType {
+  static final naturalWaypointRange = {
+    WaypointType.Lake,
+    WaypointType.Cliff,
+    WaypointType.Waterfall,
+    WaypointType.WaterSpring,
+    WaypointType.River,
+    WaypointType.MountainPeak,
+    WaypointType.Forest,
+    WaypointType.Meadow,
+    WaypointType.Cave,
+    WaypointType.Valley,
+    WaypointType.Beach,
+    WaypointType.Glacier,
+    WaypointType.Volcano,
+  };
+
+  static final informativeWaypointRange = {
+    WaypointType.HistoricalSite,
+    WaypointType.VisitorCenter,
+    WaypointType.Viewpoint,
+    WaypointType.Museum,
+    WaypointType.CulturalSite,
+    WaypointType.EducationalTrail,
+    WaypointType.ParkOffice,
+  };
+
+  static final warningWaypointRange = {
+    WaypointType.SteepDrop,
+    WaypointType.SlipperyPath,
+    WaypointType.HighTide,
+    WaypointType.WildlifeSighting,
+    WaypointType.FloodingArea,
+    WaypointType.Rockfall,
+    WaypointType.RestrictedArea,
+  };
   static WaypointCategory getCategory(WaypointType type) {
-    const naturalWaypointRange = {
-      WaypointType.Lake,
-      WaypointType.Cliff,
-      WaypointType.Waterfall,
-      WaypointType.WaterSpring,
-      WaypointType.River,
-      WaypointType.MountainPeak,
-      WaypointType.Forest,
-      WaypointType.Meadow,
-      WaypointType.Cave,
-      WaypointType.Valley,
-      WaypointType.Beach,
-      WaypointType.Glacier,
-      WaypointType.Volcano,
-    };
-
-    const informativeWaypointRange = {
-      WaypointType.HistoricalSite,
-      WaypointType.VisitorCenter,
-      WaypointType.Viewpoint,
-      WaypointType.Museum,
-      WaypointType.CulturalSite,
-      WaypointType.EducationalTrail,
-      WaypointType.ParkOffice,
-    };
-
-    const warningWaypointRange = {
-      WaypointType.SteepDrop,
-      WaypointType.SlipperyPath,
-      WaypointType.HighTide,
-      WaypointType.WildlifeSighting,
-      WaypointType.FloodingArea,
-      WaypointType.Rockfall,
-      WaypointType.RestrictedArea,
-    };
-
     if (naturalWaypointRange.contains(type)) {
-      return WaypointCategory.NaturalWaypoint;
+      return WaypointCategory.Natural;
     } else if (informativeWaypointRange.contains(type)) {
-      return WaypointCategory.InformativeWaypoint;
+      return WaypointCategory.Informative;
     } else if (warningWaypointRange.contains(type)) {
-      return WaypointCategory.WarningWaypoint;
+      return WaypointCategory.Warning;
     } else {
       throw Exception('Invalid waypoint type');
     }

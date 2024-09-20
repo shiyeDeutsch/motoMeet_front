@@ -104,15 +104,19 @@ import '../models/route.dart';
 import '../models/route.dart';
 import '../routing/routes.dart';
 import '../services/MapMarkerService.dart';
+import '../services/bottomSheetServices.dart';
 import '../services/isar/reposetory_provider.dart';
 import '../services/loctionService.dart';
 import '../services/routeService.dart';
 import '../stateProvider.dart';
+import '../widgets/ExpandablePanel.dart';
 import '../widgets/bottomNavigation.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
+import '../widgets/expandableFAB.dart';
 import '../widgets/mapButtons.dart';
 import '../widgets/selecetMapProvider.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
+import '../widgets/wayPointBottomSheet.dart';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
   const MapMarkerScreen({super.key});
@@ -183,7 +187,6 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       alignment: AlignmentDirectional.topCenter,
       // fit: StackFit.expand,
       children: [
-      
         FlutterMap(
           mapController: _animatedMapController.mapController,
           options: MapOptions(
@@ -231,9 +234,10 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         //   alignment: Alignment.bottomCenter,
         //   child: BottomNavigation(),
         // ),
-          
+
+        (newRoute?.isActive ?? false) == false ? startNewRoute() : Container(),
+
         activeRouteDetails(context),
-      //    FloatingActionButton(child:Container(height: 30,width:  30), onPressed: () => isarService.deleteAll()),
       ],
     );
   }
@@ -307,155 +311,170 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     return (newRoute?.isActive ?? false) == false
         ? Container()
         : Positioned(
-            bottom: 15,
+            bottom: 0,
             left: 0,
             right: 0,
-            child: Center(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 30),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 0,
-                        blurRadius: 4,
-                        offset: Offset(0, 4), // changes position of shadow
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        //  onTap: _toggleExpanded,
-                        onVerticalDragUpdate: (DragUpdateDetails details) {
-                          if (details.primaryDelta! < 0 && !isExpanded) {
-                            _toggleExpanded();
-                          }
-
-                          // User is swiping down
-                          if (details.primaryDelta! > 0 && isExpanded) {
-                            _toggleExpanded();
-                          }
-                        },
-
-                        child: Container(
-                          height: 4.0,
-                          width: 100,
-                          color: Colors.grey[300],
-                        ),
-                      ),
-                      AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        height: isExpanded ? 110 : 0,
-                        width: 300,
-                        curve: Curves.fastOutSlowIn,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: ListTile(
-                                      leading: const Icon(Icons.speed),
-                                      title: Text('Speed'),
-                                      subtitle: Text(
-                                          '${currentPosition?.speed ?? 'non'} km/h'),
-                                      dense: true,
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: ListTile(
-                                      leading: const Icon(Icons.terrain),
-                                      title: const Text('Elevation'),
-                                      subtitle: Text(
-                                          ' ${currentPosition?.speed ?? 'non'} m'),
-                                      dense: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  IconButton(
-                                    onPressed: () async {
-                                      bool? stop =
-                                          await showStopDialog(context);
-                                      if (stop ?? false) {
-                                        Navigator.of(context).pushNamed(
-                                          Routes.saveRoute,
-                                          arguments: {
-                                            'newRoute': newRoute,
-                                          },
-                                        );
-                                        // locationUpdatesSubscription?.cancel();
-                                      }
-                                    },
-                                    icon: Icon(Icons.pause),
-                                    style: ElevatedButton.styleFrom(
-                                      shape: StadiumBorder(),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.share),
-                                    style: ElevatedButton.styleFrom(
-                                      shape: StadiumBorder(),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      // Handle add waypoint
-                                    },
-                                    icon: Icon(Icons.add_location),
-                                    style: ElevatedButton.styleFrom(
-                                      shape: StadiumBorder(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize
-                            .min, // To make the container wrap its content
-                        children: [
-                          // Record animation
-
-                          Icon(Icons.timer, color: Colors.grey[700]),
-                          SizedBox(
-                              width: 8), // Spacing between the icon and text
-                          Text(
-                            '${(newRoute!.routeDuration?.inHours ??0)> 0 ? "${newRoute!.routeDuration?.inHours}h," : ""}${(newRoute!.routeDuration?.inMinutes ??0 % 60).toString().padLeft(2, '0')}m',
-                            style: TextStyle(color: Colors.grey[700]),
-                          ),
-
-                          SizedBox(
-                              width: 16), // Spacing between duration and length
-                          Icon(Icons.alt_route, color: Colors.grey[700]),
-                          SizedBox(width: 8),
-                          Text(
-                            '${((newRoute!.length ?? 0) / 1000).toStringAsFixed(3)} km',
-                            style: TextStyle(color: Colors.grey[700]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+        //     WayPointBottomSheet(),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: routeActionButtons(),
+                ),
+                Center(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 0,
+                            // blurRadius: 4,
+                            offset: Offset(0, 4), // changes position of shadow
                           ),
                         ],
                       ),
-
-                      // The widget showing the hours and length would be here or above the GestureDetector
-                    ],
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onVerticalDragUpdate: (DragUpdateDetails details) {
+                              if (details.primaryDelta! < 0 && !isExpanded) {
+                                _toggleExpanded();
+                              }
+                              if (details.primaryDelta! > 0 && isExpanded) {
+                                _toggleExpanded();
+                              }
+                            },
+                            child: Container(
+                              height: 4.0,
+                              width: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                              margin: EdgeInsets.only(bottom: 8),
+                            ),
+                          ),
+                          _buildMainDetails(),
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            height: isExpanded ? 110 : 0,
+                            width: double.infinity,
+                            curve: Curves.fastOutSlowIn,
+                            child: SingleChildScrollView(
+                              child: _buildExpandedDetails(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           );
+  }
+
+  Widget _buildMainDetails() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildDetailColumn(
+            Icons.speed, 'Speed', '${currentPosition?.speed ?? 'non'} km/h'),
+        _buildDetailColumn(Icons.terrain, 'Elevation',
+            '${currentPosition?.altitude ?? 'non'} m'),
+        _buildDetailColumn(Icons.timer, 'Duration',
+            '${(newRoute!.routeDuration?.inHours ?? 0) > 0 ? "${newRoute!.routeDuration?.inHours}h," : ""}${(newRoute!.routeDuration?.inMinutes ?? 0 % 60).toString().padLeft(2, '0')}m'),
+        _buildDetailColumn(Icons.alt_route, 'Distance',
+            '${((newRoute!.length ?? 0) / 1000).toStringAsFixed(3)} km'),
+      ],
+    );
+  }
+
+  Widget _buildDetailColumn(IconData icon, String title, String value) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.grey[700]),
+        SizedBox(height: 4),
+        Text(title, style: TextStyle(color: Colors.grey[700])),
+        Text(value, style: TextStyle(color: Colors.grey[700])),
+      ],
+    );
+  }
+
+  Widget _buildExpandedDetails() {
+    return Column(
+      children: [
+        // Row(
+        //   children: [
+        //     Flexible(
+        //       child: ListTile(
+        //         leading: const Icon(Icons.speed),
+        //         title: Text('Speed'),
+        //         subtitle: Text('${currentPosition?.speed ?? 'non'} km/h'),
+        //         dense: true,
+        //       ),
+        //     ),
+        //     Flexible(
+        //       child: ListTile(
+        //         leading: const Icon(Icons.terrain),
+        //         title: const Text('Elevation'),
+        //         subtitle: Text('${currentPosition?.altitude ?? 'non'} m'),
+        //         dense: true,
+        //       ),
+        //     ),
+        //   ],
+        // ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () async {
+                bool? stop = await showStopDialog(context);
+                if (stop ?? false) {
+                  Navigator.of(context).pushNamed(
+                    Routes.saveRoute,
+                    arguments: {
+                      'newRoute': newRoute,
+                    },
+                  );
+                  // locationUpdatesSubscription?.cancel();
+                }
+              },
+              icon: Icon(Icons.pause),
+              style: ElevatedButton.styleFrom(
+                shape: StadiumBorder(),
+              ),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.share),
+              style: ElevatedButton.styleFrom(
+                shape: StadiumBorder(),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                // Handle add waypoint
+              },
+              icon: Icon(Icons.add_location),
+              style: ElevatedButton.styleFrom(
+                shape: StadiumBorder(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   void _onChangeMapType() {}
@@ -463,5 +482,96 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     setState(() {
       isExpanded = !isExpanded;
     });
+  }
+
+  Widget startNewRoute() {
+    return Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+              ),
+              onPressed: _startNewRoute,
+              child: Text("start new route")),
+        ));
+  }
+
+  Widget routeActionButtons() {
+    return SizedBox(
+      height: 50,
+      child: ExpandablePanel(
+        isOpen: true,
+        alignment: Alignment.topRight,
+        buttons: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add_location, color: Colors.black),
+            onPressed: () {
+              BottomSheetService.showLargeBottomSheet(
+                  context: context, content: WayPointBottomSheet( ));
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.share, color: Colors.black),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.pause, color: Colors.black),
+            onPressed: () async {
+              bool? stop = await showStopDialog(context);
+              if (stop ?? false) {
+                Navigator.of(context).pushNamed(
+                  Routes.saveRoute,
+                  arguments: {
+                    'newRoute': newRoute,
+                  },
+                );
+                // locationUpdatesSubscription?.cancel();
+              }
+            },
+          ),
+        ],
+      ),
+    );
+    // return ExpandableFab(
+    //   distance: 100,
+    //   children: [
+    //     IconButton(
+    //       onPressed: () async {
+    //         bool? stop = await showStopDialog(context);
+    //         if (stop ?? false) {
+    //           Navigator.of(context).pushNamed(
+    //             Routes.saveRoute,
+    //             arguments: {
+    //               'newRoute': newRoute,
+    //             },
+    //           );
+    //           // locationUpdatesSubscription?.cancel();
+    //         }
+    //       },
+    //       icon: Icon(Icons.pause),
+    //       style: ElevatedButton.styleFrom(
+    //         shape: StadiumBorder(),
+    //       ),
+    //     ),
+    //     IconButton(
+    //       onPressed: () {},
+    //       icon: Icon(Icons.share),
+    //       style: ElevatedButton.styleFrom(
+    //         shape: StadiumBorder(),
+    //       ),
+    //     ),
+    //     IconButton(
+    //       onPressed: () {
+    //         // Handle add waypoint
+    //       },
+    //       icon: Icon(Icons.add_location),
+    //       style: ElevatedButton.styleFrom(
+    //         shape: StadiumBorder(),
+    //       ),
+    //     ),
+    //   ],
+    // );
   }
 }

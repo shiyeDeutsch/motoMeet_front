@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'expandableFAB.dart';
 import 'selecetMapProvider.dart';
 
 class MapButtons extends StatelessWidget {
@@ -52,16 +54,16 @@ class MapButtons extends StatelessWidget {
               ),
               SizedBox(height: 8),
               _buildCustomButton(
-                icon: Icons.details,
+                icon: Icons.layers,
                 tooltip: 'Show Route Details',
                 onPressed: onShowRouteDetails,
               ),
               SizedBox(height: 8),
-              _buildCustomButton(
-                icon: Icons.add_location_alt,
-                tooltip: 'Record New Route',
-                onPressed: onRecordNewRoute,
-              ),
+              // _buildCustomButton(
+              //   icon: Icons.add_location_alt,
+              //   tooltip: 'Record New Route',
+              //   onPressed: onRecordNewRoute,
+              // ),
             ],
           ),
         ),
@@ -86,6 +88,8 @@ class MapButtons extends StatelessWidget {
               //   tooltip: 'Zoom Out',
               //   onPressed: onZoomOut,
               // ),
+
+                
             ],
           ),
         ),

@@ -15,7 +15,8 @@ class RouteGenerator {
     Widget screen;
     switch (settings.name) {
       case Routes.login:
-        screen = LoginScreen();
+     //  screen = LoginScreen();
+       screen = MapMarkerScreen();
         break;
       case Routes.signUp:
         screen = SignupScreen();
