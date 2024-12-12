@@ -13,89 +13,237 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return   Container( 
-    width: MediaQuery.of( context).size.width,
-      height: MediaQuery.of( context).size.height,
+    return Container(
+      // רקע כהה לבוטום שיט
+      color: Colors.black,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.6, // גובה מותאם
       child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildCategorySelector(),
-                  Divider(),
-                  _buildWaypointTypeList(),
-                ],
-               
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // המחוון העליון
+          _buildTopHandle(),
+          // בורר הקטגוריות
+          _buildCategorySelector(),
+          Divider(color: Colors.grey),
+          // רשימת סוגי הנקודות
+          _buildWaypointTypeGrid(),
+        ],
       ),
     );
   }
 
-  // void _showAddLandmarkSheet() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     builder: (context) {
-  //       return Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           _buildCategorySelector(),
-  //           Divider(),
-  //           _buildWaypointTypeList(),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+  Widget _buildTopHandle() {
+    return Container(
+      height: 4.0,
+      width: 40.0,
+      margin: EdgeInsets.only(top: 8.0, bottom: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[700],
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
 
   Widget _buildCategorySelector() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: WaypointCategory.values.map((category) {
-          return ChoiceChip(
-            label: Text(category.toString().split('.').last),
-            selected: _selectedCategory == category,
-            onSelected: (selected) {
+          bool isSelected = _selectedCategory == category;
+          return GestureDetector(
+            onTap: () {
               setState(() {
                 _selectedCategory = category;
+                _selectedType = null; // איפוס הבחירה בסוג בעת שינוי קטגוריה
               });
             },
+            child: Column(
+              children: [
+                // עיגול עם אייקון מותאם
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.blueAccent : Colors.grey[800],
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: Colors.blueAccent.withOpacity(0.6),
+                              spreadRadius: 2,
+                              blurRadius: 6,
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: Center(
+                    child: _getCategoryIcon(category, isSelected),
+                  ),
+                ),
+                SizedBox(height: 1),
+                // שם הקטגוריה
+                Text(
+                  category.toString().split('.').last,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
           );
         }).toList(),
       ),
     );
   }
 
-  Widget _buildWaypointTypeList() {
+  Widget _getCategoryIcon(WaypointCategory category, bool isSelected) {
+    // החלף את האייקונים האלו באייקונים מותאמים אישית לפי הצורך
+    switch (category) {
+      case WaypointCategory.Natural:
+        return Icon(Icons.nature, color: Colors.white, size: 30);
+      case WaypointCategory.Informative:
+        return Icon(Icons.info, color: Colors.white, size: 30);
+      case WaypointCategory.Warning:
+        return Icon(Icons.warning, color: Colors.white, size: 30);
+      default:
+        return Icon(Icons.place, color: Colors.white, size: 30);
+    }
+  }
+
+  Widget _buildWaypointTypeGrid() {
     List<WaypointType> waypointTypes = _getWaypointTypesByCategory(_selectedCategory);
     return Expanded(
-      child: ListView.builder(
-        itemCount: waypointTypes.length,
-        itemBuilder: (context, index) {
-          WaypointType type = waypointTypes[index];
-          return ListTile(
-            leading: Icon(Icons.landscape), // You can use appropriate icons here
-            title: Text(type.toString().split('.').last),
-            onTap: () {
-              _selectedType = type;
-              Navigator.pop(context);
-              _showLandmarkDetailsDialog();
-            },
-          );
-        },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: GridView.builder(
+          itemCount: waypointTypes.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // מספר העמודות ברשת
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio:1.5, // יחס גובה-רוחב
+          ),
+          itemBuilder: (context, index) {
+            WaypointType type = waypointTypes[index];
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedType = type;
+                });
+                _showLandmarkDetailsDialog();
+              },
+              child: Column(
+                children: [
+                  // עיגול עם אייקון מותאם
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF2A2A2A),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: _getWaypointIcon(type),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  // שם הסוג
+                  Text(
+                    type.toString().split('.').last.replaceAll('_', ' '),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
+  }
+
+  Widget _getWaypointIcon(WaypointType type) {
+    // החלף את האייקונים האלו באייקונים מותאמים אישית לפי הצורך
+    switch (type) {
+      // Natural Waypoints
+      case WaypointType.Lake:
+        return Icon(Icons.pool, color: Colors.white, size: 30);
+      case WaypointType.Cliff:
+        return Icon(Icons.landscape, color: Colors.white, size: 30);
+      case WaypointType.Waterfall:
+        return Icon(Icons.water, color: Colors.white, size: 30);
+      case WaypointType.WaterSpring:
+        return Icon(Icons.opacity, color: Colors.white, size: 30);
+      case WaypointType.River:
+        return Icon(Icons.opacity, color: Colors.white, size: 30); // אין אייקון כזה, החלף לאייקון מתאים
+      case WaypointType.MountainPeak:
+        return Icon(Icons.terrain, color: Colors.white, size: 30);
+      case WaypointType.Forest:
+        return Icon(Icons.park, color: Colors.white, size: 30);
+      case WaypointType.Meadow:
+        return Icon(Icons.grass, color: Colors.white, size: 30); // אין אייקון כזה, החלף לאייקון מתאים
+      case WaypointType.Cave:
+        return Icon(Icons.dark_mode, color: Colors.white, size: 30); // אין אייקון כזה, החלף לאייקון מתאים
+      case WaypointType.Valley:
+        return Icon(Icons.forest, color: Colors.white, size: 30); // החלף לאייקון מתאים
+      case WaypointType.Beach:
+        return Icon(Icons.beach_access, color: Colors.white, size: 30);
+      case WaypointType.Glacier:
+        return Icon(Icons.ac_unit, color: Colors.white, size: 30);
+      case WaypointType.Volcano:
+        return Icon(Icons.local_fire_department, color: Colors.white, size: 30);
+
+      // Informative Waypoints
+      case WaypointType.HistoricalSite:
+        return Icon(Icons.history, color: Colors.white, size: 30);
+      case WaypointType.VisitorCenter:
+        return Icon(Icons.info_outline, color: Colors.white, size: 30);
+      case WaypointType.Viewpoint:
+        return Icon(Icons.visibility, color: Colors.white, size: 30);
+      case WaypointType.Museum:
+        return Icon(Icons.museum, color: Colors.white, size: 30);
+      case WaypointType.CulturalSite:
+        return Icon(Icons.account_balance, color: Colors.white, size: 30);
+      case WaypointType.EducationalTrail:
+        return Icon(Icons.school, color: Colors.white, size: 30);
+      case WaypointType.ParkOffice:
+        return Icon(Icons.apartment, color: Colors.white, size: 30);
+
+      // Warning Waypoints
+      case WaypointType.SteepDrop:
+        return Icon(Icons.trending_down, color: Colors.white, size: 30);
+      case WaypointType.SlipperyPath:
+        return Icon(Icons.fast_forward , color: Colors.white, size: 30); // אין אייקון כזה, החלף לאייקון מתאים
+      case WaypointType.HighTide:
+        return Icon(Icons.waves, color: Colors.white, size: 30);
+      case WaypointType.WildlifeSighting:
+        return Icon(Icons.pets, color: Colors.white, size: 30);
+      case WaypointType.FloodingArea:
+        return Icon(Icons.water_damage, color: Colors.white, size: 30); // אין אייקון כזה, החלף לאייקון מתאים
+      case WaypointType.Rockfall:
+        return Icon(Icons.landscape, color: Colors.white, size: 30); // אין אייקון כזה, החלף לאייקון מתאים
+      case WaypointType.RestrictedArea:
+        return Icon(Icons.block, color: Colors.white, size: 30);
+      default:
+        return Icon(Icons.place, color: Colors.white, size: 30);
+    }
   }
 
   List<WaypointType> _getWaypointTypesByCategory(WaypointCategory category) {
     switch (category) {
       case WaypointCategory.Natural:
-       List<WaypointType> x=   WaypointTypeExtension.naturalWaypointRange.map((e) => e).toList();
-      return x;   
+        return WaypointTypeExtension.naturalWaypointRange.toList();
       case WaypointCategory.Informative:
-       List<WaypointType> y=   WaypointTypeExtension.informativeWaypointRange.map((e) => e).toList();
-        return y;
+        return WaypointTypeExtension.informativeWaypointRange.toList();
       case WaypointCategory.Warning:
-       List<WaypointType> z=   WaypointTypeExtension.warningWaypointRange.map((e) => e).toList();
-        return z;
+        return WaypointTypeExtension.warningWaypointRange.toList();
       default:
         return [];
     }
@@ -106,27 +254,54 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Landmark Details'),
+          backgroundColor: Colors.grey[900],
+          title: Text(
+            'Add Landmark Details',
+            style: TextStyle(color: Colors.white),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // שדה שם
               TextField(
-                decoration: InputDecoration(labelText: 'Name'),
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  labelStyle: TextStyle(color: Colors.grey),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                ),
               ),
+              SizedBox(height: 10),
+              // שדה תיאור
               TextField(
-                decoration: InputDecoration(labelText: 'Description'),
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  labelStyle: TextStyle(color: Colors.grey),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                ),
               ),
-              // Add more fields as needed
+              // ניתן להוסיף שדות נוספים לפי הצורך
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+              ),
               onPressed: () {
-                // Save the landmark details
+                // שמור את פרטי הנקודה
                 Navigator.pop(context);
               },
               child: Text('Save'),
@@ -137,4 +312,5 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
     );
   }
 }
+
  
