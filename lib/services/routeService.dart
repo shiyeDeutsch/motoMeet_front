@@ -81,6 +81,14 @@ class RouteService extends StateNotifier<NewRoute?> {
       isActive: true,
       isComplited: false,
       pointOfInterest: null,
+      coverImageUrl: '',
+      country: '',
+      region: '',
+      isLoop: false,
+      rating: 0,
+      natureReserveUrl: '',
+      tips: '',
+      difficulty: null,
     );
     state = newRoute;
 
@@ -152,7 +160,7 @@ class RouteService extends StateNotifier<NewRoute?> {
     LocationService.dispose();
 
     if (state == null) return;
-   final simplifiedPoints = _douglasPeuckerAlgorithm(state!.routePoints, 10.0);
+   final simplifiedPoints = _douglasPeuckerAlgorithm(state!.routePoints!, 10.0);
     // Mark route as completed
     final finalRoute = state!.copyWith(
       routePoints: simplifiedPoints,

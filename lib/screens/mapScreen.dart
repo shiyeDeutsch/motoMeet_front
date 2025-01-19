@@ -10,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import '../models/enum.dart';
 import '../models/route.dart';
 import '../routing/routes.dart';
+import '../services/loctionService.dart';
 import '../services/routeService.dart';  // The new, refactored RouteService
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
@@ -43,7 +44,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
 
     // Optionally center the map on the user’s current location
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final LatLng? location = await GetIt.I<LocationService>().getCurrentLocation();
+      final LatLng? location = await LocationService.getCurrentLocation();
       if (location != null) {
         _animatedMapController.animateTo(
           dest: location,
@@ -84,7 +85,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     if (userPos != null) {
       currentMarker = Marker(
         point: LatLng(userPos.latitude, userPos.longitude),
-        builder: (_) => const Icon(Icons.location_pin, color: Colors.red),
+        child:  const Icon(Icons.location_pin, color: Colors.red),
       );
     }
 
@@ -139,7 +140,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     if (routeType == null) return;
 
     // Determine user’s current location (or last known)
-    final location = await GetIt.I<LocationService>().getCurrentLocation();
+    final location = await LocationService.getCurrentLocation();
     if (location == null) return;
 
     final routeService = ref.read(routeServiceProvider.notifier);

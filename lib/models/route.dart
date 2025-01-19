@@ -23,7 +23,25 @@ class NewRoute {
   RouteType? routeType;
   double? length;
   int? durationMinutes;
-  // DifficultyLevel difficultyLevel;
+
+  // NEW FIELDS
+  String? coverImageUrl;
+  String? country;
+  String? region;
+  bool? isLoop;
+  double? rating;
+  String? natureReserveUrl;
+  String? tips;
+
+  @Enumerated(EnumType.name)
+  DifficultyEnum? difficulty;
+
+  @Ignore()
+  List<Review>? reviews;
+
+  @Ignore()
+  List<RouteMedia>? media;
+
   List<GeoPoint>? routePoints;
   @Enumerated(EnumType.name)
   List<TagEnum> routeTags;
@@ -32,6 +50,7 @@ class NewRoute {
   DateTime startDate;
   DateTime? endDate;
   List<Waypoint>? pointOfInterest;
+
   NewRoute({
     required this.isarId,
     required this.name,
@@ -41,6 +60,14 @@ class NewRoute {
     required this.routeType,
     required this.length,
     required this.durationMinutes,
+    required this.coverImageUrl,
+    required this.country,
+    required this.region,
+    required this.isLoop,
+    required this.rating,
+    required this.natureReserveUrl,
+    required this.tips,
+    required this.difficulty,
     required this.routePoints,
     required this.routeTags,
     required this.isActive,
@@ -49,6 +76,7 @@ class NewRoute {
     required this.endDate,
     required this.pointOfInterest,
   });
+
   @Ignore()
   Duration? get routeDuration {
     if (durationMinutes != null) return Duration(minutes: durationMinutes!);
@@ -71,37 +99,45 @@ class NewRoute {
         endPoint: GeoPoint.fromJson(json['endPoint']),
         routeType: RouteType.fromJson(json['routeType']),
         length: json['length'].toDouble(),
-        durationMinutes:
-            json['durationMinutes'], // Assuming duration is in minutes
-        // difficultyLevel: DifficultyLevel.fromJson(json['difficultyLevel']),
-        routePoints: List<GeoPoint>.from(
-            json['routePoints'].map((x) => RoutePoint.fromJson(x))),
-        routeTags: List<TagEnum>.from(
-            json['routeTags'].map((x) => TageEnumExtension.fromString(x))),
-        pointOfInterest:List<Waypoint>.from(
-            json['pointOfInterest'].map((x) => Waypoint.fromJson(x))),
+        durationMinutes: json['durationMinutes'],
+        coverImageUrl: json['coverImageUrl'],
+        country: json['country'],
+        region: json['region'],
+        isLoop: json['isLoop'],
+        rating: json['rating'],
+        natureReserveUrl: json['natureReserveUrl'],
+        tips: json['tips'],
+        difficulty: DifficultyEnum.values.firstWhere((e) => e.name == json['difficulty']),
+        routePoints: List<GeoPoint>.from(json['routePoints'].map((x) => GeoPoint.fromJson(x))),
+        routeTags: List<TagEnum>.from(json['routeTags'].map((x) => TagEnum.values.firstWhere((e) => e.name == x))),
+        pointOfInterest: List<Waypoint>.from(json['pointOfInterest'].map((x) => Waypoint.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         'name': name,
         'description': description,
-
         'startDate': startDate.toIso8601String(),
         'endDate': endDate?.toIso8601String(),
         'isComplited': isComplited,
         'isActive': isActive,
-
         'startPoint': startPoint.toJson(),
         'endPoint': endPoint?.toJson(),
         'routeType': routeType?.toJson(),
         'length': length,
         'durationMinutes': durationMinutes,
-        //'difficultyLevel': difficultyLevel.toJson(),
-        'routePoints': routePoints != null
-            ? List<dynamic>.from(routePoints!.map((x) => x.toJson()))
-            : null,
+        'coverImageUrl': coverImageUrl,
+        'country': country,
+        'region': region,
+        'isLoop': isLoop,
+        'rating': rating,
+        'natureReserveUrl': natureReserveUrl,
+        'tips': tips,
+        'difficulty': difficulty?.name,
+        'routePoints': routePoints != null ? List<dynamic>.from(routePoints!.map((x) => x.toJson())) : null,
         'routeTags': List<String>.from(routeTags.map((x) => x.name)),
+        'pointOfInterest': pointOfInterest != null ? List<dynamic>.from(pointOfInterest!.map((x) => x.toJson())) : null,
       };
+
   NewRoute copyWith({
     String? name,
     String? description,
@@ -110,7 +146,14 @@ class NewRoute {
     RouteType? routeType,
     double? length,
     Duration? duration,
-    DifficultyLevel? difficultyLevel,
+    String? coverImageUrl,
+    String? country,
+    String? region,
+    bool? isLoop,
+    double? rating,
+    String? natureReserveUrl,
+    String? tips,
+    DifficultyEnum? difficulty,
     List<GeoPoint>? routePoints,
     List<TagEnum>? routeTags,
     bool? isActive,
@@ -119,7 +162,7 @@ class NewRoute {
     DateTime? endDate,
     int? durationMinutes,
     Id? isarId,
-    List<Waypoint>?pointOfInterest,
+    List<Waypoint>? pointOfInterest,
   }) {
     return NewRoute(
       isarId: isarId ?? this.isarId,
@@ -134,7 +177,14 @@ class NewRoute {
       routeType: routeType ?? this.routeType,
       length: length ?? this.length,
       durationMinutes: durationMinutes ?? this.durationMinutes,
-      // difficultyLevel: difficultyLevel ?? this.difficultyLevel,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      country: country ?? this.country,
+      region: region ?? this.region,
+      isLoop: isLoop ?? this.isLoop,
+      rating: rating ?? this.rating,
+      natureReserveUrl: natureReserveUrl ?? this.natureReserveUrl,
+      tips: tips ?? this.tips,
+      difficulty: difficulty ?? this.difficulty,
       routePoints: routePoints ?? this.routePoints,
       routeTags: routeTags ?? this.routeTags,
       pointOfInterest: pointOfInterest ?? this.pointOfInterest,
@@ -181,92 +231,7 @@ class Waypoint {
       );
 }
 
-class Route {
-  final int id;
-  final int addedBy;
-  final DateTime addedOn;
-  final DateTime editOn;
-  final String name;
-  final String description;
-  final GeoPoint startPoint;
-  final GeoPoint endPoint;
-  final int difficultyLevelId;
-  final List<RouteType> routeTypes;
-  final double length;
-  final Duration duration;
-  final double elevationGain;
-  final double rating;
-  // final DifficultyLevel difficultyLevel;
-  final List<RoutePoint> routePoints;
-  final List<RouteTag> routeTags;
-
-  Route({
-    required this.id,
-    required this.addedBy,
-    required this.addedOn,
-    required this.editOn,
-    required this.name,
-    required this.description,
-    required this.startPoint,
-    required this.endPoint,
-    required this.difficultyLevelId,
-    required this.routeTypes,
-    required this.length,
-    required this.duration,
-    required this.elevationGain,
-    required this.rating,
-    // required this.difficultyLevel,
-    required this.routePoints,
-    required this.routeTags,
-  });
-
-  factory Route.fromJson(Map<String, dynamic> json) => Route(
-        id: json['id'],
-        addedBy: json['addedBy'],
-        addedOn: DateTime.parse(json['addedOn']),
-        editOn: DateTime.parse(json['editOn']),
-        name: json['name'],
-        description: json['description'],
-        startPoint: GeoPoint.fromJson(json['startPoint']),
-        endPoint: GeoPoint.fromJson(json['endPoint']),
-        difficultyLevelId: json['difficultyLevelId'],
-        routeTypes: List<RouteType>.from(
-            json['routeTypes'].map((x) => RouteType.fromJson(x))),
-        length: json['length'].toDouble(),
-        duration: Duration(
-            minutes: json['duration']
-                as int), // Assuming duration is stored in minutes in JSON
-        elevationGain: json['elevationGain'].toDouble(),
-        rating: json['rating'].toDouble(),
-        // difficultyLevel: DifficultyLevel.fromJson(json['difficultyLevel']),
-        routePoints: List<RoutePoint>.from(
-            json['routePoints'].map((x) => RoutePoint.fromJson(x))),
-        routeTags: List<RouteTag>.from(
-            json['routeTags'].map((x) => RouteTag.fromJson(x))),
-      );
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'addedBy': addedBy,
-        'addedOn': addedOn.toIso8601String(),
-        'editOn': editOn.toIso8601String(),
-        'name': name,
-        'description': description,
-        'startPoint': startPoint.toJson(),
-        'endPoint': endPoint.toJson(),
-        'difficultyLevelId': difficultyLevelId,
-        'routeTypes': List<dynamic>.from(routeTypes.map((x) => x.toJson())),
-        'length': length,
-        'duration': duration
-            .inMinutes, // Assuming you want to store duration in minutes
-        'elevationGain': elevationGain,
-        'rating': rating,
-        // 'difficultyLevel': difficultyLevel.toJson(),
-        'routePoints': List<dynamic>.from(routePoints.map((x) => x.toJson())),
-        'routeTags': List<dynamic>.from(routeTags.map((x) => x.toJson())),
-      };
-}
-
+ 
 class RoutePoint {
   final int id;
   final int routeId;
@@ -298,39 +263,9 @@ class RoutePoint {
       };
 }
 
-class DifficultyLevel {
-  final int id;
-  final String level;
-  final String description;
-  final List<Route> routes;
-
-  DifficultyLevel({
-    required this.id,
-    required this.level,
-    required this.description,
-    required this.routes,
-  });
-
-  // Factory constructor for creating a new DifficultyLevel instance from a map structure
-  factory DifficultyLevel.fromJson(Map<String, dynamic> json) =>
-      DifficultyLevel(
-        id: json['id'],
-        level: json['level'],
-        description: json['description'],
-        // Ensure your Route class has a fromJson constructor similar to this one
-        routes: List<Route>.from(json['routes'].map((x) => Route.fromJson(x))),
-      );
-
-  // Method for converting a DifficultyLevel instance to a map
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'level': level,
-        'description': description,
-        // Ensure your Route class has a toJson method similar to this one
-        'routes': List<dynamic>.from(routes.map((x) => x.toJson())),
-      };
-}
-
+ 
+ 
+@embedded
 class Review {
   final int id;
   final String username;
@@ -338,17 +273,17 @@ class Review {
   final String comment;
   final DateTime date;
   final int routeId;
-  final Route route;
+ final String review;
 
-  Review({
-    required this.id,
-    required this.username,
-    required this.rating,
-    required this.comment,
-    required this.date,
-    required this.routeId,
-    required this.route,
-  });
+Review({
+  required this.id,
+  required this.username,
+  required this.rating,
+  required this.comment,
+  required this.date,
+  required this.routeId,
+  required this.review,
+});
 }
 
 @embedded
@@ -373,67 +308,11 @@ class RouteType {
       };
 }
 
-class RouteTag {
-  final int routeId;
-  final Route route;
-  final int tagId;
-  final Tag tag;
+ 
 
-  RouteTag({
-    required this.routeId,
-    required this.route,
-    required this.tagId,
-    required this.tag,
-  });
+   
 
-  // Factory constructor for creating a new RouteTag instance from a map structure
-  factory RouteTag.fromJson(Map<String, dynamic> json) => RouteTag(
-        routeId: json['routeId'],
-        // Ensure your Route class has a fromJson constructor
-        route: Route.fromJson(json['route']),
-        tagId: json['tagId'],
-        // Ensure your Tag class has a fromJson constructor
-        tag: Tag.fromJson(json['tag']),
-      );
-
-  // Method for converting a RouteTag instance to a map
-  Map<String, dynamic> toJson() => {
-        'routeId': routeId,
-        // Ensure your Route class has a toJson method
-        'route': route.toJson(),
-        'tagId': tagId,
-        // Ensure your Tag class has a toJson method
-        'tag': tag.toJson(),
-      };
-}
-
-class Tag {
-  final int id;
-  final String name;
-  final List<RouteTag> routeTags;
-
-  Tag({
-    required this.id,
-    required this.name,
-    required this.routeTags,
-  });
-  // Factory constructor for creating a new Tag instance from a map structure
-  factory Tag.fromJson(Map<String, dynamic> json) => Tag(
-        id: json['id'],
-        name: json['name'],
-        // Ensure your RouteTag class has a fromJson constructor
-        routeTags: List<RouteTag>.from(
-            json['routeTags'].map((x) => RouteTag.fromJson(x))),
-      );
-
-  // Method for converting a Tag instance to a map
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        // Ensure your RouteTag class has a toJson method
-        'routeTags': List<dynamic>.from(routeTags.map((x) => x.toJson())),
-      };
-}
+ 
 
 @embedded
 class GeoPoint {
@@ -464,4 +343,55 @@ class GeoPoint {
   LatLng toLatLng() {
     return LatLng(latitude!, longitude!);
   }
+}
+@embedded
+class RouteMedia {
+  final String url;     // The URL/path to the image/video
+  final String type;    // "image", "video", or "live"
+  final String? title;  // Optional: title or caption
+  final String? owner;  // Optional: user who uploaded it
+  final DateTime? uploadedOn; // When was it uploaded?
+
+  RouteMedia({
+    required this.url,
+    required this.type,
+    this.title,
+    this.owner,
+    this.uploadedOn,
+  });
+
+  factory RouteMedia.fromJson(Map<String, dynamic> json) => RouteMedia(
+    url: json['url'],
+    type: json['type'],
+    title: json['title'],
+    owner: json['owner'],
+    uploadedOn: json['uploadedOn'] != null
+        ? DateTime.parse(json['uploadedOn'])
+        : null,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'url': url,
+    'type': type,
+    'title': title,
+    'owner': owner,
+    'uploadedOn': uploadedOn?.toIso8601String(),
+  };
+}
+class WeatherForecast {
+  final DateTime date;
+  final double temperature; 
+  final double windSpeed;
+  final double humidity;
+  final double precipitation;
+  final String condition; // "Cloudy", "Sunny", etc.
+
+  WeatherForecast({
+    required this.date,
+    required this.temperature,
+    required this.windSpeed,
+    required this.humidity,
+    required this.precipitation,
+    required this.condition,
+  });
 }

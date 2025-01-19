@@ -197,3 +197,19 @@ extension WaypointTypeExtension on WaypointType {
     throw ArgumentError('Invalid route type: $value');
   }
 }
+enum DifficultyEnum {
+  Easy,
+  Moderate,
+  Hard,
+  Expert,
+}
+extension DifficultyEnumExtension on DifficultyEnum {
+  static DifficultyEnum fromString(String value) {
+    for (var difficulty in DifficultyEnum.values) {
+      if (difficulty.name.toLowerCase() == value.toLowerCase()) {
+        return difficulty;
+      }
+    }
+    throw ArgumentError('Invalid difficulty level: $value');
+  }
+}
