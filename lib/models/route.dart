@@ -265,8 +265,7 @@ class RoutePoint {
 
  
  
-@embedded
-class Review {
+ class Review {
   final int id;
   final String username;
   final double rating;
@@ -344,7 +343,7 @@ class GeoPoint {
     return LatLng(latitude!, longitude!);
   }
 }
-@embedded
+ 
 class RouteMedia {
   final String url;     // The URL/path to the image/video
   final String type;    // "image", "video", or "live"

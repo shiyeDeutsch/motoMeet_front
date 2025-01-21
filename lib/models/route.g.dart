@@ -17,81 +17,122 @@ const NewRouteSchema = CollectionSchema(
   name: r'NewRoute',
   id: 2534213512110557197,
   properties: {
-    r'description': PropertySchema(
+    r'country': PropertySchema(
       id: 0,
+      name: r'country',
+      type: IsarType.string,
+    ),
+    r'coverImageUrl': PropertySchema(
+      id: 1,
+      name: r'coverImageUrl',
+      type: IsarType.string,
+    ),
+    r'description': PropertySchema(
+      id: 2,
       name: r'description',
       type: IsarType.string,
     ),
+    r'difficulty': PropertySchema(
+      id: 3,
+      name: r'difficulty',
+      type: IsarType.string,
+      enumMap: _NewRoutedifficultyEnumValueMap,
+    ),
     r'durationMinutes': PropertySchema(
-      id: 1,
+      id: 4,
       name: r'durationMinutes',
       type: IsarType.long,
     ),
     r'endDate': PropertySchema(
-      id: 2,
+      id: 5,
       name: r'endDate',
       type: IsarType.dateTime,
     ),
     r'endPoint': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'endPoint',
       type: IsarType.object,
       target: r'GeoPoint',
     ),
     r'isActive': PropertySchema(
-      id: 4,
+      id: 7,
       name: r'isActive',
       type: IsarType.bool,
     ),
     r'isComplited': PropertySchema(
-      id: 5,
+      id: 8,
       name: r'isComplited',
       type: IsarType.bool,
     ),
+    r'isLoop': PropertySchema(
+      id: 9,
+      name: r'isLoop',
+      type: IsarType.bool,
+    ),
     r'length': PropertySchema(
-      id: 6,
+      id: 10,
       name: r'length',
       type: IsarType.double,
     ),
     r'name': PropertySchema(
-      id: 7,
+      id: 11,
       name: r'name',
       type: IsarType.string,
     ),
+    r'natureReserveUrl': PropertySchema(
+      id: 12,
+      name: r'natureReserveUrl',
+      type: IsarType.string,
+    ),
     r'pointOfInterest': PropertySchema(
-      id: 8,
+      id: 13,
       name: r'pointOfInterest',
       type: IsarType.objectList,
       target: r'Waypoint',
     ),
+    r'rating': PropertySchema(
+      id: 14,
+      name: r'rating',
+      type: IsarType.double,
+    ),
+    r'region': PropertySchema(
+      id: 15,
+      name: r'region',
+      type: IsarType.string,
+    ),
     r'routePoints': PropertySchema(
-      id: 9,
+      id: 16,
       name: r'routePoints',
       type: IsarType.objectList,
       target: r'GeoPoint',
     ),
     r'routeTags': PropertySchema(
-      id: 10,
+      id: 17,
       name: r'routeTags',
       type: IsarType.stringList,
       enumMap: _NewRouterouteTagsEnumValueMap,
     ),
     r'routeType': PropertySchema(
-      id: 11,
+      id: 18,
       name: r'routeType',
       type: IsarType.object,
       target: r'RouteType',
     ),
     r'startDate': PropertySchema(
-      id: 12,
+      id: 19,
       name: r'startDate',
       type: IsarType.dateTime,
     ),
     r'startPoint': PropertySchema(
-      id: 13,
+      id: 20,
       name: r'startPoint',
       type: IsarType.object,
       target: r'GeoPoint',
+    ),
+    r'tips': PropertySchema(
+      id: 21,
+      name: r'tips',
+      type: IsarType.string,
     )
   },
   estimateSize: _newRouteEstimateSize,
@@ -119,9 +160,27 @@ int _newRouteEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.country;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.coverImageUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.description;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.difficulty;
+    if (value != null) {
+      bytesCount += 3 + value.name.length * 3;
     }
   }
   {
@@ -133,6 +192,12 @@ int _newRouteEstimateSize(
   }
   bytesCount += 3 + object.name.length * 3;
   {
+    final value = object.natureReserveUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final list = object.pointOfInterest;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
@@ -143,6 +208,12 @@ int _newRouteEstimateSize(
           bytesCount += WaypointSchema.estimateSize(value, offsets, allOffsets);
         }
       }
+    }
+  }
+  {
+    final value = object.region;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
     }
   }
   {
@@ -176,6 +247,12 @@ int _newRouteEstimateSize(
   bytesCount += 3 +
       GeoPointSchema.estimateSize(
           object.startPoint, allOffsets[GeoPoint]!, allOffsets);
+  {
+    final value = object.tips;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -185,46 +262,54 @@ void _newRouteSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.description);
-  writer.writeLong(offsets[1], object.durationMinutes);
-  writer.writeDateTime(offsets[2], object.endDate);
+  writer.writeString(offsets[0], object.country);
+  writer.writeString(offsets[1], object.coverImageUrl);
+  writer.writeString(offsets[2], object.description);
+  writer.writeString(offsets[3], object.difficulty?.name);
+  writer.writeLong(offsets[4], object.durationMinutes);
+  writer.writeDateTime(offsets[5], object.endDate);
   writer.writeObject<GeoPoint>(
-    offsets[3],
+    offsets[6],
     allOffsets,
     GeoPointSchema.serialize,
     object.endPoint,
   );
-  writer.writeBool(offsets[4], object.isActive);
-  writer.writeBool(offsets[5], object.isComplited);
-  writer.writeDouble(offsets[6], object.length);
-  writer.writeString(offsets[7], object.name);
+  writer.writeBool(offsets[7], object.isActive);
+  writer.writeBool(offsets[8], object.isComplited);
+  writer.writeBool(offsets[9], object.isLoop);
+  writer.writeDouble(offsets[10], object.length);
+  writer.writeString(offsets[11], object.name);
+  writer.writeString(offsets[12], object.natureReserveUrl);
   writer.writeObjectList<Waypoint>(
-    offsets[8],
+    offsets[13],
     allOffsets,
     WaypointSchema.serialize,
     object.pointOfInterest,
   );
+  writer.writeDouble(offsets[14], object.rating);
+  writer.writeString(offsets[15], object.region);
   writer.writeObjectList<GeoPoint>(
-    offsets[9],
+    offsets[16],
     allOffsets,
     GeoPointSchema.serialize,
     object.routePoints,
   );
   writer.writeStringList(
-      offsets[10], object.routeTags.map((e) => e.name).toList());
+      offsets[17], object.routeTags.map((e) => e.name).toList());
   writer.writeObject<RouteType>(
-    offsets[11],
+    offsets[18],
     allOffsets,
     RouteTypeSchema.serialize,
     object.routeType,
   );
-  writer.writeDateTime(offsets[12], object.startDate);
+  writer.writeDateTime(offsets[19], object.startDate);
   writer.writeObject<GeoPoint>(
-    offsets[13],
+    offsets[20],
     allOffsets,
     GeoPointSchema.serialize,
     object.startPoint,
   );
+  writer.writeString(offsets[21], object.tips);
 }
 
 NewRoute _newRouteDeserialize(
@@ -234,48 +319,57 @@ NewRoute _newRouteDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = NewRoute(
-    description: reader.readStringOrNull(offsets[0]),
-    durationMinutes: reader.readLongOrNull(offsets[1]),
-    endDate: reader.readDateTimeOrNull(offsets[2]),
+    country: reader.readStringOrNull(offsets[0]),
+    coverImageUrl: reader.readStringOrNull(offsets[1]),
+    description: reader.readStringOrNull(offsets[2]),
+    difficulty:
+        _NewRoutedifficultyValueEnumMap[reader.readStringOrNull(offsets[3])],
+    durationMinutes: reader.readLongOrNull(offsets[4]),
+    endDate: reader.readDateTimeOrNull(offsets[5]),
     endPoint: reader.readObjectOrNull<GeoPoint>(
-      offsets[3],
+      offsets[6],
       GeoPointSchema.deserialize,
       allOffsets,
     ),
-    isActive: reader.readBool(offsets[4]),
-    isComplited: reader.readBool(offsets[5]),
+    isActive: reader.readBool(offsets[7]),
+    isComplited: reader.readBool(offsets[8]),
+    isLoop: reader.readBoolOrNull(offsets[9]),
     isarId: id,
-    length: reader.readDoubleOrNull(offsets[6]),
-    name: reader.readString(offsets[7]),
+    length: reader.readDoubleOrNull(offsets[10]),
+    name: reader.readString(offsets[11]),
+    natureReserveUrl: reader.readStringOrNull(offsets[12]),
     pointOfInterest: reader.readObjectList<Waypoint>(
-      offsets[8],
+      offsets[13],
       WaypointSchema.deserialize,
       allOffsets,
       Waypoint(),
     ),
+    rating: reader.readDoubleOrNull(offsets[14]),
+    region: reader.readStringOrNull(offsets[15]),
     routePoints: reader.readObjectList<GeoPoint>(
-      offsets[9],
+      offsets[16],
       GeoPointSchema.deserialize,
       allOffsets,
       GeoPoint(),
     ),
     routeTags: reader
-            .readStringList(offsets[10])
+            .readStringList(offsets[17])
             ?.map((e) => _NewRouterouteTagsValueEnumMap[e] ?? TagEnum.Hiking)
             .toList() ??
         [],
     routeType: reader.readObjectOrNull<RouteType>(
-      offsets[11],
+      offsets[18],
       RouteTypeSchema.deserialize,
       allOffsets,
     ),
-    startDate: reader.readDateTime(offsets[12]),
+    startDate: reader.readDateTime(offsets[19]),
     startPoint: reader.readObjectOrNull<GeoPoint>(
-          offsets[13],
+          offsets[20],
           GeoPointSchema.deserialize,
           allOffsets,
         ) ??
         GeoPoint(),
+    tips: reader.readStringOrNull(offsets[21]),
   );
   return object;
 }
@@ -290,63 +384,92 @@ P _newRouteDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
+      return (_NewRoutedifficultyValueEnumMap[reader.readStringOrNull(offset)])
+          as P;
+    case 4:
+      return (reader.readLongOrNull(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 6:
       return (reader.readObjectOrNull<GeoPoint>(
         offset,
         GeoPointSchema.deserialize,
         allOffsets,
       )) as P;
-    case 4:
-      return (reader.readBool(offset)) as P;
-    case 5:
-      return (reader.readBool(offset)) as P;
-    case 6:
-      return (reader.readDoubleOrNull(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 8:
+      return (reader.readBool(offset)) as P;
+    case 9:
+      return (reader.readBoolOrNull(offset)) as P;
+    case 10:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
       return (reader.readObjectList<Waypoint>(
         offset,
         WaypointSchema.deserialize,
         allOffsets,
         Waypoint(),
       )) as P;
-    case 9:
+    case 14:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 15:
+      return (reader.readStringOrNull(offset)) as P;
+    case 16:
       return (reader.readObjectList<GeoPoint>(
         offset,
         GeoPointSchema.deserialize,
         allOffsets,
         GeoPoint(),
       )) as P;
-    case 10:
+    case 17:
       return (reader
               .readStringList(offset)
               ?.map((e) => _NewRouterouteTagsValueEnumMap[e] ?? TagEnum.Hiking)
               .toList() ??
           []) as P;
-    case 11:
+    case 18:
       return (reader.readObjectOrNull<RouteType>(
         offset,
         RouteTypeSchema.deserialize,
         allOffsets,
       )) as P;
-    case 12:
+    case 19:
       return (reader.readDateTime(offset)) as P;
-    case 13:
+    case 20:
       return (reader.readObjectOrNull<GeoPoint>(
             offset,
             GeoPointSchema.deserialize,
             allOffsets,
           ) ??
           GeoPoint()) as P;
+    case 21:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
+const _NewRoutedifficultyEnumValueMap = {
+  r'Easy': r'Easy',
+  r'Moderate': r'Moderate',
+  r'Hard': r'Hard',
+  r'Expert': r'Expert',
+};
+const _NewRoutedifficultyValueEnumMap = {
+  r'Easy': DifficultyEnum.Easy,
+  r'Moderate': DifficultyEnum.Moderate,
+  r'Hard': DifficultyEnum.Hard,
+  r'Expert': DifficultyEnum.Expert,
+};
 const _NewRouterouteTagsEnumValueMap = {
   r'Hiking': r'Hiking',
   r'Biking': r'Biking',
@@ -483,6 +606,304 @@ extension NewRouteQueryWhere on QueryBuilder<NewRoute, NewRoute, QWhereClause> {
 
 extension NewRouteQueryFilter
     on QueryBuilder<NewRoute, NewRoute, QFilterCondition> {
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'country',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'country',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'country',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'country',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'country',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'country',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> countryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'country',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      coverImageUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'coverImageUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      coverImageUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'coverImageUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> coverImageUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'coverImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      coverImageUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'coverImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> coverImageUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'coverImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> coverImageUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'coverImageUrl',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      coverImageUrlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'coverImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> coverImageUrlEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'coverImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> coverImageUrlContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'coverImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> coverImageUrlMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'coverImageUrl',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      coverImageUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'coverImageUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      coverImageUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'coverImageUrl',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> descriptionIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -627,6 +1048,154 @@ extension NewRouteQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'description',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'difficulty',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      difficultyIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'difficulty',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyEqualTo(
+    DifficultyEnum? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'difficulty',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyGreaterThan(
+    DifficultyEnum? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'difficulty',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyLessThan(
+    DifficultyEnum? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'difficulty',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyBetween(
+    DifficultyEnum? lower,
+    DifficultyEnum? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'difficulty',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'difficulty',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'difficulty',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'difficulty',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'difficulty',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> difficultyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'difficulty',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      difficultyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'difficulty',
         value: '',
       ));
     });
@@ -806,6 +1375,32 @@ extension NewRouteQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isComplited',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> isLoopIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'isLoop',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> isLoopIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'isLoop',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> isLoopEqualTo(
+      bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isLoop',
         value: value,
       ));
     });
@@ -1089,6 +1684,160 @@ extension NewRouteQueryFilter
   }
 
   QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'natureReserveUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'natureReserveUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'natureReserveUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'natureReserveUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'natureReserveUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'natureReserveUrl',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'natureReserveUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'natureReserveUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'natureReserveUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'natureReserveUrl',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'natureReserveUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
+      natureReserveUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'natureReserveUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition>
       pointOfInterestIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1192,6 +1941,230 @@ extension NewRouteQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> ratingIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'rating',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> ratingIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'rating',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> ratingEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rating',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> ratingGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'rating',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> ratingLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'rating',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> ratingBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'rating',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'region',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'region',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'region',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'region',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'region',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'region',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'region',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'region',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'region',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'region',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'region',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> regionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'region',
+        value: '',
+      ));
     });
   }
 
@@ -1592,6 +2565,152 @@ extension NewRouteQueryFilter
       ));
     });
   }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'tips',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'tips',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'tips',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'tips',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'tips',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'tips',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'tips',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'tips',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'tips',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'tips',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'tips',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterFilterCondition> tipsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'tips',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension NewRouteQueryObject
@@ -1636,6 +2755,30 @@ extension NewRouteQueryLinks
     on QueryBuilder<NewRoute, NewRoute, QFilterCondition> {}
 
 extension NewRouteQuerySortBy on QueryBuilder<NewRoute, NewRoute, QSortBy> {
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByCountry() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByCountryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByCoverImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'coverImageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByCoverImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'coverImageUrl', Sort.desc);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.asc);
@@ -1645,6 +2788,18 @@ extension NewRouteQuerySortBy on QueryBuilder<NewRoute, NewRoute, QSortBy> {
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByDifficulty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'difficulty', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByDifficultyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'difficulty', Sort.desc);
     });
   }
 
@@ -1696,6 +2851,18 @@ extension NewRouteQuerySortBy on QueryBuilder<NewRoute, NewRoute, QSortBy> {
     });
   }
 
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByIsLoop() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLoop', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByIsLoopDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLoop', Sort.desc);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByLength() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'length', Sort.asc);
@@ -1720,6 +2887,42 @@ extension NewRouteQuerySortBy on QueryBuilder<NewRoute, NewRoute, QSortBy> {
     });
   }
 
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByNatureReserveUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'natureReserveUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByNatureReserveUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'natureReserveUrl', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rating', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByRatingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rating', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByRegion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'region', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByRegionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'region', Sort.desc);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByStartDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startDate', Sort.asc);
@@ -1731,10 +2934,46 @@ extension NewRouteQuerySortBy on QueryBuilder<NewRoute, NewRoute, QSortBy> {
       return query.addSortBy(r'startDate', Sort.desc);
     });
   }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByTips() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tips', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> sortByTipsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tips', Sort.desc);
+    });
+  }
 }
 
 extension NewRouteQuerySortThenBy
     on QueryBuilder<NewRoute, NewRoute, QSortThenBy> {
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByCountry() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByCountryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'country', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByCoverImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'coverImageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByCoverImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'coverImageUrl', Sort.desc);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.asc);
@@ -1744,6 +2983,18 @@ extension NewRouteQuerySortThenBy
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByDifficulty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'difficulty', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByDifficultyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'difficulty', Sort.desc);
     });
   }
 
@@ -1795,6 +3046,18 @@ extension NewRouteQuerySortThenBy
     });
   }
 
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByIsLoop() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLoop', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByIsLoopDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLoop', Sort.desc);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
@@ -1831,6 +3094,42 @@ extension NewRouteQuerySortThenBy
     });
   }
 
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByNatureReserveUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'natureReserveUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByNatureReserveUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'natureReserveUrl', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rating', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByRatingDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rating', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByRegion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'region', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByRegionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'region', Sort.desc);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByStartDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startDate', Sort.asc);
@@ -1842,14 +3141,48 @@ extension NewRouteQuerySortThenBy
       return query.addSortBy(r'startDate', Sort.desc);
     });
   }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByTips() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tips', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QAfterSortBy> thenByTipsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tips', Sort.desc);
+    });
+  }
 }
 
 extension NewRouteQueryWhereDistinct
     on QueryBuilder<NewRoute, NewRoute, QDistinct> {
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByCountry(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'country', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByCoverImageUrl(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'coverImageUrl',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByDescription(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByDifficulty(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'difficulty', caseSensitive: caseSensitive);
     });
   }
 
@@ -1877,6 +3210,12 @@ extension NewRouteQueryWhereDistinct
     });
   }
 
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByIsLoop() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isLoop');
+    });
+  }
+
   QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByLength() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'length');
@@ -1887,6 +3226,27 @@ extension NewRouteQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByNatureReserveUrl(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'natureReserveUrl',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByRating() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rating');
+    });
+  }
+
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByRegion(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'region', caseSensitive: caseSensitive);
     });
   }
 
@@ -1901,6 +3261,13 @@ extension NewRouteQueryWhereDistinct
       return query.addDistinctBy(r'startDate');
     });
   }
+
+  QueryBuilder<NewRoute, NewRoute, QDistinct> distinctByTips(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'tips', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension NewRouteQueryProperty
@@ -1911,9 +3278,28 @@ extension NewRouteQueryProperty
     });
   }
 
+  QueryBuilder<NewRoute, String?, QQueryOperations> countryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'country');
+    });
+  }
+
+  QueryBuilder<NewRoute, String?, QQueryOperations> coverImageUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'coverImageUrl');
+    });
+  }
+
   QueryBuilder<NewRoute, String?, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
+    });
+  }
+
+  QueryBuilder<NewRoute, DifficultyEnum?, QQueryOperations>
+      difficultyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'difficulty');
     });
   }
 
@@ -1947,6 +3333,12 @@ extension NewRouteQueryProperty
     });
   }
 
+  QueryBuilder<NewRoute, bool?, QQueryOperations> isLoopProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isLoop');
+    });
+  }
+
   QueryBuilder<NewRoute, double?, QQueryOperations> lengthProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'length');
@@ -1959,10 +3351,28 @@ extension NewRouteQueryProperty
     });
   }
 
+  QueryBuilder<NewRoute, String?, QQueryOperations> natureReserveUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'natureReserveUrl');
+    });
+  }
+
   QueryBuilder<NewRoute, List<Waypoint>?, QQueryOperations>
       pointOfInterestProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'pointOfInterest');
+    });
+  }
+
+  QueryBuilder<NewRoute, double?, QQueryOperations> ratingProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rating');
+    });
+  }
+
+  QueryBuilder<NewRoute, String?, QQueryOperations> regionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'region');
     });
   }
 
@@ -1994,6 +3404,12 @@ extension NewRouteQueryProperty
   QueryBuilder<NewRoute, GeoPoint, QQueryOperations> startPointProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'startPoint');
+    });
+  }
+
+  QueryBuilder<NewRoute, String?, QQueryOperations> tipsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'tips');
     });
   }
 }

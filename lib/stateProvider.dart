@@ -54,29 +54,29 @@ class RouteState extends StateNotifier<NewRoute?> {
     return state;
   }
 
-  void startNewRoute(GeoPoint startPoint, RouteTypeEnum routeType) {
-    final newRoute = NewRoute(
-      isarId: null,
-      startDate: DateTime.now().toUtc(),
-      endDate: null,
-      name: '',
-      description: '',
-      startPoint: startPoint,
-      endPoint: null,
-      routeType: RouteType(type: routeType),
-      length:
-          null, // Initial length is 0, will be updated as new points are added
-      durationMinutes: 0, // Starts with zero duration
-      //   difficultyLevel: DifficultyLevel (), // Initialize with a default value, or modify as needed
-      routePoints: [], // Starts with an empty list of route points
-      routeTags: [], // Starts with an empty list of tags, modify as needed
-      isActive: true, // A new route starts as active
-      isComplited: false, // Since it's a new route, it's not completed
-     pointOfInterest: null,
-    );
+  // void startNewRoute(GeoPoint startPoint, RouteTypeEnum routeType) {
+  //   final newRoute = NewRoute(
+  //     isarId: null,
+  //     startDate: DateTime.now().toUtc(),
+  //     endDate: null,
+  //     name: '',
+  //     description: '',
+  //     startPoint: startPoint,
+  //     endPoint: null,
+  //     routeType: RouteType(type: routeType),
+  //     length:
+  //         null, // Initial length is 0, will be updated as new points are added
+  //     durationMinutes: 0, // Starts with zero duration
+  //     //   difficultyLevel: DifficultyLevel (), // Initialize with a default value, or modify as needed
+  //     routePoints: [], // Starts with an empty list of route points
+  //     routeTags: [], // Starts with an empty list of tags, modify as needed
+  //     isActive: true, // A new route starts as active
+  //     isComplited: false, // Since it's a new route, it's not completed
+  //    pointOfInterest: null,
+  //   );
 
-    state = newRoute; // Update the state with the new route
-  }
+  //   state = newRoute; // Update the state with the new route
+  // }
 
   NewRoute addRoutePoints(
       List<GeoPoint> newPoints, Duration routeDuration, double pathLength) {

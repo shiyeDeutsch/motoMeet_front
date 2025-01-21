@@ -10,10 +10,15 @@ import 'package:get_it/get_it.dart';
 import '../models/enum.dart';
 import '../models/route.dart';
 import '../routing/routes.dart';
+import '../services/bottomSheetServices.dart';
+import '../services/distanceFormatter.dart';
 import '../services/loctionService.dart';
 import '../services/routeService.dart';  // The new, refactored RouteService
+import '../utilities/duration_formatter.dart';
+import '../widgets/ExpandablePanel.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
+import '../widgets/wayPointBottomSheet.dart';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
   const MapMarkerScreen({Key? key}) : super(key: key);
@@ -70,7 +75,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       children: [
         _buildFlutterMap(committedPoints, currentPosition),
         if (!(currentRoute?.isActive ?? false)) _buildStartRouteButton(),
-        if (currentRoute?.isActive ?? false) _buildActiveRouteDetails(context, currentRoute),
+        if (currentRoute?.isActive ?? false) _buildActiveRouteDetails(context, currentRoute,currentPosition),
       ],
     );
   }
@@ -151,56 +156,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       GeoPoint.fromLatLng(location, null),
     );
   }
-
-  Widget _buildActiveRouteDetails(BuildContext context, NewRoute? currentRoute) {
-    if (currentRoute == null) return const SizedBox.shrink();
-
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Container(
-        color: Colors.black.withOpacity(0.5),
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            // Info (distance, time, etc.)
-            Text(
-              'Distance: ${(currentRoute.length ?? 0 / 1000).toStringAsFixed(2)} km',
-              style: const TextStyle(color: Colors.white),
-            ),
-            Text(
-              'Duration: ${currentRoute.durationMinutes} min',
-              style: const TextStyle(color: Colors.white),
-            ),
-            // Action buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.pause, color: Colors.white),
-                  onPressed: () => _onStopRoutePressed(context),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_location, color: Colors.white),
-                  onPressed: () {
-                    // e.g., add waypoint
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.share, color: Colors.white),
-                  onPressed: () {
-                    // share logic
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+ 
   /// Stop the route
   Future<void> _onStopRoutePressed(BuildContext context) async {
     final shouldStop = await showStopDialog(context);
@@ -221,4 +177,131 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     _locationUpdatesSubscription?.cancel();
     super.dispose();
   }
+
+
+  Widget _buildActiveRouteDetails(BuildContext context, NewRoute? currentRoute,Position ?currentPosition) {
+    // Only show if there's an active route
+    if (!(currentRoute?.isActive ?? false)) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _buildRouteActionButtons(),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                  //  _buildDraggableHandle(),
+                    _buildMainDetails(currentRoute, currentPosition),
+                 //   _buildExpandedDetailsContainer(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainDetails(NewRoute? currentRoute,Position ?currentPosition) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildDetailColumn(
+            icon: Icons.speed,
+            title: 'Speed',
+            value: '${currentPosition?.speed?.toStringAsFixed(0) ?? 'N/A'} km/h',
+          ),
+        _buildDetailColumn(
+          icon: Icons.terrain,
+          title: 'Elevation',
+          value: '${currentPosition?.altitude ?? 'N/A'} m',
+        ),
+        _buildDetailColumn(
+          icon: Icons.timer,
+          title: 'Duration',
+          value: DurationFormatter.formatDuration(currentRoute!.routeDuration),
+        ),
+        _buildDetailColumn(
+          icon: Icons.alt_route,
+          title: 'Distance',
+          value: DistanceFormatter.formatDistance(currentRoute!.length),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailColumn({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.grey[700]),
+        const SizedBox(height: 4),
+        Text(title, style: TextStyle(color: Colors.grey[700])),
+        Text(value, style: TextStyle(color: Colors.grey[700])),
+      ],
+    );
+  }
+ Widget _buildRouteActionButtons() {
+    return SizedBox(
+      height: 50,
+      child: ExpandablePanel(
+        isOpen: true,
+        alignment: Alignment.topRight,
+        buttons: [
+          IconButton(
+            icon: const Icon(Icons.add_location, color: Colors.black),
+            onPressed: () {
+              BottomSheetService.showLargeBottomSheet(
+                context: context,
+                content:   WayPointBottomSheet(),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.black),
+            onPressed: () {
+              // Implement share route
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.pause, color: Colors.black),
+       onPressed: () => _onStopRoutePressed(context),
+          ),
+        ],
+      ),
+    );
+  }
+  
 }
