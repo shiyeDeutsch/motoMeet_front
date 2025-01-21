@@ -113,7 +113,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         MarkerLayer(
           markers: [
             if (currentMarker != null) currentMarker,
-            // Add any other Markers you might have
+            ..._buildWaypointMarkers(currentRoute?.pointOfInterest),
           ],
         ),
       ],
@@ -214,6 +214,30 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         arguments: {'newRoute': ref.read(routeServiceProvider)},
       );
     }
+  }
+
+ List<Marker> _buildWaypointMarkers(List<Waypoint>? waypoints) {
+  return waypoints?.map((waypoint) => Marker(
+    point: waypoint.location!.toLatLng(),
+    width: 40,
+    height: 40,
+    child: Icon(
+      _getWaypointIcon(waypoint.type!),
+      color: Colors.blue,
+    ),
+  )).toList() ?? [];
+}
+
+_getWaypointIcon(WaypointType type) {
+  switch (getCategory(type)) {
+    case WaypointCategory.Natural:
+      return Icons.nature;
+    case WaypointCategory.Informative:
+      return Icons.info;
+    case WaypointCategory.Warning:
+      return Icons.warning;
+    default:
+      return Icons.location_on;
   }
 
   @override
