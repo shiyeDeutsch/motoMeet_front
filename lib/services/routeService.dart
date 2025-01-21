@@ -342,6 +342,20 @@ class RouteService extends StateNotifier<NewRoute?> {
     return _calculateDistanceInMeters(point, proj);
   }
 
+// Add to RouteService class in routeService.dart
+  void addWaypoint(Waypoint waypoint) {
+    if (state == null) return;
+    
+    final updatedPoints = List<Waypoint>.from(state!.pointOfInterest ?? []);
+    updatedPoints.add(waypoint);
+    
+    state = state!.copyWith(pointOfInterest: updatedPoints);
+  }
+
+  
+  }
+
+
   // -----------------------
   //  GETTERS (for the UI)
   // -----------------------

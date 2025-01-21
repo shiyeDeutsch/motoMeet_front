@@ -10,7 +10,6 @@ class WayPointBottomSheet extends StatefulWidget {
 class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
   WaypointCategory _selectedCategory = WaypointCategory.Natural;
   WaypointType? _selectedType;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -134,7 +133,11 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
                 setState(() {
                   _selectedType = type;
                 });
-                _showLandmarkDetailsDialog();
+                _handleWaypointSelection(
+                  context,
+                  type,
+                
+                );
               },
               child: Column(
                 children: [
@@ -296,21 +299,43 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
                 style: TextStyle(color: Colors.white),
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-              ),
-              onPressed: () {
-                // שמור את פרטי הנקודה
-                Navigator.pop(context);
-              },
-              child: Text('Save'),
-            ),
-          ],
+               ElevatedButton(
+            onPressed: () => Navigator.pop(context, {
+              'name': nameController.text,
+              'description': descriptionController.text,
+            }),
+            child: const Text('Save'),
+          ),
+          ]
         );
       },
     );
   }
+
+ Future<void> _handleWaypointSelection(
+    BuildContext context,
+    WaypointType type,
+    
+    
+  ) async {
+    final location = await LocationService.getCurrentLocation();
+    if (location == null) return;
+
+    final details = await _showWaypointDetailsDialog(context);
+    if (details == null) return;
+
+    final waypoint = Waypoint(
+      location: GeoPoint.fromLatLng(location, null),
+      name: details['name'],
+      description: details['description'],
+      type: type,
+    );
+   final routeService = ref.read(routeServiceProvider.notifier);
+
+    routeService.addWaypoint(waypoint);
+  }
+
+
 }
 
  
