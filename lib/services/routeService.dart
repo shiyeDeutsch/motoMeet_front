@@ -352,8 +352,7 @@ class RouteService extends StateNotifier<NewRoute?> {
     state = state!.copyWith(pointOfInterest: updatedPoints);
   }
 
-  
-  }
+ 
 
 
   // -----------------------

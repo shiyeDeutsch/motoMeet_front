@@ -73,14 +73,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
 
     return Stack(
       children: [
-        _buildFlutterMap(committedPoints, currentPosition),
+        _buildFlutterMap(committedPoints, currentPosition ,currentRoute),
         if (!(currentRoute?.isActive ?? false)) _buildStartRouteButton(),
         if (currentRoute?.isActive ?? false) _buildActiveRouteDetails(context, currentRoute,currentPosition),
       ],
     );
   }
 
-  Widget _buildFlutterMap(List<GeoPoint> committedPoints, Position? userPos) {
+  Widget _buildFlutterMap(List<GeoPoint> committedPoints, Position? userPos,  NewRoute? currentRoute) {
     // Convert GeoPoints to LatLng
     final polylinePoints =
         committedPoints.map((gp) => gp.toLatLng()).toList();
@@ -185,7 +185,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
 }
 
 _getWaypointIcon(WaypointType type) {
-  switch (getCategory(type)) {
+  switch (WaypointTypeExtension.getCategory(type)) {
     case WaypointCategory.Natural:
       return Icons.nature;
     case WaypointCategory.Informative:
@@ -201,7 +201,7 @@ _getWaypointIcon(WaypointType type) {
     _locationUpdatesSubscription?.cancel();
     super.dispose();
   }
-
+}
 
   Widget _buildActiveRouteDetails(BuildContext context, NewRoute? currentRoute,Position ?currentPosition) {
     // Only show if there's an active route
