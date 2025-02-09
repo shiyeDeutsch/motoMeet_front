@@ -1,0 +1,1135 @@
+import 'package:isar/isar.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:latlong2/latlong.dart'; //  Keep latlong2 for easy LatLng conversions
+
+part 'models.g.dart'; //  Single generated file for all models
+
+// --- Helpers ---
+
+@embedded
+class GeoPoint {
+  double? latitude;
+  double? longitude;
+  double? altitude;
+
+  GeoPoint({this.latitude, this.longitude, this.altitude});
+
+  factory GeoPoint.fromJson(Map<String, dynamic> json) =>
+      _$GeoPointFromJson(json);
+  Map<String, dynamic> toJson() => _$GeoPointToJson(this);
+
+  LatLng toLatLng() {
+     if (latitude == null || longitude == null) {
+       return LatLng(0, 0); // Or throw an exception, or return a default value
+     }
+    return LatLng(latitude!, longitude!);
+  }
+
+    GeoPoint copyWith({
+    double? latitude,
+    double? longitude,
+    double? altitude,
+  }) {
+    return GeoPoint(
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      altitude: altitude ?? this.altitude,
+    );
+  }
+}
+// --- Enums (Important:  Keep enums consistent with server) ---
+
+//Use the same enums as the server.
+enum WaypointType {
+  Lake,
+  Cliff,
+  Waterfall,
+  WaterSpring,
+  River,
+  MountainPeak,
+  Forest,
+  Meadow,
+  Cave,
+  Valley,
+  Beach,
+  Glacier,
+  Volcano,
+  HistoricalSite,
+  VisitorCenter,
+  Viewpoint,
+  Museum,
+  CulturalSite,
+  EducationalTrail,
+  ParkOffice,
+  SteepDrop,
+  SlipperyPath,
+  HighTide,
+  WildlifeSighting,
+  FloodingArea,
+  Rockfall,
+  RestrictedArea
+}
+enum EventStageType {
+    RouteSegment,    // A stage that references a Route
+    MeetingPoint,    // A stage with a single coordinate or place
+    OvernightStop,   // E.g. camping, lodging
+    LunchStop,       // Another specific stop type
+    Activity         // A custom activity that doesn’t necessarily have a route
+}
+// --- Models ---
+
+@collection
+class Person {
+  Id id = Isar.autoIncrement; //  Let Isar manage IDs
+
+  String? username;
+  String? firstName;
+  String? lastName;
+  String? phoneNumber;
+  DateTime? addedOn;
+  DateTime? editOn;
+  String? profilePictureUrl;
+  String? bio;
+  String? address;
+  String? email;
+  // Removed PasswordHash, VerificationToken, VerificationTokenExpiration - Client-side security is different.
+  bool? isVerified;
+  int? countryId;
+  double? totalDistance;
+
+    final userRoutes = IsarLinks<UserRoute>();
+  // final followers = IsarLinks<PersonFollow>();  //  See notes on PersonFollow below
+  // final following = IsarLinks<PersonFollow>();
+  final groupMemberships = IsarLinks<GroupMember>();
+  final createdRoutes = IsarLinks<Route>();
+  final createdEvents = IsarLinks<Event>();
+    final notificationsReceived = IsarLinks<Notification>();
+    final reactions = IsarLinks<Reaction>();
+      final favorites = IsarLinks<Favorite>();
+
+  Person({
+    this.username,
+    this.firstName,
+    this.lastName,
+    this.phoneNumber,
+    this.addedOn,
+    this.editOn,
+    this.profilePictureUrl,
+    this.bio,
+    this.address,
+    this.email,
+    this.isVerified,
+    this.countryId,
+    this.totalDistance
+  });
+
+  factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
+  Map<String, dynamic> toJson() => _$PersonToJson(this);
+
+  Person copyWith({
+    String? username,
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+    DateTime? addedOn,
+    DateTime? editOn,
+    String? profilePictureUrl,
+    String? bio,
+    String? address,
+    String? email,
+    bool? isVerified,
+    int? countryId,
+    double? totalDistance,
+    Id? id
+  }) {
+    return Person(
+      username: username ?? this.username,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      addedOn: addedOn ?? this.addedOn,
+      editOn: editOn ?? this.editOn,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      bio: bio ?? this.bio,
+      address: address ?? this.address,
+      email: email ?? this.email,
+      isVerified: isVerified ?? this.isVerified,
+      countryId: countryId ?? this.countryId,
+      totalDistance: totalDistance ?? this.totalDistance,
+    )..id = id ?? this.id; // Preserve the ID
+  }
+}
+
+
+
+@collection
+class Route {
+  Id id = Isar.autoIncrement;
+
+  final person = IsarLink<Person>(); // Link to the creator
+  int? personId;
+
+  DateTime? addedOn;
+  DateTime? editOn;
+
+  String? name;
+  String? description;
+
+  @embedded
+  GeoPoint? startPoint;
+  @embedded
+  GeoPoint? endPoint;
+
+  final routeType = IsarLink<RouteType>();
+  int? routeTypeId;
+
+    final difficultyLevel = IsarLink<DifficultyLevel>();
+    int? difficultyLevelId;
+
+  double? length;
+  int? duration; // Store as minutes (more efficient than TimeSpan)
+  double? elevationGain;
+  double? rating;
+  bool? isLoop;
+
+  String? country;
+  String? region;
+
+    final routePoints = IsarLinks<RoutePoint>();
+    final reviews = IsarLinks<Review>();
+    final tags = IsarLinks<Tag>();
+    final userRoutes = IsarLinks<UserRoute>();
+      final pointsOfInterest = IsarLinks<PointOfInterest>();
+  // Removed computed properties - Not needed on the client.
+
+  Route({
+    this.personId,
+    this.addedOn,
+    this.editOn,
+    this.name,
+    this.description,
+    this.startPoint,
+    this.endPoint,
+    this.routeTypeId,
+    this.difficultyLevelId,
+    this.length,
+    this.duration,
+    this.elevationGain,
+    this.rating,
+    this.isLoop,
+    this.country,
+    this.region,
+  });
+
+  factory Route.fromJson(Map<String, dynamic> json) => _$RouteFromJson(json);
+  Map<String, dynamic> toJson() => _$RouteToJson(this);
+
+  Route copyWith({
+      int? personId,
+    DateTime? addedOn,
+    DateTime? editOn,
+    String? name,
+    String? description,
+    GeoPoint? startPoint,
+    GeoPoint? endPoint,
+    int? routeTypeId,
+    int? difficultyLevelId,
+    double? length,
+    int? duration,
+    double? elevationGain,
+    double? rating,
+    bool? isLoop,
+    String? country,
+    String? region,
+    Id? id,
+  }) {
+    return Route(
+        personId: personId ?? this.personId,
+      addedOn: addedOn ?? this.addedOn,
+      editOn: editOn ?? this.editOn,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      startPoint: startPoint ?? this.startPoint,
+      endPoint: endPoint ?? this.endPoint,
+      routeTypeId: routeTypeId ?? this.routeTypeId,
+      difficultyLevelId: difficultyLevelId ?? this.difficultyLevelId,
+      length: length ?? this.length,
+      duration: duration ?? this.duration,
+      elevationGain: elevationGain ?? this.elevationGain,
+      rating: rating ?? this.rating,
+      isLoop: isLoop ?? this.isLoop,
+      country: country ?? this.country,
+      region: region ?? this.region,
+    )..id = id ?? this.id;
+  }
+}
+
+
+@collection
+class UserRoute {
+  Id id = Isar.autoIncrement;
+
+    final person = IsarLink<Person>();
+  int? personId;
+
+    final route = IsarLink<Route>();
+  int? routeId;
+
+   final difficultyLevel = IsarLink<DifficultyLevel>();
+    int? difficultyLevelId;
+
+    final routeType = IsarLink<RouteType>();
+    int? routeTypeId;
+
+  DateTime? dateTraveled;
+  int? duration; //  minutes
+  double? distance;
+  double? elevationGain;
+
+    final eventStageParticipant = IsarLink<EventStageParticipant>();
+ int? eventStageParticipantId;
+
+    final userRoutePoints = IsarLinks<UserRoutePoint>();
+
+  UserRoute({
+    this.personId,
+    this.routeId,
+    this.difficultyLevelId,
+    this.routeTypeId,
+    this.dateTraveled,
+    this.duration,
+    this.distance,
+    this.elevationGain,
+    this.eventStageParticipantId
+  });
+
+  factory UserRoute.fromJson(Map<String, dynamic> json) =>
+      _$UserRouteFromJson(json);
+  Map<String, dynamic> toJson() => _$UserRouteToJson(this);
+
+   UserRoute copyWith({
+    int? personId,
+    int? routeId,
+    int? difficultyLevelId,
+    int? routeTypeId,
+    DateTime? dateTraveled,
+    int? duration,
+    double? distance,
+    double? elevationGain,
+     int? eventStageParticipantId,
+     Id? id,
+  }) {
+    return UserRoute(
+      personId: personId ?? this.personId,
+      routeId: routeId ?? this.routeId,
+      difficultyLevelId: difficultyLevelId ?? this.difficultyLevelId,
+      routeTypeId: routeTypeId ?? this.routeTypeId,
+      dateTraveled: dateTraveled ?? this.dateTraveled,
+      duration: duration ?? this.duration,
+      distance: distance ?? this.distance,
+      elevationGain: elevationGain ?? this.elevationGain,
+       eventStageParticipantId :eventStageParticipantId ?? this.eventStageParticipantId
+    )..id = id?? this.id;
+  }
+}
+
+@collection
+class RoutePoint {
+  Id id = Isar.autoIncrement;
+
+    final route = IsarLink<Route>();
+  int? routeId;
+  int? sequenceNumber;
+  @embedded
+  GeoPoint? point;
+
+  RoutePoint({
+    this.routeId,
+    this.sequenceNumber,
+    this.point
+    });
+
+  factory RoutePoint.fromJson(Map<String, dynamic> json) =>
+      _$RoutePointFromJson(json);
+  Map<String, dynamic> toJson() => _$RoutePointToJson(this);
+
+  RoutePoint copyWith({
+    int? routeId,
+    int? sequenceNumber,
+    GeoPoint? point,
+    Id? id
+  })
+  {
+    return RoutePoint(
+      routeId: routeId ?? this.routeId,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      point: point ?? this.point
+    )..id = id ?? this.id;
+  }
+}
+
+@collection
+class UserRoutePoint
+{
+    Id id = Isar.autoIncrement;
+      final userRoute = IsarLink<UserRoute>();
+    int? userRouteId;
+    int? sequenceNumber;
+      @embedded
+    GeoPoint? point;
+
+    UserRoutePoint({
+      this.userRouteId,
+      this.sequenceNumber,
+      this.point
+    });
+
+     factory UserRoutePoint.fromJson(Map<String, dynamic> json) =>
+      _$UserRoutePointFromJson(json);
+  Map<String, dynamic> toJson() => _$UserRoutePointToJson(this);
+
+    UserRoutePoint copyWith({
+    int? userRouteId,
+    int? sequenceNumber,
+    GeoPoint? point,
+    Id? id
+  })
+  {
+    return UserRoutePoint(
+      userRouteId: userRouteId ?? this.userRouteId,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      point: point ?? this.point
+    )..id = id ?? this.id;
+  }
+}
+
+@collection
+class PointOfInterest {
+  Id id = Isar.autoIncrement;
+    final route = IsarLink<Route>();
+    int? routeId;
+
+  @embedded
+  GeoPoint? location;
+
+  String? imageUrl;
+  String? name;
+  String? description;
+ @Enumerated(EnumType.name)
+  WaypointType? waypointType;
+
+  PointOfInterest({
+    this.routeId,
+    this.location,
+    this.imageUrl,
+    this.name,
+    this.description,
+    this.waypointType
+  });
+
+  factory PointOfInterest.fromJson(Map<String, dynamic> json) =>
+      _$PointOfInterestFromJson(json);
+  Map<String, dynamic> toJson() => _$PointOfInterestToJson(this);
+
+   PointOfInterest copyWith({
+     int? routeId,
+    GeoPoint? location,
+    String? imageUrl,
+    String? name,
+    String? description,
+    WaypointType? waypointType,
+    Id? id
+  }) {
+    return PointOfInterest(
+      routeId: routeId ?? this.routeId,
+      location: location ?? this.location,
+      imageUrl: imageUrl ?? this.imageUrl,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      waypointType: waypointType ?? this.waypointType,
+    )..id = id ?? this.id;
+  }
+}
+
+@collection
+class DifficultyLevel {
+  Id id = Isar.autoIncrement;
+  String? level;
+  String? description;
+
+// No need for backlinks (OfficialRoutes, UserRoutes) on the client
+
+  DifficultyLevel({this.level, this.description});
+    factory DifficultyLevel.fromJson(Map<String, dynamic> json) =>
+      _$DifficultyLevelFromJson(json);
+  Map<String, dynamic> toJson() => _$DifficultyLevelToJson(this);
+
+   DifficultyLevel copyWith({
+    String? level,
+    String? description,
+    Id? id
+  }) {
+    return DifficultyLevel(
+      level: level ?? this.level,
+      description: description ?? this.description,
+    )..id = id?? this.id;
+  }
+}
+
+@collection
+class Review {
+  Id id = Isar.autoIncrement;
+  String? username;
+  double? rating;
+  String? comment;
+  DateTime? date;
+
+    final route = IsarLink<Route>();
+    int? routeId;
+
+  Review({
+    this.username,
+    this.rating,
+    this.comment,
+    this.date,
+    this.routeId
+  });
+
+  factory Review.fromJson(Map<String, dynamic> json) => _$ReviewFromJson(json);
+  Map<String, dynamic> toJson() => _$ReviewToJson(this);
+
+   Review copyWith({
+    String? username,
+    double? rating,
+    String? comment,
+    DateTime? date,
+    int? routeId,
+    Id? id
+  }) {
+    return Review(
+      username: username ?? this.username,
+      rating: rating ?? this.rating,
+      comment: comment ?? this.comment,
+      date: date ?? this.date,
+      routeId : routeId ?? this.routeId
+    )..id= id ?? this.id;
+  }
+}
+
+@collection
+class RouteType {
+  Id id = Isar.autoIncrement;
+  String? name;
+
+  RouteType({this.name});
+    factory RouteType.fromJson(Map<String, dynamic> json) =>
+      _$RouteTypeFromJson(json);
+  Map<String, dynamic> toJson() => _$RouteTypeToJson(this);
+
+  RouteType copyWith({
+    String? name,
+     Id? id
+  }) {
+    return RouteType(
+      name: name ?? this.name,
+    )..id = id ?? this.id;
+  }
+}
+
+@collection
+class Tag {
+  Id id = Isar.autoIncrement;
+  String? name;
+
+  Tag({this.name});
+
+  factory Tag.fromJson(Map<String, dynamic> json) => _$TagFromJson(json);
+  Map<String, dynamic> toJson() => _$TagToJson(this);
+ Tag copyWith({
+    String? name,
+    Id? id
+  }) {
+    return Tag(
+      name: name ?? this.name,
+    )..id = id ?? this.id;
+  }
+}
+@collection
+class Event {
+    Id id = Isar.autoIncrement;
+    String? name;
+    String? description;
+
+    bool? isPublic;
+    bool? requiresApproval;
+
+    final creator = IsarLink<Person>();
+    int? creatorId;
+
+    DateTime? startDateTime;
+    DateTime? endDateTime;
+
+    final group = IsarLink<Group>();
+    int? groupId;
+
+    final requiredItems = IsarLinks<EventItem>();
+    final participants = IsarLinks<EventParticipant>();
+    final stages = IsarLinks<EventStage>();
+    final eventActivities = IsarLinks<EventActivity>();
+
+    Event({
+        this.name,
+        this.description,
+        this.isPublic,
+        this.requiresApproval,
+        this.creatorId,
+        this.startDateTime,
+        this.endDateTime,
+        this.groupId,
+    });
+
+    factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
+    Map<String, dynamic> toJson() => _$EventToJson(this);
+
+    Event copyWith({
+        String? name,
+        String? description,
+        bool? isPublic,
+        bool? requiresApproval,
+        int? creatorId,
+        DateTime? startDateTime,
+        DateTime? endDateTime,
+        int? groupId,
+        Id? id
+    }) {
+        return Event(
+            name: name ?? this.name,
+            description: description ?? this.description,
+            isPublic: isPublic ?? this.isPublic,
+            requiresApproval: requiresApproval ?? this.requiresApproval,
+            creatorId: creatorId ?? this.creatorId,
+            startDateTime: startDateTime ?? this.startDateTime,
+            endDateTime: endDateTime ?? this.endDateTime,
+            groupId: groupId ?? this.groupId,
+        )..id = id ?? this.id;
+    }
+}
+@collection
+class EventStage {
+    Id id = Isar.autoIncrement;
+    final event = IsarLink<Event>();
+    int? eventId;
+
+    String? title;
+    String? description;
+
+    DateTime? stageStartTime;
+
+    final route = IsarLink<Route>();
+    int? routeId;
+@Enumerated(EnumType.name)
+    EventStageType? stageType;
+      @embedded
+    GeoPoint? location;
+      final stageParticipants = IsarLinks<EventStageParticipant>();
+
+    EventStage({
+        this.eventId,
+        this.title,
+        this.description,
+        this.stageStartTime,
+        this.routeId,
+        this.stageType,
+        this.location,
+    });
+
+    factory EventStage.fromJson(Map<String, dynamic> json) => _$EventStageFromJson(json);
+    Map<String, dynamic> toJson() => _$EventStageToJson(this);
+
+    EventStage copyWith({
+        int? eventId,
+        String? title,
+        String? description,
+        DateTime? stageStartTime,
+        int? routeId,
+        EventStageType? stageType,
+        GeoPoint? location,
+        Id? id
+    }) {
+        return EventStage(
+            eventId: eventId ?? this.eventId,
+            title: title ?? this.title,
+            description: description ?? this.description,
+            stageStartTime: stageStartTime ?? this.stageStartTime,
+            routeId: routeId ?? this.routeId,
+            stageType: stageType ?? this.stageType,
+            location: location ?? this.location,
+        )..id= id ?? this.id;
+    }
+}
+
+@collection
+class EventParticipant {
+    Id id = Isar.autoIncrement;
+
+      final event = IsarLink<Event>();
+    int? eventId;
+
+      final person = IsarLink<Person>();
+    int? personId;
+
+    bool? isApproved;
+    bool? isActive;
+    DateTime? joinedOn;
+
+    final stageParticipants = IsarLinks<EventStageParticipant>();
+
+    EventParticipant({
+        this.eventId,
+        this.personId,
+        this.isApproved,
+        this.isActive,
+        this.joinedOn,
+    });
+
+    factory EventParticipant.fromJson(Map<String, dynamic> json) => _$EventParticipantFromJson(json);
+    Map<String, dynamic> toJson() => _$EventParticipantToJson(this);
+
+    EventParticipant copyWith({
+        int? eventId,
+        int? personId,
+        bool? isApproved,
+        bool? isActive,
+        DateTime? joinedOn,
+        Id? id
+    }) {
+        return EventParticipant(
+            eventId: eventId ?? this.eventId,
+            personId: personId ?? this.personId,
+            isApproved: isApproved ?? this.isApproved,
+            isActive: isActive ?? this.isActive,
+            joinedOn: joinedOn ?? this.joinedOn,
+        )..id = id ?? this.id;
+    }
+}
+@collection
+class EventStageParticipant {
+    Id id = Isar.autoIncrement;
+
+    final eventStage = IsarLink<EventStage>();
+    int? eventStageId;
+
+    final eventParticipant = IsarLink<EventParticipant>();
+    int? eventParticipantId;
+
+   final userRoute = IsarLink<UserRoute>();
+    int? userRouteId;
+
+    DateTime? startedAt;
+    DateTime? finishedAt;
+    bool? isCompleted;
+
+    EventStageParticipant({
+        this.eventStageId,
+        this.eventParticipantId,
+        this.userRouteId,
+        this.startedAt,
+        this.finishedAt,
+        this.isCompleted,
+    });
+
+    factory EventStageParticipant.fromJson(Map<String, dynamic> json) => _$EventStageParticipantFromJson(json);
+    Map<String, dynamic> toJson() => _$EventStageParticipantToJson(this);
+
+    EventStageParticipant copyWith({
+        int? eventStageId,
+        int? eventParticipantId,
+        int? userRouteId,
+        DateTime? startedAt,
+        DateTime? finishedAt,
+        bool? isCompleted,
+        Id? id
+    }) {
+        return EventStageParticipant(
+            eventStageId: eventStageId ?? this.eventStageId,
+            eventParticipantId: eventParticipantId ?? this.eventParticipantId,
+            userRouteId: userRouteId ?? this.userRouteId,
+            startedAt: startedAt ?? this.startedAt,
+            finishedAt: finishedAt ?? this.finishedAt,
+            isCompleted: isCompleted ?? this.isCompleted,
+        )..id = id?? this.id;
+    }
+}
+
+@collection
+class ActivityType {
+  Id id = Isar.autoIncrement;
+  String? name;
+
+  ActivityType({
+    this.name
+  });
+
+    factory ActivityType.fromJson(Map<String, dynamic> json) =>
+      _$ActivityTypeFromJson(json);
+  Map<String, dynamic> toJson() => _$ActivityTypeToJson(this);
+  ActivityType copyWith({
+    String? name,
+    Id? id
+  }) {
+    return ActivityType(
+      name: name ?? this.name,
+    )..id = id ?? this.id;
+  }
+}
+//This table does not need to be a collection because it does not contain an ID, it is only used to connect between collections
+@embedded
+class EventActivity
+{
+    final event = IsarLink<Event>();
+    final activityType = IsarLink<ActivityType>();
+     EventActivity({
+    });
+    factory EventActivity.fromJson(Map<String, dynamic> json) =>
+      _$EventActivityFromJson(json);
+  Map<String, dynamic> toJson() => _$EventActivityToJson(this);
+}
+
+@collection
+class EventItem {
+    Id id = Isar.autoIncrement;
+      final event = IsarLink<Event>();
+    int? eventId;
+
+    String? itemName;
+    String? description;
+    bool? isAssigned;
+
+    EventItem({
+        this.eventId,
+        this.itemName,
+        this.description,
+        this.isAssigned,
+    });
+
+    factory EventItem.fromJson(Map<String, dynamic> json) => _$EventItemFromJson(json);
+    Map<String, dynamic> toJson() => _$EventItemToJson(this);
+
+    EventItem copyWith({
+        int? eventId,
+        String? itemName,
+        String? description,
+        bool? isAssigned,
+        Id? id
+    }) {
+        return EventItem(
+            eventId: eventId ?? this.eventId,
+            itemName: itemName ?? this.itemName,
+            description: description ?? this.description,
+            isAssigned: isAssigned ?? this.isAssigned,
+        )..id = id?? this.id;
+    }
+}
+//PersonFollow does not need to be stored in local storage because it is important for the information to be updated and there is no desire for the information to be stored locally.
+// class PersonFollow {
+//     Id id = Isar.autoIncrement;
+
+//     final follower = IsarLink<Person>();
+//     int? followerId;
+
+//       final following = IsarLink<Person>();
+//     int? followingId;
+
+//     DateTime? followedOn;
+
+//      PersonFollow({
+
+//      });
+
+//     factory PersonFollow.fromJson(Map<String, dynamic> json) => _$PersonFollowFromJson(json);
+//     Map<String, dynamic> toJson() => _$PersonFollowToJson(this);
+
+//     // copyWith method
+// }
+@collection
+class Group {
+    Id id = Isar.autoIncrement;
+    String? name;
+    String? description;
+    String? location;
+    bool? isPublic;
+    bool? isApprovalRequired;
+    final creator = IsarLink<Person>();
+    int? creatorId;
+
+      final members = IsarLinks<GroupMember>();
+      final posts = IsarLinks<GroupPost>();
+      final events = IsarLinks<Event>();
+      final groupActivities = IsarLinks<GroupActivity>();
+
+    Group({
+        this.name,
+        this.description,
+        this.location,
+        this.isPublic,
+        this.isApprovalRequired,
+        this.creatorId,
+    });
+
+    factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
+    Map<String, dynamic> toJson() => _$GroupToJson(this);
+
+    Group copyWith({
+        String? name,
+        String? description,
+        String? location,
+        bool? isPublic,
+        bool? isApprovalRequired,
+        int? creatorId,
+        Id? id
+    }) {
+        return Group(
+            name: name ?? this.name,
+            description: description ?? this.description,
+            location: location ?? this.location,
+            isPublic: isPublic ?? this.isPublic,
+            isApprovalRequired: isApprovalRequired ?? this.isApprovalRequired,
+            creatorId: creatorId ?? this.creatorId,
+        )..id = id ?? this.id;
+    }
+}
+@collection
+class GroupMember {
+    Id id = Isar.autoIncrement;
+
+      final group = IsarLink<Group>();
+    int? groupId;
+
+    final person = IsarLink<Person>();
+    int? personId;
+
+    bool? isAdmin;
+    bool? canPost;
+    bool? isApproved;
+    DateTime? joinedOn;
+
+    GroupMember({
+        this.groupId,
+        this.personId,
+        this.isAdmin,
+        this.canPost,
+        this.isApproved,
+        this.joinedOn,
+    });
+
+    factory GroupMember.fromJson(Map<String, dynamic> json) => _$GroupMemberFromJson(json);
+    Map<String, dynamic> toJson() => _$GroupMemberToJson(this);
+
+    GroupMember copyWith({
+        int? groupId,
+        int? personId,
+        bool? isAdmin,
+        bool? canPost,
+        bool? isApproved,
+        DateTime? joinedOn,
+        Id? id
+    }) {
+        return GroupMember(
+            groupId: groupId ?? this.groupId,
+            personId: personId ?? this.personId,
+            isAdmin: isAdmin ?? this.isAdmin,
+            canPost: canPost ?? this.canPost,
+            isApproved: isApproved ?? this.isApproved,
+            joinedOn: joinedOn ?? this.joinedOn,
+        )..id = id ?? this.id;
+    }
+}
+@embedded
+class GroupActivity
+{
+final group = IsarLink<Group>();
+final activityType = IsarLink<ActivityType>();
+
+      GroupActivity({});
+      factory GroupActivity.fromJson(Map<String, dynamic> json) =>
+      _$GroupActivityFromJson(json);
+  Map<String, dynamic> toJson() => _$GroupActivityToJson(this);
+}
+
+@collection
+class GroupPost {
+    Id id = Isar.autoIncrement;
+    final group = IsarLink<Group>();
+    int? groupId;
+
+    final author = IsarLink<Person>();
+    int? authorId;
+
+    String? content;
+    DateTime? createdOn;
+
+    final attachments = IsarLinks<GroupPostAttachment>();
+    final comments = IsarLinks<GroupPostComment>();
+    final reactions = IsarLinks<Reaction>(); // Keep this - might be useful
+
+    GroupPost({
+        this.groupId,
+        this.authorId,
+        this.content,
+        this.createdOn,
+    });
+
+    factory GroupPost.fromJson(Map<String, dynamic> json) => _$GroupPostFromJson(json);
+    Map<String, dynamic> toJson() => _$GroupPostToJson(this);
+
+    GroupPost copyWith({
+        int? groupId,
+        int? authorId,
+        String? content,
+        DateTime? createdOn,
+        Id? id
+    }) {
+        return GroupPost(
+            groupId: groupId ?? this.groupId,
+            authorId: authorId ?? this.authorId,
+            content: content ?? this.content,
+            createdOn: createdOn ?? this.createdOn,
+        )..id = id?? this.id;
+    }
+}
+@collection
+class GroupPostComment {
+    Id id = Isar.autoIncrement;
+      final groupPost = IsarLink<GroupPost>();
+    int? groupPostId;
+
+      final author = IsarLink<Person>();
+    int? authorId;
+
+    String? content;
+    DateTime? createdOn;
+
+    GroupPostComment({
+        this.groupPostId,
+        this.authorId,
+        this.content,
+        this.createdOn,
+    });
+
+    factory GroupPostComment.fromJson(Map<String, dynamic> json) => _$GroupPostCommentFromJson(json);
+    Map<String, dynamic> toJson() => _$GroupPostCommentToJson(this);
+
+    GroupPostComment copyWith({
+        int? groupPostId,
+        int? authorId,
+        String? content,
+        DateTime? createdOn,
+        Id? id
+    }) {
+        return GroupPostComment(
+            groupPostId: groupPostId ?? this.groupPostId,
+            authorId: authorId ?? this.authorId,
+            content: content ?? this.content,
+            createdOn: createdOn ?? this.createdOn,
+        )..id = id?? this.id;
+    }
+}
+@collection
+class GroupPostAttachment {
+    Id id = Isar.autoIncrement;
+      final groupPost = IsarLink<GroupPost>();
+    int? groupPostId;
+
+    String? fileUrl;
+    String? attachmentType;
+    DateTime? uploadedOn;
+
+    GroupPostAttachment({
+        this.groupPostId,
+        this.fileUrl,
+        this.attachmentType,
+        this.uploadedOn,
+    });
+
+    factory GroupPostAttachment.fromJson(Map<String, dynamic> json) => _$GroupPostAttachmentFromJson(json);
+    Map<String, dynamic> toJson() => _$GroupPostAttachmentToJson(this);
+
+    GroupPostAttachment copyWith({
+        int? groupPostId,
+        String? fileUrl,
+        String? attachmentType,
+        DateTime? uploadedOn,
+        Id? id
+    }) {
+        return GroupPostAttachment(
+            groupPostId: groupPostId ?? this.groupPostId,
+            fileUrl: fileUrl ?? this.fileUrl,
+            attachmentType: attachmentType ?? this.attachmentType,
+            uploadedOn: uploadedOn ?? this.uploadedOn,
+        )..id = id?? this.id;
+    }
+}
+
+@collection
+class Notification {
+    Id id = Isar.autoIncrement;
+    final recipient = IsarLink<Person>();
+    int? recipientId;
+
+     final actor = IsarLink<Person>();
+    int? actorId;
+
+    String? message;
+    DateTime? sentAt;
+    bool? isRead;
+    String? type;
+
+    Notification({
+        this.recipientId,
+        this.actorId,
+        this.message,
+        this.sentAt,
+        this.isRead,
+        this.type,
+    });
+
+    factory Notification.fromJson(Map<String, dynamic> json) => _$NotificationFromJson(json);
+    Map<String, dynamic> toJson() => _$NotificationToJson(this);
+
+    Notification copyWith({
+        int? recipientId,
+        int? actorId,
+        String? message,
+        DateTime? sentAt,
+        bool? isRead,
+        String? type,
+        Id? id
+    }) {
+        return Notification(
+            recipientId: recipientId ?? this.recipientId,
+            actorId: actorId ?? this.actorId,
+            message: message ?? this.message,
+            sentAt: sentAt ?? this.sentAt,
+            isRead: isRead ?? this.isRead,
+            type: type ?? this.type,
+        )..id = id?? this.id;
+    }
+}
+@collection
+class Reaction {
+    Id id = Isar.autoIncrement;
+
+    final person = IsarLink<Person>();
+    int? personId;
+
+    String? type;  //  "like", "love", custom emoji...
+    DateTime? reactedAt;
+    String? reactableType;
+    int? reactableId;
+
+    Reaction({
+        this.personId,
+        this.type,
+        this.reactedAt,
+        this.reactableType,
+        this
