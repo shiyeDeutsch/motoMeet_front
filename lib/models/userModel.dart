@@ -1,74 +1,154 @@
+import 'dart:convert';
 import 'package:isar/isar.dart';
-part 'userModel.g.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'client_models.g.dart';
 
 @collection
-class UserInfo {
-  final Id? id;
-  final String email;
-  final String? password;
-  final String firstName;
-  final String lastName;
-  final int age;
-  final String? bio;
-  final int countryId;
-  final String? token;
-  UserInfo({
+@JsonSerializable()
+class Person {
+  Id? id;
+  String? username;
+  String? firstName;
+  String? lastName;
+  String? phoneNumber;
+  DateTime? addedOn;
+  DateTime? editOn;
+  String? profilePictureUrl;
+  String? bio;
+  String? address;
+  String? email;
+  int? countryId;
+  double? totalDistance;
+
+  IsarLinks<PersonFollow> followers = IsarLinks<PersonFollow>();
+  IsarLinks<PersonFollow> following = IsarLinks<PersonFollow>();
+  IsarLinks<GroupMember> groupMemberships = IsarLinks<GroupMember>();
+  IsarLinks<Route> createdRoutes = IsarLinks<Route>();
+  IsarLinks<Event> createdEvents = IsarLinks<Event>();
+  IsarLinks<Notification> notificationsReceived = IsarLinks<Notification>();
+  IsarLinks<Reaction> reactions = IsarLinks<Reaction>();
+  IsarLinks<Favorite> favorites = IsarLinks<Favorite>();
+
+  Person({
     this.id,
-    required this.email,
-     this.password,
-    required this.firstName,
-    required this.lastName,
-    required this.age,
+    this.username,
+    this.firstName,
+    this.lastName,
+    this.phoneNumber,
+    this.addedOn,
+    this.editOn,
+    this.profilePictureUrl,
     this.bio,
-    required this.countryId,
-    this.token,
+    this.address,
+    this.email,
+    this.countryId,
+    this.totalDistance,
   });
 
-  factory UserInfo.fromJson(Map<String, dynamic> json) {
-    return UserInfo(
-      id: json['id'] as Id?,
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
-    //password: json['password'] as String?,
-      email: json['email'] as String,
-      bio: json['bio'] as String?,
-      age: -1,//json['Age'] as int,
-      countryId: json['countryId'] as int,
-      token: json['token'] as String?,
-    );
-  }
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'password': password,
-        'firstName': firstName,
-        'lastName': lastName,
-        'countryId': countryId,
-        'age': age,
-        'bio': bio,
-        'token': token
-      };
+  factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
 
-  UserInfo copyWith(
-      {Id? id,
-      String? email,
-      String? password,
-      String? firstName,
-      String? lastName,
-      int? age,
-      String? bio,
-      int? countryId,
-      String? token}) {
-    return UserInfo(
+  Map<String, dynamic> toJson() => _$PersonToJson(this);
+
+  Person copyWith({
+    Id? id,
+    String? username,
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+    DateTime? addedOn,
+    DateTime? editOn,
+    String? profilePictureUrl,
+    String? bio,
+    String? address,
+    String? email,
+    int? countryId,
+    double? totalDistance,
+  }) {
+    return Person(
       id: id ?? this.id,
-      email: email ?? this.email,
-      password: password ?? this.password,
+      username: username ?? this.username,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      age: age ?? this.age,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      addedOn: addedOn ?? this.addedOn,
+      editOn: editOn ?? this.editOn,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       bio: bio ?? this.bio,
+      address: address ?? this.address,
+      email: email ?? this.email,
       countryId: countryId ?? this.countryId,
-      token: token ?? this.token,
+      totalDistance: totalDistance ?? this.totalDistance,
+    );
+  }
+}
+@collection
+@JsonSerializable()
+class PersonFollow {
+  Id? id;
+
+  IsarLink<Person> follower = IsarLink<Person>();
+  IsarLink<Person> following = IsarLink<Person>();
+
+  DateTime? followedOn;
+
+  PersonFollow({
+    this.id,
+    this.followedOn,
+  });
+
+  factory PersonFollow.fromJson(Map<String, dynamic> json) =>
+      _$PersonFollowFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PersonFollowToJson(this);
+
+  PersonFollow copyWith({
+    Id? id,
+    Person? follower,
+    Person? following,
+    DateTime? followedOn,
+  }) {
+    return PersonFollow(
+      id: id ?? this.id,
+      followedOn: followedOn ?? this.followedOn,
+    );
+  }
+  
+}
+
+@collection
+@JsonSerializable()
+class Favorite {
+  Id? id;
+  String? type;
+  String? itemId;
+  DateTime? addedAt;
+
+  IsarLink<Person> person = IsarLink<Person>();
+
+  Favorite({
+    this.id,
+    this.type,
+    this.itemId,
+    this.addedAt,
+  });
+
+  factory Favorite.fromJson(Map<String, dynamic> json) =>
+      _$FavoriteFromJson(json);
+
+  Map<String, dynamic> toJson() => _$FavoriteToJson(this);
+
+  Favorite copyWith({
+    Id? id,
+    String? type,
+    String? itemId,
+    DateTime? addedAt,
+  }) {
+    return Favorite(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      itemId: itemId ?? this.itemId,
+      addedAt: addedAt ?? this.addedAt,
     );
   }
 }

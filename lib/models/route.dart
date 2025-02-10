@@ -191,7 +191,6 @@ class NewRoute {
     );
   }
 }
-
 @embedded
 class Waypoint {
   final GeoPoint? location;
@@ -229,9 +228,7 @@ class Waypoint {
             ? json['type'].map((x) => WaypointTypeExtension.fromString(x))
             : null,
       );
-}
-
- 
+} 
 class RoutePoint {
   final int id;
   final int routeId;
@@ -262,9 +259,6 @@ class RoutePoint {
         'point': point.toJson(),
       };
 }
-
- 
- 
  class Review {
   final int id;
   final String username;
@@ -284,7 +278,6 @@ Review({
   required this.review,
 });
 }
-
 @embedded
 class RouteType {
   // final int id;
@@ -306,13 +299,6 @@ class RouteType {
         'name': type?.name,
       };
 }
-
- 
-
-   
-
- 
-
 @embedded
 class GeoPoint {
   final double? latitude;
@@ -343,7 +329,6 @@ class GeoPoint {
     return LatLng(latitude!, longitude!);
   }
 }
- 
 class RouteMedia {
   final String url;     // The URL/path to the image/video
   final String type;    // "image", "video", or "live"
