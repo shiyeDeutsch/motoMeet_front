@@ -12,8 +12,8 @@ class Notification {
   DateTime? sentAt;
   bool? isRead;
 
-  IsarLink<Person> recipient = IsarLink<Person>();
-  IsarLink<Person> actor = IsarLink<Person>();
+  IsarLink<UserInfo> recipient = IsarLink<UserInfo>();
+  IsarLink<UserInfo> actor = IsarLink<UserInfo>();
 
   Notification({
     this.id,
@@ -52,7 +52,7 @@ class Reaction {
   String? type;
   DateTime? reactedAt;
 
-  IsarLink<Person> person = IsarLink<Person>();
+  IsarLink<UserInfo> person = IsarLink<UserInfo>();
   IsarLink<GroupPost> groupPost = IsarLink<GroupPost>();
 
   Reaction({

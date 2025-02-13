@@ -6,7 +6,7 @@ part 'client_models.g.dart';
 
 @collection
 @JsonSerializable()
-class Person {
+class UserInfo {
   Id? id;
   String? username;
   String? firstName;
@@ -30,7 +30,7 @@ class Person {
   IsarLinks<Reaction> reactions = IsarLinks<Reaction>();
   IsarLinks<Favorite> favorites = IsarLinks<Favorite>();
 
-  Person({
+  UserInfo({
     this.id,
     this.username,
     this.firstName,
@@ -46,11 +46,11 @@ class Person {
     this.totalDistance,
   });
 
-  factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
+  factory UserInfo.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
 
   Map<String, dynamic> toJson() => _$PersonToJson(this);
 
-  Person copyWith({
+  UserInfo copyWith({
     Id? id,
     String? username,
     String? firstName,
@@ -65,7 +65,7 @@ class Person {
     int? countryId,
     double? totalDistance,
   }) {
-    return Person(
+    return UserInfo(
       id: id ?? this.id,
       username: username ?? this.username,
       firstName: firstName ?? this.firstName,
@@ -87,8 +87,8 @@ class Person {
 class PersonFollow {
   Id? id;
 
-  IsarLink<Person> follower = IsarLink<Person>();
-  IsarLink<Person> following = IsarLink<Person>();
+  IsarLink<UserInfo> follower = IsarLink<UserInfo>();
+  IsarLink<UserInfo> following = IsarLink<UserInfo>();
 
   DateTime? followedOn;
 
@@ -104,8 +104,8 @@ class PersonFollow {
 
   PersonFollow copyWith({
     Id? id,
-    Person? follower,
-    Person? following,
+    UserInfo? follower,
+    UserInfo? following,
     DateTime? followedOn,
   }) {
     return PersonFollow(
@@ -124,7 +124,7 @@ class Favorite {
   String? itemId;
   DateTime? addedAt;
 
-  IsarLink<Person> person = IsarLink<Person>();
+  IsarLink<UserInfo> person = IsarLink<UserInfo>();
 
   Favorite({
     this.id,

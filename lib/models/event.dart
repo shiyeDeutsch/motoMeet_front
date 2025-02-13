@@ -15,7 +15,7 @@ class Event {
   DateTime? startDateTime;
   DateTime? endDateTime;
 
-  IsarLink<Person> creator = IsarLink<Person>();
+  IsarLink<UserInfo> creator = IsarLink<UserInfo>();
   IsarLink<Group> group = IsarLink<Group>();
 
   IsarLinks<EventItem> requiredItems = IsarLinks<EventItem>();
@@ -129,7 +129,7 @@ class EventParticipant {
   bool? isActive;
   DateTime? joinedOn;
 
-  IsarLink<Person> person = IsarLink<Person>();
+  IsarLink<UserInfo> person = IsarLink<UserInfo>();
   IsarLink<Event> event = IsarLink<Event>();
 
   IsarLinks<EventStageParticipant> stageParticipants =

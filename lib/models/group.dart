@@ -15,7 +15,7 @@ class Group {
   bool? isPublic;
   bool? isApprovalRequired;
 
-  IsarLink<Person> creator = IsarLink<Person>();
+  IsarLink<UserInfo> creator = IsarLink<UserInfo>();
 
   IsarLinks<GroupMember> members = IsarLinks<GroupMember>();
   IsarLinks<GroupPost> posts = IsarLinks<GroupPost>();
@@ -63,7 +63,7 @@ class GroupMember {
   bool? isApproved;
   DateTime? joinedOn;
 
-  IsarLink<Person> person = IsarLink<Person>();
+  IsarLink<UserInfo> person = IsarLink<UserInfo>();
   IsarLink<Group> group = IsarLink<Group>();
 
   GroupMember({
@@ -131,7 +131,7 @@ class GroupPost {
   String? content;
   DateTime? createdOn;
 
-  IsarLink<Person> author = IsarLink<Person>();
+  IsarLink<UserInfo> author = IsarLink<UserInfo>();
   IsarLink<Group> group = IsarLink<Group>();
 
   IsarLinks<GroupPostAttachment> attachments = IsarLinks<GroupPostAttachment>();
@@ -169,7 +169,7 @@ class GroupPostComment {
   String? content;
   DateTime? createdOn;
 
-  IsarLink<Person> author = IsarLink<Person>();
+  IsarLink<UserInfo> author = IsarLink<UserInfo>();
   IsarLink<GroupPost> groupPost = IsarLink<GroupPost>();
 
   GroupPostComment({
