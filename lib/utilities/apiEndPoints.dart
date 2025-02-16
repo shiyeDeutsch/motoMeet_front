@@ -23,4 +23,10 @@ class EndPoints {
     path: 'api/routes',
     port: port,
   );
+  static Uri userProfile = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/users/profile',
+    port: port,
+  );
 }

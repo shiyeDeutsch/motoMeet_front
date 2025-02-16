@@ -43,30 +43,25 @@ class AuthenticationService {
     }
   }
 
-  Future<UserInfo?> login(String email, String password) async {
+  Future<String?> login(String email, String password) async {
     try {
       final response = await HttpClient.post(
-        uri: EndPoints.login,
+     uri: EndPoints.login,
         body: jsonEncode({'Email': email, 'Password': password}),
         // headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
-        // Assuming the server returns a 200 status code on successful login
         final data = jsonDecode(response.body);
-        final user = UserInfo.fromJson(data['user']);
-        // final token = data['token'] as String?;
-
-        return user;
+        final token = data['token'] as String?;
+        return token; // Return only the token
       } else {
-        // Handle different status codes or errors as needed
         if (kDebugMode) {
           print('Login failed with status code: ${response.statusCode}');
         }
         return null;
       }
     } catch (e) {
-      // Log or handle the exception as needed
       if (kDebugMode) {
         print('An error occurred during login: $e');
       }

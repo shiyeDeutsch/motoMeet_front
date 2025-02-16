@@ -2,6 +2,11 @@ import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'event.dart';
+import 'group.dart';
+import 'newRoute.dart';
+import 'notification.dart';
+
 part 'client_models.g.dart';
 
 @collection
@@ -20,9 +25,9 @@ class UserInfo {
   String? email;
   int? countryId;
   double? totalDistance;
-
-  IsarLinks<PersonFollow> followers = IsarLinks<PersonFollow>();
-  IsarLinks<PersonFollow> following = IsarLinks<PersonFollow>();
+  // String? token;
+  IsarLinks<UserInfoFollow> followers = IsarLinks<UserInfoFollow>();
+  IsarLinks<UserInfoFollow> following = IsarLinks<UserInfoFollow>();
   IsarLinks<GroupMember> groupMemberships = IsarLinks<GroupMember>();
   IsarLinks<Route> createdRoutes = IsarLinks<Route>();
   IsarLinks<Event> createdEvents = IsarLinks<Event>();
@@ -46,9 +51,10 @@ class UserInfo {
     this.totalDistance,
   });
 
-  factory UserInfo.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
+  factory UserInfo.fromJson(Map<String, dynamic> json) =>
+      _$UserInfoFromJson(json);
 
-  Map<String, dynamic> toJson() => _$PersonToJson(this);
+  Map<String, dynamic> toJson() => _$UserInfoToJson(this);
 
   UserInfo copyWith({
     Id? id,
@@ -82,9 +88,10 @@ class UserInfo {
     );
   }
 }
+
 @collection
 @JsonSerializable()
-class PersonFollow {
+class UserInfoFollow {
   Id? id;
 
   IsarLink<UserInfo> follower = IsarLink<UserInfo>();
@@ -92,28 +99,27 @@ class PersonFollow {
 
   DateTime? followedOn;
 
-  PersonFollow({
+  UserInfoFollow({
     this.id,
     this.followedOn,
   });
 
-  factory PersonFollow.fromJson(Map<String, dynamic> json) =>
-      _$PersonFollowFromJson(json);
+  factory UserInfoFollow.fromJson(Map<String, dynamic> json) =>
+      _$UserInfoFollowFromJson(json);
 
-  Map<String, dynamic> toJson() => _$PersonFollowToJson(this);
+  Map<String, dynamic> toJson() => _$UserInfoFollowToJson(this);
 
-  PersonFollow copyWith({
+  UserInfoFollow copyWith({
     Id? id,
     UserInfo? follower,
     UserInfo? following,
     DateTime? followedOn,
   }) {
-    return PersonFollow(
+    return UserInfoFollow(
       id: id ?? this.id,
       followedOn: followedOn ?? this.followedOn,
     );
   }
-  
 }
 
 @collection
@@ -124,7 +130,7 @@ class Favorite {
   String? itemId;
   DateTime? addedAt;
 
-  IsarLink<UserInfo> person = IsarLink<UserInfo>();
+  IsarLink<UserInfo> UserInfo = IsarLink<UserInfo>();
 
   Favorite({
     this.id,

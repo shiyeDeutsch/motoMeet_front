@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:motomeetfront/services/userService.dart';
 
+import '../models/userModel.dart';
 import '../routing/routes.dart';
 import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
@@ -93,15 +95,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () async {
+                        UserInfo? user;
+                        var token;
                         if (_formKey.currentState!.validate()) {
                           final auth = GetIt.I<AuthenticationService>();
-                          var user = await auth.login(
+                            token = await auth.login(
                               emailController.text, passwordController.text);
 
+                          if (token != null) {
+                            final userServce = GetIt.I<UserServce>(); //
+                            user = await userServce.fetchUserProfile(token);
+                          }
+
                           if (user != null) {
-                           final isarService = GetIt.I<RepositoryProvider>().userInfoRepository;
+                            final isarService = GetIt.I<RepositoryProvider>()
+                                .userInfoRepository;
+                                  user.copyWith(token: token);
                             await isarService.add(user);
-                             Navigator.of(context).pushNamed(Routes.homePage);
+                            Navigator.of(context).pushNamed(Routes.homePage);
                           }
                         }
                       },
