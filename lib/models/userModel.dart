@@ -7,7 +7,7 @@ import 'group.dart';
 import 'newRoute.dart';
 import 'notification.dart';
 
-part 'client_models.g.dart';
+part 'userModel.g.dart';
 
 @collection
 @JsonSerializable()
@@ -25,7 +25,7 @@ class UserInfo {
   String? email;
   int? countryId;
   double? totalDistance;
-  // String? token;
+  String? token; // Add token field back
   IsarLinks<UserInfoFollow> followers = IsarLinks<UserInfoFollow>();
   IsarLinks<UserInfoFollow> following = IsarLinks<UserInfoFollow>();
   IsarLinks<GroupMember> groupMemberships = IsarLinks<GroupMember>();
@@ -49,6 +49,7 @@ class UserInfo {
     this.email,
     this.countryId,
     this.totalDistance,
+    this.token,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) =>
@@ -70,6 +71,7 @@ class UserInfo {
     String? email,
     int? countryId,
     double? totalDistance,
+    String? token,
   }) {
     return UserInfo(
       id: id ?? this.id,
@@ -85,6 +87,7 @@ class UserInfo {
       email: email ?? this.email,
       countryId: countryId ?? this.countryId,
       totalDistance: totalDistance ?? this.totalDistance,
+      token: token ?? this.token,
     );
   }
 }

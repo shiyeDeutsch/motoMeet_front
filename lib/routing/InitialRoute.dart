@@ -5,7 +5,7 @@ import 'package:motomeetfront/routing/routes.dart';
 import '../services/isar/isar_user_info.dart';
 
  
-import '../services/isar/reposetory_provider.dart';
+import '../services/isar/repository_provider.dart';
 import '../widgets/bottomNavigation.dart';
  
 class RouteService{

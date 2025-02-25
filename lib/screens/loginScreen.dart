@@ -9,7 +9,7 @@ import '../models/userModel.dart';
 import '../routing/routes.dart';
 import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
-import '../services/isar/reposetory_provider.dart';
+import '../services/isar/repository_provider.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -95,24 +95,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () async {
-                        UserInfo? user;
-                        var token;
                         if (_formKey.currentState!.validate()) {
                           final auth = GetIt.I<AuthenticationService>();
-                            token = await auth.login(
+                          final token = await auth.login(
                               emailController.text, passwordController.text);
 
                           if (token != null) {
-                            final userServce = GetIt.I<UserServce>(); //
-                            user = await userServce.fetchUserProfile(token);
-                          }
+                            final userService = GetIt.I<UserServce>();
+                            UserInfo user =
+                                await userService.fetchUserProfile(token) ??
+                                    UserInfo(token: token);
 
-                          if (user != null) {
+                            // Store user profile to repository
                             final isarService = GetIt.I<RepositoryProvider>()
                                 .userInfoRepository;
-                                  user.copyWith(token: token);
                             await isarService.add(user);
+
+                            // Navigate to home page
                             Navigator.of(context).pushNamed(Routes.homePage);
+                          } else {
+                            // Handle login failure (e.g., show an error message)
+                            // Show some user feedback or alert for invalid credentials
                           }
                         }
                       },

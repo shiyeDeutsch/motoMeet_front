@@ -11,7 +11,7 @@ import '../models/enum.dart';
 import '../models/route.dart';
 import '../services/httpClient.dart';
 import '../services/loctionService.dart';
-import '../services/isar/reposetory_provider.dart';
+import 'isar/repository_provider.dart';
 import '../utilities/apiEndPoints.dart';
 
 /// Riverpod provider for the RouteService

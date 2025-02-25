@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../models/route.dart';
 import '../models/userModel.dart';
-import '../services/isar/reposetory_provider.dart';
+import '../services/isar/repository_provider.dart';
 import '../widgets/customTextFromField.dart';
 
 class PersonalProfileScreen extends ConsumerStatefulWidget {

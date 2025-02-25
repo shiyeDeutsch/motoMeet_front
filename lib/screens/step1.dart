@@ -10,7 +10,7 @@ import 'package:motomeetfront/models/userModel.dart';
 import '../routing/routes.dart';
 import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
-import '../services/isar/reposetory_provider.dart';
+import '../services/isar/repository_provider.dart';
 import '../utilities/assetLoader.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';

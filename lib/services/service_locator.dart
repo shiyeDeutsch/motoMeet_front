@@ -7,7 +7,7 @@ import '../stateProvider.dart';
 import 'MapMarkerService.dart';
 import 'authService.dart';
 import 'isar/isar_user_info.dart';
-import 'isar/reposetory_provider.dart';
+import 'isar/repository_provider.dart';
 import 'userService.dart';
 
 void setupLocator(Isar isarInstance) {
