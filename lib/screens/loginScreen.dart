@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:motomeetfront/services/locationService.dart';
 import 'package:motomeetfront/services/userService.dart';
 
 import '../models/userModel.dart';
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,34 +95,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(color: Colors.blueAccent),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          final auth = GetIt.I<AuthenticationService>();
-                          final token = await auth.login(
-                              emailController.text, passwordController.text);
-
-                          if (token != null) {
-                            final userService = GetIt.I<UserServce>();
-                            UserInfo user =
-                                await userService.fetchUserProfile(token) ??
-                                    UserInfo(token: token);
-
-                            // Store user profile to repository
-                            final isarService = GetIt.I<RepositoryProvider>()
-                                .userInfoRepository;
-                            await isarService.add(user);
-
-                            // Navigate to home page
-                            Navigator.of(context).pushNamed(Routes.homePage);
-                          } else {
-                            // Handle login failure (e.g., show an error message)
-                            // Show some user feedback or alert for invalid credentials
-                          }
-                        }
-                      },
-                      child: const Text('Log in'),
-                    ),
+                    _isLoading
+                        ? CircularProgressIndicator()
+                        : ElevatedButton(
+                            onPressed: () => _handleLogin(context),
+                            child: const Text('Log in'),
+                          ),
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pushNamed(Routes.signUp);
@@ -145,5 +125,50 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+  
+  Future<void> _handleLogin(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final auth = GetIt.I<AuthenticationService>();
+      final token = await auth.login(
+          emailController.text, passwordController.text);
+
+      if (token != null) {
+        final userService = GetIt.I<UserServce>();
+        UserInfo user = await userService.fetchUserProfile(token) ??
+            UserInfo(token: token);
+            
+        // Store user profile to repository
+        final repositoryProvider = GetIt.I<RepositoryProvider>();
+        final isarService = repositoryProvider.userInfoRepository;
+        await isarService.add(user);
+        
+        // Update location data
+        final locationService = GetIt.I<LocationService>();
+        await locationService.updateUserLocation(token);
+
+        // Navigate to home page
+        Navigator.of(context).pushReplacementNamed(Routes.homePage);
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed. Please check your credentials.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 }

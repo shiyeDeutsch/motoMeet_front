@@ -17,7 +17,7 @@ class EndPoints {
     path: 'api/auth/login',
     port: port,
   );
-    static Uri addNewRoute = Uri(
+  static Uri addNewRoute = Uri(
     scheme: scheme,
     host: host,
     path: 'api/routes',
@@ -27,6 +27,24 @@ class EndPoints {
     scheme: scheme,
     host: host,
     path: 'api/users/profile',
+    port: port,
+  );
+  static Uri geoLocation = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/users/geolocation',
+    port: port,
+  );
+  static Uri updateUserProfile = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/users/updateProfile',
+    port: port,
+  );
+  static Uri deleteUser = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/users/delete',
     port: port,
   );
 }
