@@ -104,6 +104,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 ],
                 bottom: PreferredSize(
+                  
                   preferredSize: const Size.fromHeight(60),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -268,11 +269,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  void _navigateToActivityDetail(BuildContext context, UserActivity activity) {
+  void (BuildContext context, UserActivity activity) {
     switch (activity.activityType) {
       case ActivityType.routeCompleted:
       case ActivityType.routeCreated:
-        Navigator.pushNamed(context, '/routes/detail', arguments: activity.routeId);
+        Navigator.pushNamed(conte_navigateToActivityDetailxt, '/routes/detail', arguments: activity.routeId);
         break;
       case ActivityType.eventJoined:
       case ActivityType.eventCreated:

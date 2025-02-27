@@ -59,4 +59,125 @@ class EventsService {
       'Authorization': 'Bearer yourAuthTokenHere'
     };
   }
+
+  // Get event participants
+  Future<List<UserModel>> getEventParticipants(String eventId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.events}/$eventId/participants',
+      );
+
+      return (response.data as List)
+          .map((userJson) => UserModel.fromJson(userJson))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to load event participants: $e');
+    }
+  }
+
+  // Get pending participants (for events with approval)
+  Future<List<UserModel>> getPendingParticipants(String eventId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.events}/$eventId/pending-participants',
+      );
+
+      return (response.data as List)
+          .map((userJson) => UserModel.fromJson(userJson))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to load pending participants: $e');
+    }
+  }
+
+  // Get event participant count
+  Future<int> getEventParticipantCount(String eventId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.events}/$eventId/participants/count',
+      );
+
+      return response.data as int;
+    } catch (e) {
+      throw Exception('Failed to load participant count: $e');
+    }
+  }
+
+  // Approve participant (for events with approval)
+  Future<bool> approveParticipant(String eventId, String userId) async {
+    try {
+      final response = await _httpClient.post(
+        '${ApiEndpoints.events}/$eventId/participants/$userId/approve',
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Failed to approve participant: $e');
+    }
+  }
+
+  // Reject participant (for events with approval)
+  Future<bool> rejectParticipant(String eventId, String userId) async {
+    try {
+      final response = await _httpClient.post(
+        '${ApiEndpoints.events}/$eventId/participants/$userId/reject',
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Failed to reject participant: $e');
+    }
+  }
+
+  // Remove participant
+  Future<bool> removeParticipant(String eventId, String userId) async {
+    try {
+      final response = await _httpClient.delete(
+        '${ApiEndpoints.events}/$eventId/participants/$userId',
+      );
+
+      return response.statusCode == 204;
+    } catch (e) {
+      throw Exception('Failed to remove participant: $e');
+    }
+  }
+
+  // Check if the current user is the creator of the event
+  Future<bool> isEventCreator(String eventId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.events}/$eventId/is-creator',
+      );
+
+      return response.data as bool;
+    } catch (e) {
+      throw Exception('Failed to check creator status: $e');
+    }
+  }
+
+  // Check if the current user is a participant in the event
+  Future<bool> isEventParticipant(String eventId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.events}/$eventId/is-participant',
+      );
+
+      return response.data as bool;
+    } catch (e) {
+      throw Exception('Failed to check participant status: $e');
+    }
+  }
+
+  // Get the name of the event creator
+  Future<String> getEventCreatorName(String eventId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.events}/$eventId/creator-name',
+      );
+
+      return response.data as String;
+    } catch (e) {
+      throw Exception('Failed to get creator name: $e');
+    }
+  }
 }

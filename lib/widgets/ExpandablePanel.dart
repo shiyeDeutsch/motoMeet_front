@@ -1,35 +1,59 @@
 import 'package:flutter/material.dart';
 
 class ExpandablePanel extends StatefulWidget {
-  @override
-  _ExpandablePanelState createState() => _ExpandablePanelState();
-  final List<Widget> buttons;
-  final AlignmentGeometry alignment;
-  final bool ? isOpen;
+  final String title;
+  final String? subtitle;
+  final Widget child;
+  final bool initiallyExpanded;
+  final bool showDivider;
+  final EdgeInsetsGeometry? padding;
+  final Color? backgroundColor;
+  final Widget? trailing;
 
-  ExpandablePanel({required this.buttons,required this.alignment,  this.isOpen});
+  const ExpandablePanel({
+    Key? key,
+    required this.title,
+    this.subtitle,
+    required this.child,
+    this.initiallyExpanded = false,
+    this.showDivider = true,
+    this.padding,
+    this.backgroundColor,
+    this.trailing,
+  }) : super(key: key);
+
+  @override
+  State<ExpandablePanel> createState() => _ExpandablePanelState();
 }
 
-class _ExpandablePanelState extends State<ExpandablePanel>
-    with SingleTickerProviderStateMixin {
-  bool _isExpanded = false;
+class _ExpandablePanelState extends State<ExpandablePanel> with SingleTickerProviderStateMixin {
+  late bool _isExpanded;
   late AnimationController _controller;
-  late Animation<double> _arrowAnimation;
-  late Animation<double> _panelAnimation;
+  late Animation<double> _heightFactor;
 
   @override
   void initState() {
     super.initState();
-    _isExpanded=widget.isOpen??false;
+    _isExpanded = widget.initiallyExpanded;
+    
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    _arrowAnimation = Tween<double>(begin: 0, end: 0.5).animate(_controller);
-    _panelAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _heightFactor = _controller.drive(CurveTween(curve: Curves.easeIn));
+    
+    if (_isExpanded) {
+      _controller.value = 1.0;
+    }
   }
 
-  void _togglePanel() {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggleExpanded() {
     setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
@@ -41,118 +65,74 @@ class _ExpandablePanelState extends State<ExpandablePanel>
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Stack(
-    alignment: widget.alignment,
-        //  clipBehavior: Clip.hardEdge,
+    final theme = Theme.of(context);
+    
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      color: widget.backgroundColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AnimatedContainer(
-            duration: Duration(milliseconds: 3000),
-         //   curve: Curves.fastOutSlowIn,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(30.0),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _isExpanded ? Row(children: widget.buttons) : Container(),
-                IconButton(
-                  icon: RotationTransition(
-                    turns: _arrowAnimation,
-                    child: Icon(Icons.keyboard_arrow_left, color: Colors.black),
+          InkWell(
+            onTap: _toggleExpanded,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (widget.subtitle != null) ...[
+                          const SizedBox(height: 4.0),
+                          Text(
+                            widget.subtitle!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  onPressed: _togglePanel,
-                ),
-              ],
+                  widget.trailing ?? RotationTransition(
+                    turns: Tween(begin: 0.0, end: 0.5).animate(_controller),
+                    child: const Icon(Icons.keyboard_arrow_down),
+                  ),
+                ],
+              ),
             ),
-          )
-        ]);
+          ),
+          if (widget.showDivider && _isExpanded)
+            const Divider(height: 1.0),
+          AnimatedBuilder(
+            animation: _controller.view,
+            builder: (context, child) {
+              return ClipRect(
+                child: Align(
+                  heightFactor: _heightFactor.value,
+                  child: child,
+                ),
+              );
+            },
+            child: Offstage(
+              offstage: !_isExpanded,
+              child: Padding(
+                padding: widget.padding ?? const EdgeInsets.all(16.0),
+                child: widget.child,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
-
-
-
-// import 'package:flutter/material.dart';
-
-// class ExpandablePanel extends StatefulWidget {
-//   final List<Widget> buttons;
-
-//   ExpandablePanel({required this.buttons});
-
-//   @override
-//   _ExpandablePanelState createState() => _ExpandablePanelState();
-// }
-
-// class _ExpandablePanelState extends State<ExpandablePanel>
-//     with SingleTickerProviderStateMixin {
-//   bool _isExpanded = false;
-//   late AnimationController _controller;
-//   late Animation<double> _arrowAnimation;
-//   late Animation<double> _panelAnimation;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller = AnimationController(
-//       duration: const Duration(milliseconds: 300),
-//       vsync: this,
-//     );
-//     _arrowAnimation = Tween<double>(begin: 0, end: 0.5).animate(_controller);
-//     _panelAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-//   }
-
-//   void _togglePanel() {
-//     setState(() {
-//       _isExpanded = !_isExpanded;
-//       if (_isExpanded) {
-//         _controller.forward();
-//       } else {
-//         _controller.reverse();
-//       }
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _controller.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SizeTransition(
-//       sizeFactor: _panelAnimation,
-//       axisAlignment: -1.0,
-//       child: Container(
-//         decoration: BoxDecoration(
-//           color: Colors.white,
-//           border: Border.all(color: Colors.black),
-//           borderRadius: BorderRadius.circular(12.0),
-//         ),
-//         child: Row(
-//       mainAxisSize: MainAxisSize.min,
-//           children: [
-//             _isExpanded
-//                 ? Row(children: widget.buttons)
-//                 : Container(),
-//             IconButton(
-//               icon: RotationTransition(
-//                 turns: _arrowAnimation,
-//                 child: Icon(Icons.arrow_left, color: Colors.black),
-//               ),
-//               onPressed: _togglePanel,
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }

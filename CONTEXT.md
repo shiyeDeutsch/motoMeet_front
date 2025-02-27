@@ -36,46 +36,81 @@ UI Components <-> Providers <-> Services <-> Local Database (Isar) / Remote API
 ## Project Structure
 
 ```
-lib/
-├── common/                 # Shared UI components and utilities
-│   ├── buttons/            # Reusable button components
-│   ├── theme/              # App theme and styling
-│   └── widgets/            # Common widgets used across the app
-├── models/                 # Data models
-│   ├── eventModel.dart     # Event-related data models
-│   ├── groupModel.dart     # Group-related data models
-│   ├── routeModel.dart     # Route-related data models
-│   └── userModel.dart      # User-related data models
-├── routing/                # Navigation system
-│   ├── InitialRoute.dart   # Initial route determination
-│   ├── routeGenerator.dart # Route generation logic
-│   └── routes.dart         # Route definitions
-├── screens/                # Application screens
-│   ├── auth/               # Authentication screens
-│   ├── discover/           # Discovery and search screens
-│   ├── events/             # Event-related screens
-│   ├── groups/             # Group-related screens
-│   ├── maps/               # Map and navigation screens
-│   ├── profile/            # User profile screens
-│   └── routes/             # Route-related screens
-├── services/               # Business logic and data services
-│   ├── authService.dart    # Authentication service
-│   ├── eventService.dart   # Event management service
-│   ├── groupService.dart   # Group management service
-│   ├── httpClient.dart     # API communication
-│   ├── routeService.dart   # Route management service
-│   ├── userService.dart    # User data service
-│   ├── service_locator.dart# Dependency injection
-│   └── isar/               # Local database operations
-│       ├── isar_service.dart   # Isar database service
-│       └── isar_user_info.dart # User data persistence
-├── utilities/              # Helper functions and constants
-│   ├── apiEndPoints.dart   # API endpoints
-│   ├── assetLoader.dart    # Asset loading utilities
-│   ├── constants.dart      # App constants
-│   └── helpers.dart        # Utility functions
-├── stateProvider.dart      # Global state management
-└── main.dart               # Application entry point
+.
+├── main.dart
+├── models
+│   ├── activity.dart
+│   ├── enum.dart
+│   ├── event.dart
+│   ├── geoLocationInfo.dart
+│   ├── group.dart
+│   ├── mapMarker.dart
+│   ├── newRoute.dart
+│   ├── notification.dart
+│   ├── route.dart
+│   ├── route.g.dart
+│   ├── subscriber.dart
+│   ├── tempmodel
+│   ├── userModel.dart
+│   └── userModel.g.dart
+├── providers
+│   ├── activity_provider.dart
+│   ├── events_provider.dart
+│   ├── home_screen_provider.dart
+│   └── routes_provider.dart
+├── routing
+│   ├── InitialRoute.dart
+│   ├── routeGenerator.dart
+│   └── routes.dart
+├── screens
+│   ├── homeScreen.dart
+│   ├── loginScreen.dart
+│   ├── mapScreen.dart
+│   ├── routeDetailsScreen.dart
+│   ├── saveRouteScreen.dart
+│   ├── singupScreen.dart
+│   ├── step1.dart
+│   └── userProfileScreen.dart
+├── services
+│   ├── MapMarkerService.dart
+│   ├── activity_service.dart
+│   ├── authService.dart
+│   ├── bottomSheetServices.dart
+│   ├── distanceFormatter.dart
+│   ├── events_service.dart
+│   ├── httpClient.dart
+│   ├── isar
+│   │   ├── isar_geo_location.dart
+│   │   ├── isar_initializer.dart
+│   │   ├── isar_reposetory.dart
+│   │   ├── isar_repository.dart
+│   │   ├── isar_user_info.dart
+│   │   ├── reposetory_provider.dart
+│   │   └── repository_provider.dart
+│   ├── loctionService.dart
+│   ├── repository
+│   ├── routeService.dart
+│   ├── service_locator.dart
+│   └── userService.dart
+├── utilities
+│   ├── apiEndPoints.dart
+│   ├── appIcons.dart
+│   ├── assetLoader.dart
+│   ├── duration_formatter.dart
+│   └── isarConverters.dart
+└── widgets
+    ├── ExpandablePanel.dart
+    ├── bottomNavigation.dart
+    ├── customTextFromField.dart
+    ├── dialogs
+    │   ├── chooseRouteTypeDialog.dart
+    │   └── stopRoutedialog.dart
+    ├── dropdown.dart
+    ├── expandableFAB.dart
+    ├── mapButtons.dart
+    ├── selecetMapProvider.dart
+    └── wayPointBottomSheet.dart
+
 ```
 
 ## Key Data Models

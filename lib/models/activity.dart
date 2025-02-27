@@ -1,6 +1,8 @@
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:motomeetfront/models/userModel.dart';
+import 'package:motomeetfront/models/event.dart';
+import 'package:motomeetfront/models/route.dart';
 
 part 'activity.g.dart';
 
@@ -87,3 +89,5 @@ class UserActivity {
     return '$userName ${activityTypeString}';
   }
 }
+
+ 

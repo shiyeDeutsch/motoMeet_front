@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/activity.dart';
+import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/services/httpClient.dart';
 import 'package:motomeetfront/services/isar/isar_activity.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
@@ -9,7 +10,11 @@ import 'package:motomeetfront/utilities/apiEndPoints.dart';
 
 class ActivityService {
   final _repositoryProvider = GetIt.I<RepositoryProvider>();
-  
+  final HttpClient _httpClient;
+
+  ActivityService({HttpClient? httpClient})
+      : _httpClient = httpClient ?? HttpClient();
+
   ActivityRepository get _activityRepository =>
     _repositoryProvider.activityRepository;
 
@@ -67,5 +72,94 @@ class ActivityService {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer yourAuthTokenHere'
     };
+  }
+
+  // Get all activity types
+  Future<List<ActivityType>> getActivityTypes() async {
+    try {
+      final response = await _httpClient.get(
+        ApiEndpoints.activityTypes,
+      );
+
+      return (response.data as List)
+          .map((activityJson) => ActivityType.fromJson(activityJson))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to load activity types: $e');
+    }
+  }
+
+  // Get activity type by ID
+  Future<ActivityType> getActivityTypeById(String activityTypeId) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.activityTypes}/$activityTypeId',
+      );
+
+      return ActivityType.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to load activity type: $e');
+    }
+  }
+
+  // Get popular activity types
+  Future<List<ActivityType>> getPopularActivityTypes({int limit = 5}) async {
+    try {
+      final response = await _httpClient.get(
+        '${ApiEndpoints.activityTypes}/popular',
+        queryParameters: {'limit': limit.toString()},
+      );
+
+      return (response.data as List)
+          .map((activityJson) => ActivityType.fromJson(activityJson))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to load popular activity types: $e');
+    }
+  }
+
+  // Create a custom activity type (for admin users)
+  Future<bool> createActivityType(ActivityType activityType) async {
+    try {
+      final response = await _httpClient.post(
+        ApiEndpoints.activityTypes,
+        data: activityType.toJson(),
+      );
+
+      return response.statusCode == 201;
+    } catch (e) {
+      throw Exception('Failed to create activity type: $e');
+    }
+  }
+
+  // Update activity type (for admin users)
+  Future<bool> updateActivityType(ActivityType activityType) async {
+    if (activityType.id == null) {
+      throw Exception('Activity type ID is required for updating');
+    }
+
+    try {
+      final response = await _httpClient.put(
+        '${ApiEndpoints.activityTypes}/${activityType.id}',
+        data: activityType.toJson(),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Failed to update activity type: $e');
+    }
+  }
+
+  // Delete activity type (for admin users)
+  Future<bool> deleteActivityType(String activityTypeId) async {
+    try {
+      final response = await _httpClient.delete(
+        '${ApiEndpoints.activityTypes}/$activityTypeId',
+      );
+
+      return response.statusCode == 204;
+    } catch (e) {
+      throw Exception('Failed to delete activity type: $e');
+    }
   }
 }
