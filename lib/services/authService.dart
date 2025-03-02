@@ -6,14 +6,14 @@ import 'package:motomeetfront/services/httpClient.dart';
 import '../models/userModel.dart';
 import '../utilities/apiEndPoints.dart';
 
-class AuthenticationService {
-  AuthenticationService();
+class AuthService {
+  AuthService();
 
   Future<UserInfo?> register(UserInfo user) async {
     try {
       print(user.toJson());
       final response = await HttpClient.post(
-        uri: EndPoints.register,
+        uri: ApiEndpoints.register,
         body: jsonEncode(user.toJson()),
         //  headers: {'Content-Type': 'application/json'},
       );
@@ -46,7 +46,7 @@ class AuthenticationService {
   Future<String?> login(String email, String password) async {
     try {
       final response = await HttpClient.post(
-     uri: EndPoints.login,
+     uri: ApiEndpoints.login,
         body: jsonEncode({'Email': email, 'Password': password}),
         // headers: {'Content-Type': 'application/json'},
       );

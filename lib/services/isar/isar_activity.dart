@@ -2,6 +2,8 @@ import 'package:isar/isar.dart';
 import 'package:motomeetfront/models/activity.dart';
 import 'package:motomeetfront/services/isar/isar_initializer.dart';
 
+part 'isar_activity.g.dart';
+
 class ActivityRepository {
   final Isar _isar;
 

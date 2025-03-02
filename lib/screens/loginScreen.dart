@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:motomeetfront/services/locationService.dart';
+ 
 import 'package:motomeetfront/services/userService.dart';
 
 import '../models/userModel.dart';
@@ -11,6 +11,7 @@ import '../routing/routes.dart';
 import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
 import '../services/isar/repository_provider.dart';
+import '../services/loctionService.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -135,12 +136,12 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     
     try {
-      final auth = GetIt.I<AuthenticationService>();
+      final auth = GetIt.I<AuthService>();
       final token = await auth.login(
           emailController.text, passwordController.text);
 
       if (token != null) {
-        final userService = GetIt.I<UserServce>();
+        final userService = GetIt.I<UserService>();
         UserInfo user = await userService.fetchUserProfile(token) ??
             UserInfo(token: token);
             
@@ -150,8 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
         await isarService.add(user);
         
         // Update location data
-        final locationService = GetIt.I<LocationService>();
-        await locationService.updateUserLocation(token);
+        final location  = await LocationService.getCurrentLocation; 
+        await userService.sendGeoLocation(token, location);
+       
 
         // Navigate to home page
         Navigator.of(context).pushReplacementNamed(Routes.homePage);

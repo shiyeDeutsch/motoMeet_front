@@ -35,81 +35,104 @@ UI Components <-> Providers <-> Services <-> Local Database (Isar) / Remote API
 
 ## Project Structure
 
+lib/
 ```
-.
-├── main.dart
-├── models
-│   ├── activity.dart
-│   ├── enum.dart
-│   ├── event.dart
-│   ├── geoLocationInfo.dart
-│   ├── group.dart
-│   ├── mapMarker.dart
-│   ├── newRoute.dart
-│   ├── notification.dart
-│   ├── route.dart
-│   ├── route.g.dart
-│   ├── subscriber.dart
-│   ├── tempmodel
-│   ├── userModel.dart
-│   └── userModel.g.dart
-├── providers
-│   ├── activity_provider.dart
-│   ├── events_provider.dart
-│   ├── home_screen_provider.dart
-│   └── routes_provider.dart
-├── routing
-│   ├── InitialRoute.dart
-│   ├── routeGenerator.dart
-│   └── routes.dart
-├── screens
-│   ├── homeScreen.dart
-│   ├── loginScreen.dart
-│   ├── mapScreen.dart
-│   ├── routeDetailsScreen.dart
-│   ├── saveRouteScreen.dart
-│   ├── singupScreen.dart
-│   ├── step1.dart
-│   └── userProfileScreen.dart
-├── services
-│   ├── MapMarkerService.dart
-│   ├── activity_service.dart
-│   ├── authService.dart
-│   ├── bottomSheetServices.dart
-│   ├── distanceFormatter.dart
-│   ├── events_service.dart
-│   ├── httpClient.dart
-│   ├── isar
-│   │   ├── isar_geo_location.dart
-│   │   ├── isar_initializer.dart
-│   │   ├── isar_reposetory.dart
-│   │   ├── isar_repository.dart
-│   │   ├── isar_user_info.dart
-│   │   ├── reposetory_provider.dart
-│   │   └── repository_provider.dart
-│   ├── loctionService.dart
-│   ├── repository
-│   ├── routeService.dart
-│   ├── service_locator.dart
-│   └── userService.dart
-├── utilities
-│   ├── apiEndPoints.dart
-│   ├── appIcons.dart
-│   ├── assetLoader.dart
-│   ├── duration_formatter.dart
-│   └── isarConverters.dart
-└── widgets
-    ├── ExpandablePanel.dart
-    ├── bottomNavigation.dart
-    ├── customTextFromField.dart
-    ├── dialogs
-    │   ├── chooseRouteTypeDialog.dart
-    │   └── stopRoutedialog.dart
-    ├── dropdown.dart
-    ├── expandableFAB.dart
-    ├── mapButtons.dart
-    ├── selecetMapProvider.dart
-    └── wayPointBottomSheet.dart
+│   main.dart
+│   
+├───models
+│       activity.dart
+│       enum.dart
+│       event.dart
+│       geoLocationInfo.dart
+│       group.dart
+│       mapMarker.dart
+│       newRoute.dart
+│       notification.dart
+│       route.dart
+│       route.g.dart
+│       subscriber.dart
+│       tempmodel
+│       userModel.dart
+│       userModel.g.dart
+│       
+├───providers
+│       activity_provider.dart
+│       create_event_provider.dart
+│       events_provider.dart
+│       event_details_provider.dart
+│       event_participants_provider.dart
+│       home_screen_provider.dart
+│       routes_provider.dart
+│       
+├───routing
+│       InitialRoute.dart
+│       routeGenerator.dart
+│       routes.dart
+│       
+├───screens
+│       create_event_screen.dart
+│       eventDeailesScreen.dart
+│       event_details_screen.dart
+│       homeScreen.dart
+│       loginScreen.dart
+│       mapScreen.dart
+│       routeDetailsScreen.dart
+│       saveRouteScreen.dart
+│       singupScreen.dart
+│       step1.dart
+│       userProfileScreen.dart
+│       
+├───services
+│   │   activity_service.dart
+│   │   authService.dart
+│   │   bottomSheetServices.dart
+│   │   distanceFormatter.dart
+│   │   events_service.dart
+│   │   httpClient.dart
+│   │   loctionService.dart
+│   │   MapMarkerService.dart
+│   │   routeService.dart
+│   │   service_locator.dart
+│   │   userService.dart
+│   │   
+│   └───isar
+│           isar_activity.dart
+│           isar_geo_location.dart
+│           isar_initializer.dart
+│           isar_reposetory.dart
+│           isar_repository.dart
+│           isar_user_info.dart
+│           reposetory_provider.dart
+│           repository_provider.dart
+│           
+├───utilities
+│       apiEndPoints.dart
+│       appIcons.dart
+│       assetLoader.dart
+│       duration_formatter.dart
+│       isarConverters.dart
+│       
+└───widgets
+    │   bottomNavigation.dart
+    │   customTextFromField.dart
+    │   dropdown.dart
+    │   event_card.dart
+    │   event_item_form.dart
+    │   event_participant_list.dart
+    │   event_stages_list.dart
+    │   event_stage_form.dart
+    │   expandableFAB.dart
+    │   ExpandablePanel.dart
+    │   loading_indicator.dart
+    │   mapButtons.dart
+    │   route_card.dart
+    │   selecetMapProvider.dart
+    │   wayPointBottomSheet.dart
+    │   
+    └───dialogs
+            chooseRouteTypeDialog.dart
+            confirmation_dialog.dart
+            stopRoutedialog.dart
 
 ```
 

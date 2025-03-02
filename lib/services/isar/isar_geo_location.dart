@@ -2,33 +2,45 @@ import 'package:isar/isar.dart';
 import 'package:motomeetfront/models/geoLocationInfo.dart';
 import 'package:motomeetfront/services/isar/isar_repository.dart';
 
-class GeoLocationRepository extends BaseRepository<GeoLocationInfo> {
-  GeoLocationRepository(Isar isar) : super(isar, isar.geoLocationInfos);
+/// Repository for handling GeoLocationInfo local storage operations
+class IsarGeoLocationRepository extends BaseRepository<GeoLocationInfo> {
+  IsarGeoLocationRepository(Isar isar) : super(isar, isar.GeoLocationInfo);
 
-  Future<GeoLocationInfo?> getLatestLocation() async {
-    final locations = await collection
-        .where()
-        .sortByLastUpdatedDesc()
-        .findAll();
-    
-    return locations.isNotEmpty ? locations.first : null;
-  }
+  // @override
+  // Future<void> add(GeoLocationInfo item) async {
+  //   await write((isar) async {
+  //     await isar.geoLocationInfos.put(item);
+  //   });
+  // }
+
+  // @override
+  // Future<void> delete(GeoLocationInfo item) async {
+  //   await write((isar) async {
+  //     await isar.geoLocationInfos.delete(item.id ?? 0);
+  //   });
+  // }
+
+  // @override
+  // Future<List<GeoLocationInfo>> getAll() async {
+  //   return await read((isar) async {
+  //     return await isar.geoLocationInfos.where().findAll();
+  //   });
+  // }
+
+  // @override
+  // Future<GeoLocationInfo?> getById(int id) async {
+  //   return await read((isar) async {
+  //     return await isar.geoLocationInfos.get(id);
+  //   });
+  // }
   
-  Future<void> updateLocationInfo(GeoLocationInfo locationInfo) async {
-    locationInfo.lastUpdated = DateTime.now();
-    await add(locationInfo);
-  }
-  
-  Future<void> clearOldLocations({int keepCount = 5}) async {
-    final allLocations = await collection
-        .where()
-        .sortByLastUpdatedDesc()
-        .findAll();
-    
-    if (allLocations.length > keepCount) {
-      for (var i = keepCount; i < allLocations.length; i++) {
-        await delete(allLocations[i].id!);
-      }
-    }
-  }
+  // /// Get the latest geo location info
+  // Future<GeoLocationInfo?> getLatest() async {
+  //   return await read((isar) async {
+  //     return await isar.geoLocationInfos
+  //         .where()
+  //         .sortByTimestampDesc()
+  //         .findFirst();
+  //   });
+  // }
 }

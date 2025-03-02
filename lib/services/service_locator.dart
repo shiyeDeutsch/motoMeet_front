@@ -18,23 +18,22 @@ import 'isar/isar_user_info.dart';
 import 'isar/repository_provider.dart';
 import 'userService.dart';
 
-final getIt = GetIt.instance;
 
-void setupServiceLocator() {
-  // Core services
-  getIt.registerSingleton<HttpClient>(HttpClient());
-  getIt.registerSingletonAsync<IsarInitializer>(() async {
-    final initializer = IsarInitializer();
-    await initializer.initialize();
-    return initializer;
-  });
+void setupLocator( )async  {
+ 
+  GetIt.I.registerLazySingleton<RouteService>(() => RouteService());
+  GetIt.I.registerLazySingleton<AuthService>(() => AuthService());
+   GetIt.I.registerLazySingleton<EventsService>(() => EventsService());
+   GetIt.I.registerLazySingleton<ActivityService>(() => ActivityService());
+   GetIt.I.registerLazySingleton<MapMarkerService>(() => MapMarkerService());
+  GetIt.I.registerLazySingleton<UserService>(() => UserService());
 
-  // API services
-  getIt.registerSingleton<AuthService>(AuthService());
-  getIt.registerSingleton<UserService>(UserService());
-  getIt.registerSingleton<RouteService>(RouteService());
-  getIt.registerSingleton<LocationService>(LocationService());
-  getIt.registerSingleton<MapMarkerService>(MapMarkerService());
-  getIt.registerSingleton<EventsService>(EventsService());
-  getIt.registerSingleton<ActivityService>(ActivityService());
+  // Register the IsarInitializer
+  final IsarInitializer isarInitializer = IsarInitializer();
+  await isarInitializer.initialize();
+  final Isar isarInstance = isarInitializer.getInstance();
+  GetIt.I.registerLazySingleton<RepositoryProvider>(() => RepositoryProvider(isarInstance));
+
+
+ 
 }

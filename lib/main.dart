@@ -30,13 +30,9 @@ void main() async {
     SecurityContext context = SecurityContext.defaultContext;
     context.setTrustedCertificatesBytes(data.buffer.asUint8List());
   }
-// Get the appropriate directory for storing the database
-    final dir = await getApplicationDocumentsDirectory();
-    final isar = await Isar.open([UserInfoSchema], directory: dir.path);
-
-  // Create a ProviderContainer for your app
-  setupLocator(
-    isar,
+ 
+   setupLocator(
+     
   );
 
   // Determine the initial route

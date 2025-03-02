@@ -1,22 +1,24 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/geoLocationInfo.dart';
 import 'package:motomeetfront/models/newRoute.dart';
 import 'package:motomeetfront/services/httpClient.dart';
+import 'package:motomeetfront/services/loctionService.dart';
+import 'package:motomeetfront/services/isar/isar_geo_location.dart';
+import 'package:motomeetfront/services/isar/repository_provider.dart';
 
 import '../models/userModel.dart';
 import '../utilities/apiEndPoints.dart';
 
-class UserServce
-{
-    Future<UserInfo?> fetchUserProfile(String token) async {
+class UserService {
+  Future<UserInfo?> fetchUserProfile(String token) async {
     try {
       final response = await HttpClient.get(
-           EndPoints.userProfile , // Replace with your actual endpoint
-      headers: {
+        ApiEndpoints.userProfile, // Replace with your actual endpoint
+        headers: {
           'Authorization': 'Bearer $token',
-   
         },
       );
 
@@ -36,27 +38,30 @@ class UserServce
       return null;
     }
   }
-  
-  Future<GeoLocationInfo?> sendGeoLocation(String token, GeoPoint geoPoint) async {
+
+  Future<GeoLocationInfo?> sendGeoLocation() async {
     try {
+      var location = await LocationService.getCurrentLocation();
       final payload = {
-        'latitude': geoPoint.latitude,
-        'longitude': geoPoint.longitude,
-        'altitude': geoPoint.altitude
+        'latitude': location?.latitude,
+        'longitude': location?.longitude,
       };
-      
+
       final response = await HttpClient.post(
-        uri: EndPoints.geoLocation,
+        uri: ApiEndpoints.geoLocation,
         body: jsonEncode(payload),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return GeoLocationInfo.fromJson(data);
+        final geoLocationInfo = GeoLocationInfo.fromJson(data);
+        
+        // Store the geo location info to the local database
+        final repositoryProvider = GetIt.I<RepositoryProvider>();
+        final geoLocationRepository = repositoryProvider.geoLocationRepository;
+        await geoLocationRepository.add(geoLocationInfo);
+        
+        return geoLocationInfo;
       } else {
         if (kDebugMode) {
           print('Failed to send geo location: ${response.statusCode}');

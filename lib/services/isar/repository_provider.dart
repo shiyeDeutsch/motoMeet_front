@@ -1,36 +1,23 @@
 import 'package:isar/isar.dart';
+import 'package:motomeetfront/services/isar/isar_activity.dart';
 import 'package:motomeetfront/services/isar/isar_geo_location.dart';
 import 'package:motomeetfront/services/isar/isar_user_info.dart';
 
+/// Provider for all Isar repositories
 class RepositoryProvider {
-  final Isar isar;
+  final Isar _isar;
+  
+  late final IsarUserInfoRepository _userInfoRepository;
+  late final IsarActivityRepository _activityRepository;
+  late final IsarGeoLocationRepository _geoLocationRepository;
 
-  UserInfoRepository? _userInfoRepository;
-  GeoLocationRepository? _geoLocationRepository;
-
-  RepositoryProvider(this.isar);
-
-  UserInfoRepository get userInfoRepository {
-    _userInfoRepository ??= UserInfoRepository(isar);
-    return _userInfoRepository!;
+  RepositoryProvider(this._isar) {
+    _userInfoRepository = IsarUserInfoRepository(_isar);
+    _activityRepository = IsarActivityRepository(_isar);
+    _geoLocationRepository = IsarGeoLocationRepository(_isar);
   }
 
-  GeoLocationRepository get geoLocationRepository {
-    _geoLocationRepository ??= GeoLocationRepository(isar);
-    return _geoLocationRepository!;
-  }
-
-  // Add other repositories similarly
-
-  // Optionally, you can add a method to clear or reset repositories if needed
-  void clearRepositories() {
-    _userInfoRepository = null;
-    _geoLocationRepository = null;
-    // Reset other repositories
-  }
-
-  Future<void> deleteAllRposetories() async {
-    await _userInfoRepository?.deleteAll();
-    await _geoLocationRepository?.deleteAll();
-  }
+  IsarUserInfoRepository get userInfoRepository => _userInfoRepository;
+  IsarActivityRepository get activityRepository => _activityRepository;
+  IsarGeoLocationRepository get geoLocationRepository => _geoLocationRepository;
 }
