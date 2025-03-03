@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:motomeetfront/common/widgets/activity_feed_item.dart';
+// import 'package:motomeetfront/common/widgets/activity_feed_item.dart';
 import 'package:motomeetfront/common/widgets/event_card.dart';
-import 'package:motomeetfront/common/widgets/loading_indicator.dart';
+// import 'package:motomeetfront/common/widgets/loading_indicator.dart';
 import 'package:motomeetfront/common/widgets/route_card.dart';
-import 'package:motomeetfront/common/widgets/search_bar.dart';
+// import 'package:motomeetfront/common/widgets/search_bar.dart';
 import 'package:motomeetfront/models/activity.dart';
 import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/models/newRoute.dart';
@@ -14,7 +14,7 @@ import 'package:motomeetfront/providers/events_provider.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
 import 'package:motomeetfront/providers/routes_provider.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
-import 'package:motomeetfront/common/theme/colors.dart';
+// import 'package:motomeetfront/common/theme/colors.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -37,8 +37,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     // Add scroll listener for pagination
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= 
-          _scrollController.position.maxScrollExtent - 200 &&
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
           !_isRefreshing) {
         _loadMoreActivities();
       }
@@ -68,7 +68,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final activities = ref.watch(activityProvider);
     final upcomingEvents = ref.watch(upcomingEventsProvider);
     final recommendedRoutes = ref.watch(recommendedRoutesProvider);
-    
+
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -85,29 +85,30 @@ class _HomePageState extends ConsumerState<HomePage> {
                 title: const Text(
                   'MotoMeet',
                   style: TextStyle(
-                    color: AppColors.primaryDark,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: AppColors.primaryDark),
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: Colors.black),
                     onPressed: () {
                       Navigator.pushNamed(context, '/notifications');
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.person_outline, color: AppColors.primaryDark),
+                    icon: const Icon(Icons.person_outline, color: Colors.black),
                     onPressed: () {
                       Navigator.pushNamed(context, '/profile');
                     },
                   ),
                 ],
                 bottom: PreferredSize(
-                  
                   preferredSize: const Size.fromHeight(60),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
                     child: HomeSearchBar(
                       onTap: () {
                         Navigator.pushNamed(context, '/search');
@@ -125,7 +126,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          const Icon(Icons.error_outline,
+                              size: 48, color: Colors.red),
                           const SizedBox(height: 16),
                           Text(
                             'Something went wrong',
@@ -133,7 +135,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                           const SizedBox(height: 8),
                           ElevatedButton(
-                            onPressed: () => ref.read(homeScreenProvider.notifier).refreshAll(),
+                            onPressed: () => ref
+                                .read(homeScreenProvider.notifier)
+                                .refreshAll(),
                             child: const Text('Retry'),
                           ),
                         ],
@@ -181,9 +185,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                           children: [
                             Text(
                               'Recent Activity',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             TextButton(
                               onPressed: () {
@@ -206,7 +213,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       return homeState.isLoadingMore
                           ? const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(child: CustomLoadingIndicator(size: 30)),
+                              child: Center(
+                                  child: CustomLoadingIndicator(size: 30)),
                             )
                           : const SizedBox.shrink();
                     }
@@ -226,14 +234,17 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
 
               // Empty state
-              if (!homeState.isInitialLoading && activities.isEmpty && !homeState.hasError)
+              if (!homeState.isInitialLoading &&
+                  activities.isEmpty &&
+                  !homeState.hasError)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(32.0),
                     child: Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.auto_awesome, size: 48, color: Colors.amber),
+                          const Icon(Icons.auto_awesome,
+                              size: 48, color: Colors.amber),
                           const SizedBox(height: 16),
                           Text(
                             'No activity yet',
@@ -273,15 +284,18 @@ class _HomePageState extends ConsumerState<HomePage> {
     switch (activity.activityType) {
       case ActivityType.routeCompleted:
       case ActivityType.routeCreated:
-        Navigator.pushNamed(context, '/routes/detail', arguments: activity.routeId);
+        Navigator.pushNamed(context, '/routes/detail',
+            arguments: activity.routeId);
         break;
       case ActivityType.eventJoined:
       case ActivityType.eventCreated:
-        Navigator.pushNamed(context, '/events/detail', arguments: activity.eventId);
+        Navigator.pushNamed(context, '/events/detail',
+            arguments: activity.eventId);
         break;
       case ActivityType.groupJoined:
       case ActivityType.groupCreated:
-        Navigator.pushNamed(context, '/groups/detail', arguments: activity.groupId);
+        Navigator.pushNamed(context, '/groups/detail',
+            arguments: activity.groupId);
         break;
       default:
         // Handle other activity types or show activity details
@@ -305,8 +319,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               Text(
                 'Recommended Routes',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               TextButton(
                 onPressed: () {
@@ -330,7 +344,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   route: routes[index],
                   onTap: () {
                     Navigator.pushNamed(
-                      context, 
+                      context,
                       '/routes/detail',
                       arguments: routes[index].isarId,
                     );
@@ -360,8 +374,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               Text(
                 'Upcoming Events',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               TextButton(
                 onPressed: () {
@@ -385,7 +399,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   event: events[index],
                   onTap: () {
                     Navigator.pushNamed(
-                      context, 
+                      context,
                       '/events/detail',
                       arguments: events[index].id,
                     );
@@ -396,6 +410,57 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class HomeSearchBar extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const HomeSearchBar({Key? key, required this.onTap}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(25),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            Icon(Icons.search, color: Colors.grey[600]),
+            const SizedBox(width: 10),
+            Text(
+              'Search...',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomLoadingIndicator extends StatelessWidget {
+  final double size;
+
+  const CustomLoadingIndicator({Key? key, this.size = 50}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CircularProgressIndicator(
+          strokeWidth: 4.0,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+        ),
+      ),
     );
   }
 }
