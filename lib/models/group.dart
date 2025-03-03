@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
-
+import 'userModel.dart';
+import 'event.dart';
+import 'notification.dart';  // for Reaction class
  
-@collection
-@JsonSerializable()
+part 'group.g.dart';
+
 @collection
 @JsonSerializable()
 class Group {
@@ -15,11 +17,19 @@ class Group {
   bool? isPublic;
   bool? isApprovalRequired;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> creator = IsarLink<UserInfo>();
 
+  @JsonKey(ignore: true)
   IsarLinks<GroupMember> members = IsarLinks<GroupMember>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<GroupPost> posts = IsarLinks<GroupPost>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Event> events = IsarLinks<Event>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<GroupActivity> groupActivities = IsarLinks<GroupActivity>();
 
   Group({
@@ -63,7 +73,10 @@ class GroupMember {
   bool? isApproved;
   DateTime? joinedOn;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> person = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<Group> group = IsarLink<Group>();
 
   GroupMember({
@@ -100,12 +113,11 @@ class GroupMember {
 @JsonSerializable()
 class GroupActivity {
   Id? id;
-  @Embedded()
-  ActivityType? activityType;
+  String? activityTypeName;  // Using a simple String instead of embedded type
 
   GroupActivity({
     this.id,
-    this.activityType,
+    this.activityTypeName,
   });
 
   factory GroupActivity.fromJson(Map<String, dynamic> json) =>
@@ -115,11 +127,11 @@ class GroupActivity {
 
   GroupActivity copyWith({
     Id? id,
-    ActivityType? activityType,
+    String? activityTypeName,
   }) {
     return GroupActivity(
       id: id ?? this.id,
-      activityType: activityType ?? this.activityType,
+      activityTypeName: activityTypeName ?? this.activityTypeName,
     );
   }
 }
@@ -131,11 +143,19 @@ class GroupPost {
   String? content;
   DateTime? createdOn;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> author = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<Group> group = IsarLink<Group>();
 
+  @JsonKey(ignore: true)
   IsarLinks<GroupPostAttachment> attachments = IsarLinks<GroupPostAttachment>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<GroupPostComment> comments = IsarLinks<GroupPostComment>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Reaction> reactions = IsarLinks<Reaction>();
 
   GroupPost({
@@ -169,7 +189,10 @@ class GroupPostComment {
   String? content;
   DateTime? createdOn;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> author = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<GroupPost> groupPost = IsarLink<GroupPost>();
 
   GroupPostComment({
@@ -204,6 +227,7 @@ class GroupPostAttachment {
   String? attachmentType;
   DateTime? uploadedOn;
 
+  @JsonKey(ignore: true)
   IsarLink<GroupPost> groupPost = IsarLink<GroupPost>();
 
   GroupPostAttachment({

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+part 'newRoute.g.dart';
+
 @collection
 @JsonSerializable()
 class Route {
@@ -24,10 +26,19 @@ class Route {
   String? country;
   String? region;
 
+  @JsonKey(ignore: true)
   IsarLinks<RoutePoint> routePoints = IsarLinks<RoutePoint>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Review> reviews = IsarLinks<Review>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Tag> tags = IsarLinks<Tag>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<UserRoute> userRoutes = IsarLinks<UserRoute>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<PointOfInterest> pointsOfInterest = IsarLinks<PointOfInterest>();
 
   Route({
@@ -254,6 +265,7 @@ class UserRoute {
   double? distance;
   double? elevationGain;
 
+  @JsonKey(ignore: true)
   IsarLinks<UserRoutePoint> userRoutePoints = IsarLinks<UserRoutePoint>();
 
   UserRoute({

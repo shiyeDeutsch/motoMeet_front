@@ -38,6 +38,7 @@ class UserActivity {
   // Whether this activity has been read/viewed by the user
   final bool isRead;
   
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> user = IsarLink<UserInfo>();
 
   UserActivity({
@@ -90,4 +91,4 @@ class UserActivity {
   }
 }
 
- 
+

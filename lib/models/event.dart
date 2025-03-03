@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:motomeetfront/models/newRoute.dart'; // Import for GeoPoint
+import 'package:motomeetfront/models/userModel.dart'; // Import for UserInfo
+import 'package:motomeetfront/models/group.dart'; // Import for Group
 
-part 'client_models.g.dart';
+part 'event.g.dart';
 
 @collection
 @JsonSerializable()
@@ -15,12 +18,22 @@ class Event {
   DateTime? startDateTime;
   DateTime? endDateTime;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> creator = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<Group> group = IsarLink<Group>();
 
+  @JsonKey(ignore: true)
   IsarLinks<EventItem> requiredItems = IsarLinks<EventItem>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<EventParticipant> participants = IsarLinks<EventParticipant>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<EventStage> stages = IsarLinks<EventStage>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<EventActivity> eventActivities = IsarLinks<EventActivity>();
 
   Event({
@@ -65,15 +78,16 @@ class EventStage {
   String? title;
   String? description;
   DateTime? stageStartTime;
-  @Embedded()
-  RouteType? route;
+  String? routeType; // Changed from RouteType? to String? to avoid type issues
   @Enumerated(EnumType.name)
   EventStageType? stageType;
   @Embedded()
   GeoPoint? location;
 
+  @JsonKey(ignore: true)
   IsarLink<Event> event = IsarLink<Event>();
 
+  @JsonKey(ignore: true)
   IsarLinks<EventStageParticipant> stageParticipants =
       IsarLinks<EventStageParticipant>();
 
@@ -82,7 +96,7 @@ class EventStage {
     this.title,
     this.description,
     this.stageStartTime,
-    this.route,
+    this.routeType,
     this.stageType,
     this.location,
   });
@@ -97,7 +111,7 @@ class EventStage {
     String? title,
     String? description,
     DateTime? stageStartTime,
-    RouteType? route,
+    String? routeType,
     EventStageType? stageType,
     GeoPoint? location,
   }) {
@@ -106,7 +120,7 @@ class EventStage {
       title: title ?? this.title,
       description: description ?? this.description,
       stageStartTime: stageStartTime ?? this.stageStartTime,
-      route: route ?? this.route,
+      routeType: routeType ?? this.routeType,
       stageType: stageType ?? this.stageType,
       location: location ?? this.location,
     );
@@ -129,9 +143,13 @@ class EventParticipant {
   bool? isActive;
   DateTime? joinedOn;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> person = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<Event> event = IsarLink<Event>();
 
+  @JsonKey(ignore: true)
   IsarLinks<EventStageParticipant> stageParticipants =
       IsarLinks<EventStageParticipant>();
 
@@ -170,8 +188,13 @@ class EventStageParticipant {
   DateTime? finishedAt;
   bool? isCompleted;
 
+  @JsonKey(ignore: true)
   IsarLink<EventStage> eventStage = IsarLink<EventStage>();
+  
+  @JsonKey(ignore: true)
   IsarLink<EventParticipant> eventParticipant = IsarLink<EventParticipant>();
+  
+  @JsonKey(ignore: true)
   IsarLink<UserRoute> userRoute = IsarLink<UserRoute>();
 
   EventStageParticipant({
@@ -207,7 +230,10 @@ class ActivityType {
   Id? id;
   String? name;
 
+  @JsonKey(ignore: true)
   IsarLinks<EventActivity> eventActivities = IsarLinks<EventActivity>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<GroupActivity> groupActivities = IsarLinks<GroupActivity>();
 
   ActivityType({
@@ -235,12 +261,11 @@ class ActivityType {
 @JsonSerializable()
 class EventActivity {
   Id? id;
-  @Embedded()
-  ActivityType? activityType;
+  String? activityTypeName; // Changed from @Embedded() ActivityType to simple String
 
   EventActivity({
     this.id,
-    this.activityType,
+    this.activityTypeName,
   });
 
   factory EventActivity.fromJson(Map<String, dynamic> json) =>
@@ -250,11 +275,11 @@ class EventActivity {
 
   EventActivity copyWith({
     Id? id,
-    ActivityType? activityType,
+    String? activityTypeName,
   }) {
     return EventActivity(
       id: id ?? this.id,
-      activityType: activityType ?? this.activityType,
+      activityTypeName: activityTypeName ?? this.activityTypeName,
     );
   }
 }
@@ -267,6 +292,7 @@ class EventItem {
   String? description;
   bool? isAssigned;
 
+  @JsonKey(ignore: true)
   IsarLink<Event> event = IsarLink<Event>();
 
   EventItem({

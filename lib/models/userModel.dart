@@ -26,13 +26,29 @@ class UserInfo {
   int? countryId;
   double? totalDistance;
   String? token; // Add token field back
+
+  @JsonKey(ignore: true)
   IsarLinks<UserInfoFollow> followers = IsarLinks<UserInfoFollow>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<UserInfoFollow> following = IsarLinks<UserInfoFollow>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<GroupMember> groupMemberships = IsarLinks<GroupMember>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Route> createdRoutes = IsarLinks<Route>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Event> createdEvents = IsarLinks<Event>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Notification> notificationsReceived = IsarLinks<Notification>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Reaction> reactions = IsarLinks<Reaction>();
+  
+  @JsonKey(ignore: true)
   IsarLinks<Favorite> favorites = IsarLinks<Favorite>();
 
   UserInfo({
@@ -97,7 +113,10 @@ class UserInfo {
 class UserInfoFollow {
   Id? id;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> follower = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> following = IsarLink<UserInfo>();
 
   DateTime? followedOn;
@@ -133,7 +152,8 @@ class Favorite {
   String? itemId;
   DateTime? addedAt;
 
-  IsarLink<UserInfo> UserInfo = IsarLink<UserInfo>();
+  @JsonKey(ignore: true)
+  IsarLink<UserInfo> user = IsarLink<UserInfo>();  // Changed from UserInfo to user
 
   Favorite({
     this.id,

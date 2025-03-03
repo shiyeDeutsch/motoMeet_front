@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
-
+import 'package:motomeetfront/models/userModel.dart'; // Import for UserInfo
+import 'package:motomeetfront/models/group.dart'; // Import for GroupPost
  
+part 'notification.g.dart';
+
 @collection
 @JsonSerializable()
 class Notification {
@@ -12,7 +15,10 @@ class Notification {
   DateTime? sentAt;
   bool? isRead;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> recipient = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> actor = IsarLink<UserInfo>();
 
   Notification({
@@ -52,7 +58,10 @@ class Reaction {
   String? type;
   DateTime? reactedAt;
 
+  @JsonKey(ignore: true)
   IsarLink<UserInfo> person = IsarLink<UserInfo>();
+  
+  @JsonKey(ignore: true)
   IsarLink<GroupPost> groupPost = IsarLink<GroupPost>();
 
   Reaction({
