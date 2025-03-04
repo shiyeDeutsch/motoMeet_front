@@ -7,6 +7,7 @@ import '../screens/saveRouteScreen.dart';
 import '../screens/step1.dart';
 import 'InitialRoute.dart';
 import 'routes.dart';
+import '../screens/theme_settings_screen.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -30,7 +31,10 @@ class RouteGenerator {
       case Routes.saveRoute:
         screen = SaveRouteScreen(route: args!['newRoute']);
         break;
-
+      case Routes.themeSettings:
+        return MaterialPageRoute(
+          builder: (context) => const ThemeSettingsScreen(),
+        );
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();

@@ -1,4 +1,6 @@
 import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../models/theme_preferences.dart';
 
 // Interface defining standard CRUD operations
 abstract class Repository<T> {
@@ -64,5 +66,22 @@ abstract class BaseRepository<T> implements Repository<T> {
   
   T? getLastSync() {
     return collection.where().findAllSync().lastOrNull;
+  }
+}
+
+class IsarRepository {
+  Future<Isar> openIsar() async {
+    if (Isar.instanceNames.isEmpty) {
+      final dir = await getApplicationDocumentsDirectory();
+      return await Isar.open(
+        [
+          // Add ThemePreferences to your schema list
+          ThemePreferencesSchema,
+          // ... other schemas
+        ],
+        directory: dir.path,
+      );
+    }
+    return Future.value(Isar.getInstance());
   }
 }
