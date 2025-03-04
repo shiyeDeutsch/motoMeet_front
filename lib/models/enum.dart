@@ -224,3 +224,13 @@ extension DifficultyEnumExtension on DifficultyEnum {
   comment,
   like,
 }
+enum SocialActivityType {
+  Riding,
+  Camping,
+  Workshop,
+  Social,
+  TourGuided,
+  OffRoad,
+  TrackDay,
+  Other
+}

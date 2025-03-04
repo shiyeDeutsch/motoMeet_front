@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/activity.dart';
 
 class ActivityFeedItem extends StatelessWidget {
-  final UserActivity activity;
+  final UserRecentActivity activity;
   final VoidCallback onTap;
 
   const ActivityFeedItem({

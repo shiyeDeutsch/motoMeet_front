@@ -4,6 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:motomeetfront/models/newRoute.dart'; // Import for GeoPoint
 import 'package:motomeetfront/models/userModel.dart'; // Import for UserInfo
 import 'package:motomeetfront/models/group.dart'; // Import for Group
+import 'package:motomeetfront/models/enum.dart'; // Import for enums
 
 part 'event.g.dart';
 
@@ -224,48 +225,22 @@ class EventStageParticipant {
   }
 }
 
-@collection
-@JsonSerializable()
-class ActivityType {
-  Id? id;
-  String? name;
 
-  @JsonKey(ignore: true)
-  IsarLinks<EventActivity> eventActivities = IsarLinks<EventActivity>();
-  
-  @JsonKey(ignore: true)
-  IsarLinks<GroupActivity> groupActivities = IsarLinks<GroupActivity>();
-
-  ActivityType({
-    this.id,
-    this.name,
-  });
-
-  factory ActivityType.fromJson(Map<String, dynamic> json) =>
-      _$ActivityTypeFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ActivityTypeToJson(this);
-
-  ActivityType copyWith({
-    Id? id,
-    String? name,
-  }) {
-    return ActivityType(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
-  }
-}
 
 @collection
 @JsonSerializable()
 class EventActivity {
   Id? id;
-  String? activityTypeName; // Changed from @Embedded() ActivityType to simple String
+  
+  @Enumerated(EnumType.name)
+  SocialActivityType? activityType;
+  
+  @JsonKey(ignore: true)
+  IsarLink<Event> event = IsarLink<Event>();
 
   EventActivity({
     this.id,
-    this.activityTypeName,
+    this.activityType,
   });
 
   factory EventActivity.fromJson(Map<String, dynamic> json) =>
@@ -275,11 +250,11 @@ class EventActivity {
 
   EventActivity copyWith({
     Id? id,
-    String? activityTypeName,
+    SocialActivityType? activityType,
   }) {
     return EventActivity(
       id: id ?? this.id,
-      activityTypeName: activityTypeName ?? this.activityTypeName,
+      activityType: activityType ?? this.activityType,
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:motomeetfront/common/theme/colors.dart';
 import 'package:motomeetfront/models/event.dart';
 
 class EventCard extends StatelessWidget {
@@ -77,14 +76,14 @@ class EventCard extends StatelessWidget {
                           // Event time
                           _buildStat(
                             Icons.access_time,
-                            _formatTime(event.startDateTime),
+                            _formatTime(event.startDateTime),context,
                           ),
                           
                           const SizedBox(width: 12),
                           // Participants count
                           _buildStat(
                             Icons.people,
-                            '${event.participantIds.length} joined',
+                            '${event.participants.length} joined',context,
                           ),
                         ],
                       ),
@@ -109,12 +108,12 @@ class EventCard extends StatelessWidget {
                           
                           // Public/Private tag
                           _buildTag(
-                            event.isPublic ? 'Public' : 'Private',
-                            event.isPublic ? Icons.public : Icons.lock,
+                            event.isPublic??false ? 'Public' : 'Private',
+                            event.isPublic??false ? Icons.public : Icons.lock,
                           ),
                           
                           // Approval tag if required
-                          if (event.requiresApproval)
+                          if (event.requiresApproval??false)
                             _buildTag('Approval Required', Icons.check_circle_outline),
                         ],
                       ),
@@ -149,8 +148,8 @@ class EventCard extends StatelessWidget {
                       now.month == eventDate.month &&
                       now.year == eventDate.year;
                       
-    final bgColor = isToday ? AppColors.primary : 
-                  isTomorrow ? AppColors.primaryLight : 
+    final bgColor = isToday ? Theme.of(context).primaryColor : 
+                  isTomorrow ? Theme.of(context).primaryColorLight : 
                   Colors.grey[200];
                   
     final textColor = isToday || isTomorrow ? Colors.white : Colors.black87;
@@ -192,11 +191,11 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(IconData icon, String value) {
+  Widget _buildStat(IconData icon, String value, BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.primaryDark),
+        Icon(icon, size: 14, color: Theme.of(context).primaryColorDark),
         const SizedBox(width: 4),
         Text(
           value,
