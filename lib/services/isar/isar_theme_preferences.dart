@@ -1,23 +1,19 @@
 import 'package:isar/isar.dart';
+
 import '../../models/theme_preferences.dart';
 import 'isar_repository.dart';
 
-class IsarThemePreferencesService {
-  final IsarRepository _isarRepo;
-
-  IsarThemePreferencesService(this._isarRepo);
+class IsarThemePreferencesRepository extends BaseRepository<ThemePreferences> {
+  IsarThemePreferencesRepository(Isar isar) : super(isar, isar.themePreferences);
 
   Future<ThemePreferences> getThemePreferences() async {
-    final isar = await _isarRepo.openIsar();
-    
     // Attempt to load existing preferences
-    final prefs = await isar.themePreferences
-        .get(ThemePreferences.singletonId);
+    final prefs = await getById(ThemePreferences.singletonId);
     
     // If no preferences exist, create default ones
     if (prefs == null) {
       final defaultPrefs = ThemePreferences.defaults();
-      await saveThemePreferences(defaultPrefs);
+      await add(defaultPrefs);
       return defaultPrefs;
     }
     
@@ -25,14 +21,9 @@ class IsarThemePreferencesService {
   }
 
   Future<void> saveThemePreferences(ThemePreferences prefs) async {
-    final isar = await _isarRepo.openIsar();
-    
     // Ensure we're using the singleton ID
     prefs.id = ThemePreferences.singletonId;
-    
-    await isar.writeTxn(() async {
-      await isar.themePreferences.put(prefs);
-    });
+    await update(prefs);
   }
 
   Future<void> saveThemeType(String themeType) async {

@@ -69,19 +69,4 @@ abstract class BaseRepository<T> implements Repository<T> {
   }
 }
 
-class IsarRepository {
-  Future<Isar> openIsar() async {
-    if (Isar.instanceNames.isEmpty) {
-      final dir = await getApplicationDocumentsDirectory();
-      return await Isar.open(
-        [
-          // Add ThemePreferences to your schema list
-          ThemePreferencesSchema,
-          // ... other schemas
-        ],
-        directory: dir.path,
-      );
-    }
-    return Future.value(Isar.getInstance());
-  }
-}
+ 

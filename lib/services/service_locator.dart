@@ -10,8 +10,6 @@ import 'package:motomeetfront/services/userService.dart';
 import 'package:motomeetfront/services/isar/isar_initializer.dart';
 import 'package:motomeetfront/services/loctionService.dart';
 import 'package:motomeetfront/services/MapMarkerService.dart';
-import 'isar/isar_repository.dart';
-import 'isar/isar_theme_preferences.dart';
 
 import '../stateProvider.dart';
 import 'MapMarkerService.dart';
@@ -20,14 +18,14 @@ import 'isar/isar_user_info.dart';
 import 'isar/repository_provider.dart';
 import 'userService.dart';
 
-final locator = GetIt.instance;
 
-void setupLocator() async {
+void setupLocator( )async  {
+ 
   GetIt.I.registerLazySingleton<RouteService>(() => RouteService());
   GetIt.I.registerLazySingleton<AuthService>(() => AuthService());
-  GetIt.I.registerLazySingleton<EventsService>(() => EventsService());
-  GetIt.I.registerLazySingleton<ActivityService>(() => ActivityService());
-  GetIt.I.registerLazySingleton<MapMarkerService>(() => MapMarkerService());
+   GetIt.I.registerLazySingleton<EventsService>(() => EventsService());
+   GetIt.I.registerLazySingleton<ActivityService>(() => ActivityService());
+   GetIt.I.registerLazySingleton<MapMarkerService>(() => MapMarkerService());
   GetIt.I.registerLazySingleton<UserService>(() => UserService());
 
   // Register the IsarInitializer
@@ -36,11 +34,6 @@ void setupLocator() async {
   final Isar isarInstance = isarInitializer.getInstance();
   GetIt.I.registerLazySingleton<RepositoryProvider>(() => RepositoryProvider(isarInstance));
 
-  // Repository
-  locator.registerLazySingleton<IsarRepository>(() => IsarRepository());
 
-  // Services
-  locator.registerLazySingleton<IsarThemePreferencesService>(
-    () => IsarThemePreferencesService(locator<IsarRepository>())
-  );
+ 
 }

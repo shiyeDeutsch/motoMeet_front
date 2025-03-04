@@ -1,25 +1,16 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar/isar.dart';
-import 'package:motomeetfront/models/userModel.dart';
+import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/routing/routes.dart';
 import 'package:motomeetfront/services/service_locator.dart';
-import 'package:motomeetfront/services/httpClient.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'routing/InitialRoute.dart';
 import 'routing/routeGenerator.dart';
-import 'services/isar/isar_user_info.dart';
-import 'services/isar/isar_theme_preferences.dart';
-import 'stateProvider.dart';
-import 'utilities/assetLoader.dart';
 import 'theme/theme_provider.dart';
 
 final providerContainer = ProviderContainer();
@@ -45,12 +36,6 @@ void main() async {
   runApp(
     ProviderScope(
       parent: providerContainer,
-      overrides: [
-        // Override theme service provider
-        themePreferencesServiceProvider.overrideWithValue(
-          locator<IsarThemePreferencesService>()
-        ),
-      ],
       child: MyApp(initialRoute: initialRoute),
     ),
   );

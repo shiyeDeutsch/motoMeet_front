@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../models/theme_preferences.dart';
 
 // Import all model classes with Isar collections
 import '../../models/userModel.dart';
@@ -53,6 +54,9 @@ class IsarInitializer {
 
         // GeoLocation related schemas
         GeoLocationInfoSchema,
+
+        // Theme preferences schema
+        ThemePreferencesSchema,
       ],
       directory: dir.path,
     );

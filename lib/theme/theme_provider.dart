@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 
 import '../models/theme_preferences.dart';
+import '../services/isar/repository_provider.dart';
 import '../services/isar/isar_theme_preferences.dart';
 import 'app_theme.dart';
 import 'themes/adventure_theme.dart';
@@ -76,9 +78,9 @@ class ThemeState {
 
 /// Notifier class for theme state management
 class ThemeNotifier extends StateNotifier<ThemeState> {
-  final IsarThemePreferencesService _themeService;
+  final IsarThemePreferencesRepository _themeRepository;
 
-  ThemeNotifier(this._themeService)
+  ThemeNotifier(this._themeRepository)
       : super(ThemeState(
           currentTheme: AdventureTheme(),
           themeType: AppThemeType.adventure,
@@ -89,7 +91,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
   }
 
   Future<void> _loadSavedTheme() async {
-    final prefs = await _themeService.getThemePreferences();
+    final prefs = await _themeRepository.getThemePreferences();
     
     AppThemeType themeType = AppThemeType.adventure;
     if (prefs.themeType.isNotEmpty) {
@@ -143,7 +145,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
       themeType: themeType,
     );
 
-    _themeService.saveThemeType(themeType.toString());
+    _themeRepository.saveThemeType(themeType.toString());
   }
 
   void setThemeMode(AppThemeMode themeMode) {
@@ -152,19 +154,15 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
       isSystemMode: themeMode == AppThemeMode.system,
     );
 
-    _themeService.saveThemeMode(themeMode.toString());
+    _themeRepository.saveThemeMode(themeMode.toString());
   }
 }
 
-// Provider for theme services
-final themePreferencesServiceProvider = Provider<IsarThemePreferencesService>((ref) {
-  throw UnimplementedError('IsarThemePreferencesService provider must be overridden');
-});
-
 /// Provider for theme state
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeState>((ref) {
-  final themeService = ref.watch(themePreferencesServiceProvider);
-  return ThemeNotifier(themeService);
+  // Get the repository provider from GetIt
+  final repositoryProvider = GetIt.I<RepositoryProvider>();
+  return ThemeNotifier(repositoryProvider.themePreferencesRepository);
 });
 
 /// Provider for current theme data
