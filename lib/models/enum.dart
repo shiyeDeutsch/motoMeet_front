@@ -212,4 +212,15 @@ extension DifficultyEnumExtension on DifficultyEnum {
     }
     throw ArgumentError('Invalid difficulty level: $value');
   }
+}enum RecentActivityType {
+  routeCompleted,
+  routeCreated,
+  eventJoined,
+  eventCreated,
+  groupJoined,
+  groupCreated,
+  followedUser,
+  achievement,
+  comment,
+  like,
 }

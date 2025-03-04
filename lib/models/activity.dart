@@ -2,29 +2,19 @@ import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:motomeetfront/models/userModel.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/models/route.dart';
+// import 'package:motomeetfront/models/route.dart';
+import 'package:motomeetfront/models/enum.dart';
 
-part 'activity.g.dart';
+part 'UserRecentActivity.g.dart';
 
-enum ActivityType {
-  routeCompleted,
-  routeCreated,
-  eventJoined,
-  eventCreated,
-  groupJoined,
-  groupCreated,
-  followedUser,
-  achievement,
-  comment,
-  like,
-}
+
 
 @collection
 @JsonSerializable()
-class UserActivity {
+class UserRecentActivity {
   Id? id;
   @Enumerated(EnumType.name)
-  final ActivityType activityType;
+  final RecentActivityType activityType;
   final DateTime timestamp;
   final String? message;
   final String? imageUrl;
@@ -41,7 +31,7 @@ class UserActivity {
   @JsonKey(ignore: true)
   IsarLink<UserInfo> user = IsarLink<UserInfo>();
 
-  UserActivity({
+  UserRecentActivity({
     this.id,
     required this.activityType,
     required this.timestamp,
@@ -54,32 +44,32 @@ class UserActivity {
     this.isRead = false,
   });
 
-  factory UserActivity.fromJson(Map<String, dynamic> json) => 
-    _$UserActivityFromJson(json);
+  factory UserRecentActivity.fromJson(Map<String, dynamic> json) => 
+    _$UserRecentActivityFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UserActivityToJson(this);
+  Map<String, dynamic> toJson() => _$UserRecentActivityToJson(this);
 
   String get activityTypeString {
-    switch (activityType) {
-      case ActivityType.routeCompleted:
+    switch (RecentActivityType) {
+      case RecentActivityType.routeCompleted:
         return 'completed a route';
-      case ActivityType.routeCreated:
+      case RecentActivityType.routeCreated:
         return 'created a new route';
-      case ActivityType.eventJoined:
+      case RecentActivityType.eventJoined:
         return 'joined an event';
-      case ActivityType.eventCreated:
+      case RecentActivityType.eventCreated:
         return 'created an event';
-      case ActivityType.groupJoined:
+      case RecentActivityType.groupJoined:
         return 'joined a group';
-      case ActivityType.groupCreated:
+      case RecentActivityType.groupCreated:
         return 'created a group';
-      case ActivityType.followedUser:
+      case RecentActivityType.followedUser:
         return 'started following';
-      case ActivityType.achievement:
+      case RecentActivityType.achievement:
         return 'earned an achievement';
-      case ActivityType.comment:
+      case RecentActivityType.comment:
         return 'commented on';
-      case ActivityType.like:
+      case RecentActivityType.like:
         return 'liked';
       default:
         return 'did something';

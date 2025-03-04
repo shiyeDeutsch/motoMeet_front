@@ -8,13 +8,14 @@ import 'package:motomeetfront/common/widgets/route_card.dart';
 // import 'package:motomeetfront/common/widgets/search_bar.dart';
 import 'package:motomeetfront/models/activity.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/models/newRoute.dart';
+import 'package:motomeetfront/models/newRoute.dart' as route_model;
 import 'package:motomeetfront/providers/activity_provider.dart';
 import 'package:motomeetfront/providers/events_provider.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
 import 'package:motomeetfront/providers/routes_provider.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
-// import 'package:motomeetfront/common/theme/colors.dart';
+import 'package:motomeetfront/models/enum.dart';
+import 'package:motomeetfront/common/widgets/activity_feed_item.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -280,20 +281,20 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  void _navigateToActivityDetail(BuildContext context, UserActivity activity) {
+  void _navigateToActivityDetail(BuildContext context, UserRecentActivity activity) {
     switch (activity.activityType) {
-      case ActivityType.routeCompleted:
-      case ActivityType.routeCreated:
+      case RecentActivityType.routeCompleted:
+      case RecentActivityType.routeCreated:
         Navigator.pushNamed(context, '/routes/detail',
             arguments: activity.routeId);
         break;
-      case ActivityType.eventJoined:
-      case ActivityType.eventCreated:
+      case RecentActivityType.eventJoined:
+      case RecentActivityType.eventCreated:
         Navigator.pushNamed(context, '/events/detail',
             arguments: activity.eventId);
         break;
-      case ActivityType.groupJoined:
-      case ActivityType.groupCreated:
+      case RecentActivityType.groupJoined:
+      case RecentActivityType.groupCreated:
         Navigator.pushNamed(context, '/groups/detail',
             arguments: activity.groupId);
         break;
@@ -303,7 +304,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  Widget _buildRecommendedRoutes(List<NewRoute> routes, BuildContext context) {
+  Widget _buildRecommendedRoutes(List<route_model.Route> routes, BuildContext context) {
     if (routes.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -346,7 +347,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     Navigator.pushNamed(
                       context,
                       '/routes/detail',
-                      arguments: routes[index].isarId,
+                      arguments: routes[index].id,
                     );
                   },
                 ),
