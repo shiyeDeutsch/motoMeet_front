@@ -26,6 +26,7 @@ class UserInfo {
   int? countryId;
   double? totalDistance;
   String? token; // Add token field back
+  String? profileImageUrl; // Add profileImageUrl field
 
   @JsonKey(ignore: true)
   IsarLinks<UserInfoFollow> followers = IsarLinks<UserInfoFollow>();
@@ -66,6 +67,7 @@ class UserInfo {
     this.countryId,
     this.totalDistance,
     this.token,
+    this.profileImageUrl, // Add profileImageUrl to constructor
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) =>
@@ -88,6 +90,7 @@ class UserInfo {
     int? countryId,
     double? totalDistance,
     String? token,
+    String? profileImageUrl, // Add profileImageUrl to copyWith method
   }) {
     return UserInfo(
       id: id ?? this.id,
@@ -104,6 +107,7 @@ class UserInfo {
       countryId: countryId ?? this.countryId,
       totalDistance: totalDistance ?? this.totalDistance,
       token: token ?? this.token,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl, // Add profileImageUrl to copyWith return
     );
   }
 }

@@ -3,8 +3,8 @@ import 'package:isar/isar.dart';
 import '../../models/userModel.dart';
 import 'isar_repository.dart';
 
-class UserInfoRepository extends BaseRepository<UserInfo> {
-  UserInfoRepository(Isar isar) : super(isar, isar.userInfos);
+class IsarUserInfoRepository extends BaseRepository<UserInfo> {
+  IsarUserInfoRepository(Isar isar) : super(isar, isar.userInfos);
 
   // Here you can add methods specific to UserInfo if necessary
   Future<String?> getToken() async {

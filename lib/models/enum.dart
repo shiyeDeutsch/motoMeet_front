@@ -1,13 +1,13 @@
-enum RouteTypeEnum {
+enum RouteType {
   hiking,
   biking,
   motorcycle,
   jeep,
 }
 
-extension RouteTypeExtension on RouteTypeEnum {
-  static RouteTypeEnum fromString(String value) {
-    for (var routeType in RouteTypeEnum.values) {
+extension RouteTypeExtension on RouteType {
+  static RouteType fromString(String value) {
+    for (var routeType in RouteType.values) {
       if (routeType.name.toLowerCase() == value.toLowerCase()) {
         return routeType;
       }

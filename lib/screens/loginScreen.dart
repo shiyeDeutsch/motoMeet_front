@@ -12,6 +12,7 @@ import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
 import '../services/isar/repository_provider.dart';
 import '../services/loctionService.dart';
+// import '../widgets/CustomTextFormField.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
@@ -55,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: _formKey,
                 child: Column(
                   children: <Widget>[
-                    CustomTextFromField(
+                    CustomTextFormField(
                       validator: (value) {
                         if (value?.isEmpty ?? false) {
                           return 'Please enter an email address';
@@ -75,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 15,
                     ),
-                    CustomTextFromField(
+                    CustomTextFormField(
                       validator: (value) {
                         if (value?.isEmpty ?? false) {
                           return 'Please enter a password';
@@ -152,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
         
         // Update location data
         final location  = await LocationService.getCurrentLocation; 
-        await userService.sendGeoLocation(token, location);
+        await userService.sendGeoLocation( );
        
 
         // Navigate to home page

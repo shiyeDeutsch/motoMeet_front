@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
+import  './enum.dart'; 
+ import './userModel.dart'; 
+  import 'package:latlong2/latlong.dart';
+  part 'newRoute.g.dart';
 
-part 'newRoute.g.dart';
 
 @collection
 @JsonSerializable()
@@ -14,7 +17,7 @@ class Route {
   GeoPoint? startPoint;
   @Embedded()
   GeoPoint? endPoint;
-  @Embedded()
+  @Enumerated(EnumType.name)
   RouteType? routeType;
   @Embedded()
   DifficultyLevel? difficultyLevel;
@@ -25,6 +28,7 @@ class Route {
   bool? isLoop;
   String? country;
   String? region;
+  String? imageUrl;
 
   @JsonKey(ignore: true)
   IsarLinks<RoutePoint> routePoints = IsarLinks<RoutePoint>();
@@ -41,6 +45,9 @@ class Route {
   @JsonKey(ignore: true)
   IsarLinks<PointOfInterest> pointsOfInterest = IsarLinks<PointOfInterest>();
 
+  @JsonKey(ignore: true)
+  IsarLink<UserInfo> routeCreator = IsarLink<UserInfo>();
+
   Route({
     this.id,
     required this.name,
@@ -56,6 +63,7 @@ class Route {
     this.isLoop,
     this.country,
     this.region,
+    this.imageUrl,
   });
 
   factory Route.fromJson(Map<String, dynamic> json) => _$RouteFromJson(json);
@@ -77,7 +85,8 @@ class Route {
     bool? isLoop,
     String? country,
     String? region,
-  }) {
+    String? imageUrl,
+   }) {
     return Route(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -93,7 +102,8 @@ class Route {
       isLoop: isLoop ?? this.isLoop,
       country: country ?? this.country,
       region: region ?? this.region,
-    );
+      imageUrl: imageUrl ?? this.imageUrl,
+     );
   }
 }
 
@@ -122,28 +132,37 @@ class GeoPoint {
       altitude: altitude ?? this.altitude,
     );
   }
-}
-
-@embedded
-@JsonSerializable()
-class RouteType {
-  String? name;
-
-  RouteType({this.name});
-
-  factory RouteType.fromJson(Map<String, dynamic> json) =>
-      _$RouteTypeFromJson(json);
-
-  Map<String, dynamic> toJson() => _$RouteTypeToJson(this);
-
-  RouteType copyWith({
-    String? name,
-  }) {
-    return RouteType(
-      name: name ?? this.name,
-    );
+  factory GeoPoint.fromLatLng(LatLng latLng, double? altitude) => GeoPoint(
+      latitude: latLng.latitude,
+      longitude: latLng.longitude,
+      altitude: altitude);
+  // Method for converting a GeoPoint instance to a map
+  
+  LatLng toLatLng() {
+    return LatLng(latitude!, longitude!);
   }
 }
+
+// @embedded
+// @JsonSerializable()
+// class RouteType {
+//   String? name;
+
+//   RouteType({this.name});
+
+//   factory RouteType.fromJson(Map<String, dynamic> json) =>
+//       _$RouteTypeFromJson(json);
+
+//   Map<String, dynamic> toJson() => _$RouteTypeToJson(this);
+
+//   RouteType copyWith({
+//     String? name,
+//   }) {
+//     return RouteType(
+//       name: name ?? this.name,
+//     );
+//   }
+// }
 
 @embedded
 @JsonSerializable()
@@ -258,7 +277,7 @@ class UserRoute {
   Id? id;
   @Embedded()
   DifficultyLevel? difficultyLevel;
-  @Embedded()
+   @Enumerated(EnumType.name)
   RouteType? routeType;
   DateTime? dateTraveled;
   int? durationMinutes;
@@ -377,32 +396,4 @@ class PointOfInterest {
   }
 }
 
-enum WaypointType {
-  Lake,
-  Cliff,
-  Waterfall,
-  WaterSpring,
-  River,
-  MountainPeak,
-  Forest,
-  Meadow,
-  Cave,
-  Valley,
-  Beach,
-  Glacier,
-  Volcano,
-  HistoricalSite,
-  VisitorCenter,
-  Viewpoint,
-  Museum,
-  CulturalSite,
-  EducationalTrail,
-  ParkOffice,
-  SteepDrop,
-  SlipperyPath,
-  HighTide,
-  WildlifeSighting,
-  FloodingArea,
-  Rockfall,
-  RestrictedArea
-}
+ 

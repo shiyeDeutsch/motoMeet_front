@@ -2,6 +2,8 @@ import 'package:isar/isar.dart';
 import 'package:motomeetfront/models/geoLocationInfo.dart';
 import 'package:motomeetfront/services/isar/isar_repository.dart';
 
+import '../../models/geoLocationInfo.dart';
+
 /// Repository for handling GeoLocationInfo local storage operations
 class IsarGeoLocationRepository extends BaseRepository<GeoLocationInfo> {
   IsarGeoLocationRepository(Isar isar) : super(isar, isar.GeoLocationInfo);

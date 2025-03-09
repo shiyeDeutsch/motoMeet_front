@@ -9,10 +9,12 @@ class HttpClient {
   HttpClient();
 
   // Add method to get auth token
-  static String? _getAuthToken() {
+  static Future<String?> _getAuthToken() async {
     try {
       final repositoryProvider = getIt<RepositoryProvider>();
-      final userInfo = repositoryProvider.userInfoRepository.getCurrentUser();
+      final userInfo =
+          await repositoryProvider.userInfoRepository.getCurrentUser();
+
       return userInfo?.token;
     } catch (e) {
       print('Error getting auth token: $e');
@@ -26,7 +28,7 @@ class HttpClient {
     required Uri uri,
     required String body, // Now expects a JSON string
   }) async {
-    final String? token = _getAuthToken();
+    final String? token = await _getAuthToken();
     return await client.post(
       uri,
       body: body,
@@ -39,8 +41,9 @@ class HttpClient {
   }
 
   // Read - GET
-  static Future<http.Response> get(Uri uri, {Map<String, String>? headers}) {
-    final String? token = _getAuthToken();
+  static Future<http.Response> get(Uri uri,
+      {Map<String, String>? headers}) async {
+    final String? token = await _getAuthToken();
     return client.get(
       uri,
       headers: {
@@ -57,7 +60,7 @@ class HttpClient {
     required String body,
     Map<String, String>? headers,
   }) async {
-    final String? token = _getAuthToken();
+    final String? token = await _getAuthToken();
     return await client.put(
       uri,
       body: body,
@@ -71,7 +74,7 @@ class HttpClient {
 
   // Delete - DELETE
   Future<http.Response> delete(Uri uri, {Map<String, String>? headers}) async {
-    final String? token = _getAuthToken();
+    final String? token = await _getAuthToken();
     return await client.delete(
       uri,
       headers: {

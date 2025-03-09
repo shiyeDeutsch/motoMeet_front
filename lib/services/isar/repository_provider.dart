@@ -9,19 +9,19 @@ class RepositoryProvider {
   final Isar _isar;
   
   late final IsarUserInfoRepository _userInfoRepository;
-  late final IsarActivityRepository _activityRepository;
+  late final IsarUserRecentActivityRepository _activityRepository;
   late final IsarGeoLocationRepository _geoLocationRepository;
   late final IsarThemePreferencesRepository _themePreferencesRepository;
 
   RepositoryProvider(this._isar) {
     _userInfoRepository = IsarUserInfoRepository(_isar);
-    _activityRepository = IsarActivityRepository(_isar);
+    _activityRepository = IsarUserRecentActivityRepository(_isar);
     _geoLocationRepository = IsarGeoLocationRepository(_isar);
     _themePreferencesRepository = IsarThemePreferencesRepository(_isar);
   }
 
   IsarUserInfoRepository get userInfoRepository => _userInfoRepository;
-  IsarActivityRepository get activityRepository => _activityRepository;
+  IsarUserRecentActivityRepository get activityRepository => _activityRepository;
   IsarGeoLocationRepository get geoLocationRepository => _geoLocationRepository;
   IsarThemePreferencesRepository get themePreferencesRepository => _themePreferencesRepository;
 }

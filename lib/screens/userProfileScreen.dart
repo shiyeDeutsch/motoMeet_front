@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
-import '../models/route.dart';
-import '../models/userModel.dart';
+ import '../models/userModel.dart';
+ import '../models/newRoute.dart' as route_model;
 import '../services/isar/repository_provider.dart';
-import '../widgets/customTextFromField.dart';
-
+ 
 class PersonalProfileScreen extends ConsumerStatefulWidget {
   const PersonalProfileScreen({Key? key}) : super(key: key);
 
@@ -188,7 +187,7 @@ class _PersonalProfileScreenState extends ConsumerState<PersonalProfileScreen> {
 
   Widget _buildRouteList() {
     // TODO: Fetch user's created routes from the database
-    final routes = <NewRoute>[];
+    final routes = <route_model.Route>[];
     return SizedBox(
       height: 150,
       child: ListView.builder(
@@ -220,7 +219,7 @@ class _PersonalProfileScreenState extends ConsumerState<PersonalProfileScreen> {
 
   Widget _buildFavoriteRouteList() {
     // TODO: Fetch user's favorite routes from the database
-    final favoriteRoutes = <NewRoute>[];
+    final favoriteRoutes = <route_model.Route>[];
     return SizedBox(
       height: 150,
       child: ListView.builder(

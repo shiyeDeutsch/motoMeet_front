@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:motomeetfront/models/register_model.dart';
 import 'package:motomeetfront/models/userModel.dart';
 
 import '../routing/routes.dart';
@@ -12,7 +13,7 @@ import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
 import '../services/isar/repository_provider.dart';
 import '../utilities/assetLoader.dart';
-import '../widgets/customTextFromField.dart';
+ import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
 
 class Step1Screen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _Step1ScreenState extends State<Step1Screen> {
 
   final lNameController = TextEditingController();
   final dateController = TextEditingController();
-  final auth = GetIt.I<AuthenticationService>();
+  final auth = GetIt.I<AuthService>();
   DateTime selectedDate = DateTime.now();
   final _formKey = GlobalKey<FormState>();
   late int countryId;
@@ -57,7 +58,7 @@ class _Step1ScreenState extends State<Step1Screen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            CustomTextFromField(
+            CustomTextFormField(
                 validator: (value) {
                   if (value?.isEmpty ?? false) {
                     return 'Please enter a first name ';
@@ -68,7 +69,7 @@ class _Step1ScreenState extends State<Step1Screen> {
                 controller: fNameController,
                 hintText: 'first name'),
             const SizedBox(height: 16),
-            CustomTextFromField(
+            CustomTextFormField(
                 validator: (value) {
                   if (value?.isEmpty ?? false) {
                     return 'Please enter a last name ';
@@ -80,7 +81,7 @@ class _Step1ScreenState extends State<Step1Screen> {
                 hintText: 'Last name'),
             const SizedBox(height: 16),
 
-            CustomTextFromField(
+            CustomTextFormField(
               validator: (value) {
                 if (value?.isEmpty ?? false) {
                   return 'Please enter your date of birth';
@@ -163,13 +164,14 @@ class _Step1ScreenState extends State<Step1Screen> {
 
   Future<void> regist() async {
     if (_formKey.currentState!.validate()) {
-      var user = UserInfo(
+      var user = RegisterModel(
         email: widget.email,
         password: widget.password,
         firstName: fNameController.text,
         lastName: lNameController.text,
         age: 0,
         countryId: countryId,
+        dateOfBirth: selectedDate,
       );
       final newUser = await auth.register(user);
 

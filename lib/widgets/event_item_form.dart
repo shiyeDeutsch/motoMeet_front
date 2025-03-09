@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/widgets/customTextFromField.dart';
+import 'package:motomeetfront/widgets/CustomTextFormField.dart';
 
 class EventItemForm extends StatefulWidget {
   final RequiredItem? item;

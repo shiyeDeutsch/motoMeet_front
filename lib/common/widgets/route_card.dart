@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:motomeetfront/common/theme/colors.dart';
-import 'package:motomeetfront/models/newRoute.dart';
 import 'package:motomeetfront/utilities/duration_formatter.dart';
+import 'package:motomeetfront/models/newRoute.dart' as route_model;
 
 class RouteCard extends StatelessWidget {
-  final NewRoute route;
+  final route_model.Route route;
   final VoidCallback? onTap;
   final bool showCreator;
 
@@ -36,9 +35,9 @@ class RouteCard extends StatelessWidget {
                   SizedBox(
                     height: 120,
                     width: double.infinity,
-                    child: route.thumbnailUrl != null
+                    child: route.imageUrl != null
                         ? Image.network(
-                            route.thumbnailUrl!,
+                            route.imageUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 _buildPlaceholderImage(),
@@ -62,13 +61,13 @@ class RouteCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _getRouteTypeIcon(route.routeType),
+                            _getRouteTypeIcon(route.routeType?.name),
                             color: Colors.white,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            route.routeType ?? 'Unknown',
+                            route.routeType?.name ?? 'Unknown',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -89,11 +88,12 @@ class RouteCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _getDifficultyColor(route.difficultyLevel!),
+                          color: _getDifficultyColor(
+                              route.difficultyLevel!.level ?? ''),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          route.difficultyLevel!,
+                          route.difficultyLevel!.level ?? 'Unknown',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -104,7 +104,7 @@ class RouteCard extends StatelessWidget {
                     ),
                 ],
               ),
-              
+
               // Route details
               Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -121,16 +121,17 @@ class RouteCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Location info
-                    if (route.locationName != null)
+                    if (route.region != null)
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                          const Icon(Icons.location_on,
+                              size: 14, color: Colors.grey),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              route.locationName!,
+                              "${route.region!},${route.country!}",
                               style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
@@ -141,9 +142,9 @@ class RouteCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Route stats
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -151,17 +152,18 @@ class RouteCard extends StatelessWidget {
                         // Distance
                         _buildStat(
                           Icons.straighten,
-                          '${route.distance != null ? (route.distance! / 1000).toStringAsFixed(1) : '?'} km',
+                          '${route.length != null ? (route.length! / 1000).toStringAsFixed(1) : '?'} km',
                         ),
-                        
+
                         // Duration
                         _buildStat(
                           Icons.timer,
-                          route.duration != null
-                              ? formatDuration(Duration(seconds: route.duration!))
+                          route.durationMinutes != null
+                              ? DurationFormatter.formatDuration(
+                                  Duration(minutes: route.durationMinutes!))
                               : '?',
                         ),
-                        
+
                         // Elevation
                         _buildStat(
                           Icons.terrain,
@@ -171,9 +173,10 @@ class RouteCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    
+
                     // Creator info (optional)
-                    if (showCreator && route.creatorName != null) ...[
+                    if (showCreator &&
+                        route.routeCreator.value?.username != null) ...[
                       const SizedBox(height: 8),
                       const Divider(height: 1),
                       const SizedBox(height: 8),
@@ -181,12 +184,17 @@ class RouteCard extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 10,
-                            backgroundImage: route.creatorImageUrl != null
-                                ? NetworkImage(route.creatorImageUrl!)
+                            backgroundImage: route
+                                        .routeCreator.value?.profileImageUrl !=
+                                    null
+                                ? NetworkImage(
+                                    route.routeCreator.value!.profileImageUrl!)
                                 : null,
-                            child: route.creatorImageUrl == null
+                            child: route.routeCreator.value?.profileImageUrl ==
+                                    null
                                 ? Text(
-                                    route.creatorName![0].toUpperCase(),
+                                    route.routeCreator.value!.username![0]
+                                        .toUpperCase(),
                                     style: const TextStyle(fontSize: 8),
                                   )
                                 : null,
@@ -194,7 +202,7 @@ class RouteCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              'by ${route.creatorName}',
+                              'by ${route.routeCreator.value!.username!}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -229,7 +237,7 @@ class RouteCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.primaryDark),
+        Icon(icon, size: 14, color: Colors.black54),
         const SizedBox(width: 4),
         Text(
           value,

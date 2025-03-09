@@ -6,9 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:get_it/get_it.dart';
-
+import '../models/newRoute.dart' as route_model;
 import '../models/enum.dart';
-import '../models/route.dart';
+ import '../models/newRoute.dart';
 import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/distanceFormatter.dart';
@@ -75,12 +75,12 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       children: [
         _buildFlutterMap(committedPoints, currentPosition ,currentRoute),
         if (!(currentRoute?.isActive ?? false)) _buildStartRouteButton(),
-        if (currentRoute?.isActive ?? false) _buildActiveRouteDetails(context, currentRoute,currentPosition),
+        // if (currentRoute?.isActive ?? false) _buildActiveRouteDetails(context, currentRoute,currentPosition),
       ],
     );
   }
 
-  Widget _buildFlutterMap(List<GeoPoint> committedPoints, Position? userPos,  NewRoute? currentRoute) {
+  Widget _buildFlutterMap(List<GeoPoint> committedPoints, Position? userPos,  route_model.Route? currentRoute) {
     // Convert GeoPoints to LatLng
     final polylinePoints =
         committedPoints.map((gp) => gp.toLatLng()).toList();
@@ -118,7 +118,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         MarkerLayer(
           markers: [
             if (currentMarker != null) currentMarker,
-            ..._buildWaypointMarkers(currentRoute?.pointOfInterest),
+            ..._buildWaypointMarkers(currentRoute?.pointsOfInterest.toList()),
           ],
         ),
       ],
@@ -172,13 +172,13 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     }
   }
 
- List<Marker> _buildWaypointMarkers(List<Waypoint>? waypoints) {
+ List<Marker> _buildWaypointMarkers(List<PointOfInterest>? waypoints) {
   return waypoints?.map((waypoint) => Marker(
     point: waypoint.location!.toLatLng(),
     width: 40,
     height: 40,
     child: Icon(
-      _getWaypointIcon(waypoint.type!),
+      _getWaypointIcon(waypoint.waypointType!),
       color: Colors.blue,
     ),
   )).toList() ?? [];
@@ -203,85 +203,87 @@ _getWaypointIcon(WaypointType type) {
   }
 }
 
-  Widget _buildActiveRouteDetails(BuildContext context, NewRoute? currentRoute,Position ?currentPosition) {
-    // Only show if there's an active route
-    if (!(currentRoute?.isActive ?? false)) {
-      return const SizedBox.shrink();
-    }
+/// need new implemantiom
 
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
+  // Widget _buildActiveRouteDetails(BuildContext context, NewRoute? currentRoute,Position ?currentPosition) {
+  //   // Only show if there's an active route
+  //   if (!(currentRoute?.isActive ?? false)) {
+  //     return const SizedBox.shrink();
+  //   }
+
+  //   return Positioned(
+  //     bottom: 0,
+  //     left: 0,
+  //     right: 0,
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.end,
+  //       children: [
           
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _buildRouteActionButtons(),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                  //  _buildDraggableHandle(),
-                    _buildMainDetails(currentRoute, currentPosition),
-                 //   _buildExpandedDetailsContainer(),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //         Padding(
+  //           padding: const EdgeInsets.all(8.0),
+  //           child: _buildRouteActionButtons(),
+  //         ),
+  //         Center(
+  //           child: Padding(
+  //             padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+  //             child: Container(
+  //               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  //               decoration: BoxDecoration(
+  //                 color: Colors.black,
+  //                 borderRadius: const BorderRadius.only(
+  //                   topLeft: Radius.circular(20),
+  //                   topRight: Radius.circular(20),
+  //                 ),
+  //                 boxShadow: [
+  //                   BoxShadow(
+  //                     color: Colors.black.withOpacity(0.2),
+  //                     spreadRadius: 0,
+  //                     offset: const Offset(0, 4),
+  //                   ),
+  //                 ],
+  //               ),
+  //               child: Column(
+  //                 children: [
+  //                 //  _buildDraggableHandle(),
+  //                   _buildMainDetails(currentRoute, currentPosition),
+  //                //   _buildExpandedDetailsContainer(),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildMainDetails(NewRoute? currentRoute,Position ?currentPosition) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildDetailColumn(
-            icon: Icons.speed,
-            title: 'Speed',
-            value: '${currentPosition?.speed?.toStringAsFixed(0) ?? 'N/A'} km/h',
-          ),
-        _buildDetailColumn(
-          icon: Icons.terrain,
-          title: 'Elevation',
-          value: '${currentPosition?.altitude ?? 'N/A'} m',
-        ),
-        _buildDetailColumn(
-          icon: Icons.timer,
-          title: 'Duration',
-          value: DurationFormatter.formatDuration(currentRoute!.routeDuration),
-        ),
-        _buildDetailColumn(
-          icon: Icons.alt_route,
-          title: 'Distance',
-          value: DistanceFormatter.formatDistance(currentRoute!.length),
-        ),
-      ],
-    );
-  }
+  // Widget _buildMainDetails(NewRoute? currentRoute,Position ?currentPosition) {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //     children: [
+  //       _buildDetailColumn(
+  //           icon: Icons.speed,
+  //           title: 'Speed',
+  //           value: '${currentPosition?.speed?.toStringAsFixed(0) ?? 'N/A'} km/h',
+  //         ),
+  //       _buildDetailColumn(
+  //         icon: Icons.terrain,
+  //         title: 'Elevation',
+  //         value: '${currentPosition?.altitude ?? 'N/A'} m',
+  //       ),
+  //       _buildDetailColumn(
+  //         icon: Icons.timer,
+  //         title: 'Duration',
+  //         value: DurationFormatter.formatDuration(currentRoute!.routeDuration),
+  //       ),
+  //       _buildDetailColumn(
+  //         icon: Icons.alt_route,
+  //         title: 'Distance',
+  //         value: DistanceFormatter.formatDistance(currentRoute!.length),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildDetailColumn({
     required IconData icon,
@@ -297,35 +299,35 @@ _getWaypointIcon(WaypointType type) {
       ],
     );
   }
- Widget _buildRouteActionButtons() {
-    return SizedBox(
-      height: 50,
-      child: ExpandablePanel(
-        isOpen: true,
-        alignment: Alignment.topRight,
-        buttons: [
-          IconButton(
-            icon: const Icon(Icons.add_location, color: Colors.black),
-            onPressed: () {
-              BottomSheetService.showLargeBottomSheet(
-                context: context,
-                content:   WayPointBottomSheet(),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share, color: Colors.black),
-            onPressed: () {
-              // Implement share route
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.pause, color: Colors.black),
-       onPressed: () => _onStopRoutePressed(context),
-          ),
-        ],
-      ),
-    );
-  }
+//  Widget _buildRouteActionButtons() {
+//     return SizedBox(
+//       height: 50,
+//       child: ExpandablePanel(
+//         isOpen: true,
+//         alignment: Alignment.topRight,
+//         buttons: [
+//           IconButton(
+//             icon: const Icon(Icons.add_location, color: Colors.black),
+//             onPressed: () {
+//               BottomSheetService.showLargeBottomSheet(
+//                 context: context,
+//                 content:   WayPointBottomSheet(),
+//               );
+//             },
+//           ),
+//           IconButton(
+//             icon: const Icon(Icons.share, color: Colors.black),
+//             onPressed: () {
+//               // Implement share route
+//             },
+//           ),
+//           IconButton(
+//             icon: const Icon(Icons.pause, color: Colors.black),
+//        onPressed: () => _onStopRoutePressed(context),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
   
 }

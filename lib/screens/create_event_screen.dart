@@ -4,11 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/providers/create_event_provider.dart';
 import 'package:motomeetfront/widgets/ExpandablePanel.dart';
-import 'package:motomeetfront/widgets/customTextFromField.dart';
-import 'package:motomeetfront/widgets/dialogs/confirmation_dialog.dart';
+ import 'package:motomeetfront/widgets/dialogs/confirmation_dialog.dart';
 import 'package:motomeetfront/widgets/event_item_form.dart';
 import 'package:motomeetfront/widgets/event_stage_form.dart';
 import 'package:motomeetfront/widgets/loading_indicator.dart';
+
+import '../widgets/customTextFromField.dart';
 
 class CreateEventScreen extends ConsumerStatefulWidget {
   final Event? eventToEdit;
@@ -251,7 +252,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              CustomTextFormField(
+                               CustomTextFormField(
                                 controller: _nameController,
                                 labelText: 'Event Name',
                                 validator: (value) {
@@ -265,7 +266,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               CustomTextFormField(
                                 controller: _descriptionController,
                                 labelText: 'Description',
-                                maxLines: 5,
+                              //  maxLines: 5,
                               ),
                               const SizedBox(height: 16),
                               // Event privacy settings
@@ -633,7 +634,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     );
   }
 
-  void _showItemForm(BuildContext context, RequiredItem? item, [int? index]) {
+  void _showItemForm(BuildContext context, EventItem? item, [int? index]) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

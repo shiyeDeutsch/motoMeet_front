@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class CustomTextFromField extends StatelessWidget {
-  const CustomTextFromField(
+class CustomTextFormField extends StatelessWidget {
+  const CustomTextFormField(
       {super.key,
       required this.controller,
       this.hintText,
@@ -13,9 +13,10 @@ class CustomTextFromField extends StatelessWidget {
       this.errorStyle,
       this.onChanged,
       this.isPassword = false,
-     this. readOnly=false,
+      this.readOnly = false,
       this.validator,
-      this.onTap});
+      this.onTap,
+      this.labelText}); // Added labelText property
   final TextEditingController controller;
   final String? hintText;
   final Widget? prefixIcon;
@@ -27,14 +28,16 @@ class CustomTextFromField extends StatelessWidget {
   final void Function(String)? onChanged;
   final String? Function(String?)? validator;
   final bool? isPassword;
-  final bool  readOnly;
+  final bool readOnly;
   final void Function()? onTap;
+  final String? labelText; // Added labelText property
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Container(
-            height: 46,
+          height: 46,
           // padding: const EdgeInsets.symmetric(
           //     horizontal: 8), // Optional: for internal padding
           decoration: BoxDecoration(
@@ -71,6 +74,7 @@ class CustomTextFromField extends StatelessWidget {
               fillColor: Colors.white70,
               contentPadding:
                   const EdgeInsetsDirectional.only(start: 12, bottom: 9),
+              labelText: labelText, // Added labelText to InputDecoration
             //  errorStyle: TextStyle(height: 3.5),
               // errorBorder: OutlineInputBorder( 
               //   borderRadius: BorderRadius.circular(30.0),

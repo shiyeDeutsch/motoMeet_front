@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../routing/routes.dart';
 import '../widgets/customTextFromField.dart';
-
+ 
 class SignupScreen extends StatelessWidget {
   SignupScreen({super.key});
 
@@ -40,7 +40,7 @@ class SignupScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    CustomTextFromField(
+                    CustomTextFormField(
                       validator: (value) {
                         if (value?.isEmpty ?? false) {
                           return 'Please enter an email address';
@@ -59,7 +59,7 @@ class SignupScreen extends StatelessWidget {
                     SizedBox(
                       height: 15,
                     ),
-                    CustomTextFromField(
+                    CustomTextFormField(
                       validator: (value) {
                         if (value?.isEmpty ?? false) {
                           return 'Please enter a password';
@@ -79,7 +79,7 @@ class SignupScreen extends StatelessWidget {
                     SizedBox(
                       height: 15,
                     ),
-                    CustomTextFromField(
+                    CustomTextFormField(
                       validator: (value) {
                         if (value?.isEmpty ?? false) {
                           return 'Please confirm your password';

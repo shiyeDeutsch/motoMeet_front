@@ -114,7 +114,7 @@ lib/
 │       
 └───widgets
     │   bottomNavigation.dart
-    │   customTextFromField.dart
+    │   CustomTextFormField.dart
     │   dropdown.dart
     │   event_card.dart
     │   event_item_form.dart

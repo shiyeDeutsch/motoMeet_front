@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:motomeetfront/models/register_model.dart';
 import 'package:motomeetfront/services/httpClient.dart';
 
 import '../models/userModel.dart';
@@ -9,20 +10,21 @@ import '../utilities/apiEndPoints.dart';
 class AuthService {
   AuthService();
 
-  Future<UserInfo?> register(UserInfo user) async {
+  Future<UserInfo?> register(RegisterModel registerModel) async {
     try {
-      print(user.toJson());
+      if (kDebugMode) {
+        print(registerModel.toJson());
+      }
+      
       final response = await HttpClient.post(
         uri: ApiEndpoints.register,
-        body: jsonEncode(user.toJson()),
-        //  headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(registerModel.toJson()),
       );
 
       if (response.statusCode == 200) {
         // Assuming the server returns a 200 status code on successful registration
         final data = jsonDecode(response.body);
         final user = UserInfo.fromJson(data['user']);
-        //  final token = data['token'] as String?;
 
         if (user != null) {
           return user;
@@ -48,7 +50,6 @@ class AuthService {
       final response = await HttpClient.post(
      uri: ApiEndpoints.login,
         body: jsonEncode({'Email': email, 'Password': password}),
-        // headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {

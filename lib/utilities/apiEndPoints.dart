@@ -177,7 +177,12 @@ class ApiEndpoints {
     path: 'api/activity-types',
     port: port,
   );
-  
+    static Uri activityType = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/activity-type',
+    port: port,
+  );
   // Media endpoints
   static Uri media = Uri(
     scheme: scheme,

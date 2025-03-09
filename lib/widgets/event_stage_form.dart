@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/widgets/customTextFromField.dart';
+import 'package:motomeetfront/widgets/CustomTextFormField.dart';
 
 class EventStageForm extends StatefulWidget {
   final EventStage? stage;
