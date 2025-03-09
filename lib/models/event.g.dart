@@ -1362,19 +1362,24 @@ const EventStageSchema = CollectionSchema(
       name: r'routeType',
       type: IsarType.string,
     ),
-    r'stageStartTime': PropertySchema(
+    r'stageEndTime': PropertySchema(
       id: 3,
+      name: r'stageEndTime',
+      type: IsarType.dateTime,
+    ),
+    r'stageStartTime': PropertySchema(
+      id: 4,
       name: r'stageStartTime',
       type: IsarType.dateTime,
     ),
     r'stageType': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'stageType',
       type: IsarType.string,
       enumMap: _EventStagestageTypeEnumValueMap,
     ),
     r'title': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'title',
       type: IsarType.string,
     )
@@ -1460,9 +1465,10 @@ void _eventStageSerialize(
     object.location,
   );
   writer.writeString(offsets[2], object.routeType);
-  writer.writeDateTime(offsets[3], object.stageStartTime);
-  writer.writeString(offsets[4], object.stageType?.name);
-  writer.writeString(offsets[5], object.title);
+  writer.writeDateTime(offsets[3], object.stageEndTime);
+  writer.writeDateTime(offsets[4], object.stageStartTime);
+  writer.writeString(offsets[5], object.stageType?.name);
+  writer.writeString(offsets[6], object.title);
 }
 
 EventStage _eventStageDeserialize(
@@ -1480,10 +1486,11 @@ EventStage _eventStageDeserialize(
       allOffsets,
     ),
     routeType: reader.readStringOrNull(offsets[2]),
-    stageStartTime: reader.readDateTimeOrNull(offsets[3]),
+    stageEndTime: reader.readDateTimeOrNull(offsets[3]),
+    stageStartTime: reader.readDateTimeOrNull(offsets[4]),
     stageType:
-        _EventStagestageTypeValueEnumMap[reader.readStringOrNull(offsets[4])],
-    title: reader.readStringOrNull(offsets[5]),
+        _EventStagestageTypeValueEnumMap[reader.readStringOrNull(offsets[5])],
+    title: reader.readStringOrNull(offsets[6]),
   );
   return object;
 }
@@ -1508,9 +1515,11 @@ P _eventStageDeserializeProp<P>(
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 5:
       return (_EventStagestageTypeValueEnumMap[reader.readStringOrNull(offset)])
           as P;
-    case 5:
+    case 6:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2019,6 +2028,80 @@ extension EventStageQueryFilter
   }
 
   QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
+      stageEndTimeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'stageEndTime',
+      ));
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
+      stageEndTimeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'stageEndTime',
+      ));
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
+      stageEndTimeEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'stageEndTime',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
+      stageEndTimeGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'stageEndTime',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
+      stageEndTimeLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'stageEndTime',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
+      stageEndTimeBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'stageEndTime',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterFilterCondition>
       stageStartTimeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2506,6 +2589,18 @@ extension EventStageQuerySortBy
     });
   }
 
+  QueryBuilder<EventStage, EventStage, QAfterSortBy> sortByStageEndTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stageEndTime', Sort.asc);
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterSortBy> sortByStageEndTimeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stageEndTime', Sort.desc);
+    });
+  }
+
   QueryBuilder<EventStage, EventStage, QAfterSortBy> sortByStageStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'stageStartTime', Sort.asc);
@@ -2582,6 +2677,18 @@ extension EventStageQuerySortThenBy
     });
   }
 
+  QueryBuilder<EventStage, EventStage, QAfterSortBy> thenByStageEndTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stageEndTime', Sort.asc);
+    });
+  }
+
+  QueryBuilder<EventStage, EventStage, QAfterSortBy> thenByStageEndTimeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stageEndTime', Sort.desc);
+    });
+  }
+
   QueryBuilder<EventStage, EventStage, QAfterSortBy> thenByStageStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'stageStartTime', Sort.asc);
@@ -2636,6 +2743,12 @@ extension EventStageQueryWhereDistinct
     });
   }
 
+  QueryBuilder<EventStage, EventStage, QDistinct> distinctByStageEndTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'stageEndTime');
+    });
+  }
+
   QueryBuilder<EventStage, EventStage, QDistinct> distinctByStageStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'stageStartTime');
@@ -2680,6 +2793,12 @@ extension EventStageQueryProperty
   QueryBuilder<EventStage, String?, QQueryOperations> routeTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'routeType');
+    });
+  }
+
+  QueryBuilder<EventStage, DateTime?, QQueryOperations> stageEndTimeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'stageEndTime');
     });
   }
 
@@ -4048,618 +4167,6 @@ extension EventStageParticipantQueryProperty on QueryBuilder<
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetActivityTypeCollection on Isar {
-  IsarCollection<ActivityType> get activityTypes => this.collection();
-}
-
-const ActivityTypeSchema = CollectionSchema(
-  name: r'ActivityType',
-  id: -319715602017010704,
-  properties: {
-    r'name': PropertySchema(
-      id: 0,
-      name: r'name',
-      type: IsarType.string,
-    )
-  },
-  estimateSize: _activityTypeEstimateSize,
-  serialize: _activityTypeSerialize,
-  deserialize: _activityTypeDeserialize,
-  deserializeProp: _activityTypeDeserializeProp,
-  idName: r'id',
-  indexes: {},
-  links: {
-    r'eventActivities': LinkSchema(
-      id: -1530238197323582262,
-      name: r'eventActivities',
-      target: r'EventActivity',
-      single: false,
-    ),
-    r'groupActivities': LinkSchema(
-      id: 6964704383587144479,
-      name: r'groupActivities',
-      target: r'GroupActivity',
-      single: false,
-    )
-  },
-  embeddedSchemas: {},
-  getId: _activityTypeGetId,
-  getLinks: _activityTypeGetLinks,
-  attach: _activityTypeAttach,
-  version: '3.1.0+1',
-);
-
-int _activityTypeEstimateSize(
-  ActivityType object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  {
-    final value = object.name;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  return bytesCount;
-}
-
-void _activityTypeSerialize(
-  ActivityType object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.name);
-}
-
-ActivityType _activityTypeDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = ActivityType(
-    id: id,
-    name: reader.readStringOrNull(offsets[0]),
-  );
-  return object;
-}
-
-P _activityTypeDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readStringOrNull(offset)) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-Id _activityTypeGetId(ActivityType object) {
-  return object.id ?? Isar.autoIncrement;
-}
-
-List<IsarLinkBase<dynamic>> _activityTypeGetLinks(ActivityType object) {
-  return [object.eventActivities, object.groupActivities];
-}
-
-void _activityTypeAttach(
-    IsarCollection<dynamic> col, Id id, ActivityType object) {
-  object.id = id;
-  object.eventActivities.attach(
-      col, col.isar.collection<EventActivity>(), r'eventActivities', id);
-  object.groupActivities.attach(
-      col, col.isar.collection<GroupActivity>(), r'groupActivities', id);
-}
-
-extension ActivityTypeQueryWhereSort
-    on QueryBuilder<ActivityType, ActivityType, QWhere> {
-  QueryBuilder<ActivityType, ActivityType, QAfterWhere> anyId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-}
-
-extension ActivityTypeQueryWhere
-    on QueryBuilder<ActivityType, ActivityType, QWhereClause> {
-  QueryBuilder<ActivityType, ActivityType, QAfterWhereClause> idEqualTo(Id id) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterWhereClause> idNotEqualTo(
-      Id id) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
-      );
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
-      );
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterWhereClause> idBetween(
-    Id lowerId,
-    Id upperId, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-}
-
-extension ActivityTypeQueryFilter
-    on QueryBuilder<ActivityType, ActivityType, QFilterCondition> {
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> idIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'id',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      idIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'id',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> idEqualTo(
-      Id? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> idGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> idLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> idBetween(
-    Id? lower,
-    Id? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'name',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      nameIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'name',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      nameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'name',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      nameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition> nameMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'name',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      nameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      nameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'name',
-        value: '',
-      ));
-    });
-  }
-}
-
-extension ActivityTypeQueryObject
-    on QueryBuilder<ActivityType, ActivityType, QFilterCondition> {}
-
-extension ActivityTypeQueryLinks
-    on QueryBuilder<ActivityType, ActivityType, QFilterCondition> {
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivities(FilterQuery<EventActivity> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'eventActivities');
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivitiesLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'eventActivities', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivitiesIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'eventActivities', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivitiesIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'eventActivities', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivitiesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'eventActivities', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivitiesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'eventActivities', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      eventActivitiesLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'eventActivities', lower, includeLower, upper, includeUpper);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivities(FilterQuery<GroupActivity> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'groupActivities');
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivitiesLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'groupActivities', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivitiesIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'groupActivities', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivitiesIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'groupActivities', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivitiesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'groupActivities', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivitiesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'groupActivities', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterFilterCondition>
-      groupActivitiesLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'groupActivities', lower, includeLower, upper, includeUpper);
-    });
-  }
-}
-
-extension ActivityTypeQuerySortBy
-    on QueryBuilder<ActivityType, ActivityType, QSortBy> {
-  QueryBuilder<ActivityType, ActivityType, QAfterSortBy> sortByName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterSortBy> sortByNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.desc);
-    });
-  }
-}
-
-extension ActivityTypeQuerySortThenBy
-    on QueryBuilder<ActivityType, ActivityType, QSortThenBy> {
-  QueryBuilder<ActivityType, ActivityType, QAfterSortBy> thenById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterSortBy> thenByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterSortBy> thenByName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ActivityType, ActivityType, QAfterSortBy> thenByNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.desc);
-    });
-  }
-}
-
-extension ActivityTypeQueryWhereDistinct
-    on QueryBuilder<ActivityType, ActivityType, QDistinct> {
-  QueryBuilder<ActivityType, ActivityType, QDistinct> distinctByName(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
-    });
-  }
-}
-
-extension ActivityTypeQueryProperty
-    on QueryBuilder<ActivityType, ActivityType, QQueryProperty> {
-  QueryBuilder<ActivityType, int, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<ActivityType, String?, QQueryOperations> nameProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'name');
-    });
-  }
-}
-
-// coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
-
 extension GetEventActivityCollection on Isar {
   IsarCollection<EventActivity> get eventActivitys => this.collection();
 }
@@ -4668,10 +4175,11 @@ const EventActivitySchema = CollectionSchema(
   name: r'EventActivity',
   id: 3205657380676997202,
   properties: {
-    r'activityTypeName': PropertySchema(
+    r'activityType': PropertySchema(
       id: 0,
-      name: r'activityTypeName',
+      name: r'activityType',
       type: IsarType.string,
+      enumMap: _EventActivityactivityTypeEnumValueMap,
     )
   },
   estimateSize: _eventActivityEstimateSize,
@@ -4680,7 +4188,14 @@ const EventActivitySchema = CollectionSchema(
   deserializeProp: _eventActivityDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {},
+  links: {
+    r'event': LinkSchema(
+      id: 6384453150441866689,
+      name: r'event',
+      target: r'Event',
+      single: true,
+    )
+  },
   embeddedSchemas: {},
   getId: _eventActivityGetId,
   getLinks: _eventActivityGetLinks,
@@ -4695,9 +4210,9 @@ int _eventActivityEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.activityTypeName;
+    final value = object.activityType;
     if (value != null) {
-      bytesCount += 3 + value.length * 3;
+      bytesCount += 3 + value.name.length * 3;
     }
   }
   return bytesCount;
@@ -4709,7 +4224,7 @@ void _eventActivitySerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.activityTypeName);
+  writer.writeString(offsets[0], object.activityType?.name);
 }
 
 EventActivity _eventActivityDeserialize(
@@ -4719,7 +4234,8 @@ EventActivity _eventActivityDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = EventActivity(
-    activityTypeName: reader.readStringOrNull(offsets[0]),
+    activityType: _EventActivityactivityTypeValueEnumMap[
+        reader.readStringOrNull(offsets[0])],
     id: id,
   );
   return object;
@@ -4733,23 +4249,46 @@ P _eventActivityDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (_EventActivityactivityTypeValueEnumMap[
+          reader.readStringOrNull(offset)]) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _EventActivityactivityTypeEnumValueMap = {
+  r'Riding': r'Riding',
+  r'Camping': r'Camping',
+  r'Workshop': r'Workshop',
+  r'Social': r'Social',
+  r'TourGuided': r'TourGuided',
+  r'OffRoad': r'OffRoad',
+  r'TrackDay': r'TrackDay',
+  r'Other': r'Other',
+};
+const _EventActivityactivityTypeValueEnumMap = {
+  r'Riding': SocialActivityType.Riding,
+  r'Camping': SocialActivityType.Camping,
+  r'Workshop': SocialActivityType.Workshop,
+  r'Social': SocialActivityType.Social,
+  r'TourGuided': SocialActivityType.TourGuided,
+  r'OffRoad': SocialActivityType.OffRoad,
+  r'TrackDay': SocialActivityType.TrackDay,
+  r'Other': SocialActivityType.Other,
+};
 
 Id _eventActivityGetId(EventActivity object) {
   return object.id ?? Isar.autoIncrement;
 }
 
 List<IsarLinkBase<dynamic>> _eventActivityGetLinks(EventActivity object) {
-  return [];
+  return [object.event];
 }
 
 void _eventActivityAttach(
     IsarCollection<dynamic> col, Id id, EventActivity object) {
   object.id = id;
+  object.event.attach(col, col.isar.collection<Event>(), r'event', id);
 }
 
 extension EventActivityQueryWhereSort
@@ -4836,31 +4375,31 @@ extension EventActivityQueryWhere
 extension EventActivityQueryFilter
     on QueryBuilder<EventActivity, EventActivity, QFilterCondition> {
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameIsNull() {
+      activityTypeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'activityTypeName',
+        property: r'activityType',
       ));
     });
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameIsNotNull() {
+      activityTypeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'activityTypeName',
+        property: r'activityType',
       ));
     });
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameEqualTo(
-    String? value, {
+      activityTypeEqualTo(
+    SocialActivityType? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'activityTypeName',
+        property: r'activityType',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -4868,15 +4407,15 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameGreaterThan(
-    String? value, {
+      activityTypeGreaterThan(
+    SocialActivityType? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'activityTypeName',
+        property: r'activityType',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -4884,15 +4423,15 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameLessThan(
-    String? value, {
+      activityTypeLessThan(
+    SocialActivityType? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'activityTypeName',
+        property: r'activityType',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -4900,16 +4439,16 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameBetween(
-    String? lower,
-    String? upper, {
+      activityTypeBetween(
+    SocialActivityType? lower,
+    SocialActivityType? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'activityTypeName',
+        property: r'activityType',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -4920,13 +4459,13 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameStartsWith(
+      activityTypeStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'activityTypeName',
+        property: r'activityType',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -4934,13 +4473,13 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameEndsWith(
+      activityTypeEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'activityTypeName',
+        property: r'activityType',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -4948,10 +4487,10 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameContains(String value, {bool caseSensitive = true}) {
+      activityTypeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'activityTypeName',
+        property: r'activityType',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -4959,10 +4498,10 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameMatches(String pattern, {bool caseSensitive = true}) {
+      activityTypeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'activityTypeName',
+        property: r'activityType',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
@@ -4970,20 +4509,20 @@ extension EventActivityQueryFilter
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameIsEmpty() {
+      activityTypeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'activityTypeName',
+        property: r'activityType',
         value: '',
       ));
     });
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
-      activityTypeNameIsNotEmpty() {
+      activityTypeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'activityTypeName',
+        property: r'activityType',
         value: '',
       ));
     });
@@ -5065,21 +4604,35 @@ extension EventActivityQueryObject
     on QueryBuilder<EventActivity, EventActivity, QFilterCondition> {}
 
 extension EventActivityQueryLinks
-    on QueryBuilder<EventActivity, EventActivity, QFilterCondition> {}
+    on QueryBuilder<EventActivity, EventActivity, QFilterCondition> {
+  QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition> event(
+      FilterQuery<Event> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'event');
+    });
+  }
+
+  QueryBuilder<EventActivity, EventActivity, QAfterFilterCondition>
+      eventIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'event', 0, true, 0, true);
+    });
+  }
+}
 
 extension EventActivityQuerySortBy
     on QueryBuilder<EventActivity, EventActivity, QSortBy> {
   QueryBuilder<EventActivity, EventActivity, QAfterSortBy>
-      sortByActivityTypeName() {
+      sortByActivityType() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityTypeName', Sort.asc);
+      return query.addSortBy(r'activityType', Sort.asc);
     });
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterSortBy>
-      sortByActivityTypeNameDesc() {
+      sortByActivityTypeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityTypeName', Sort.desc);
+      return query.addSortBy(r'activityType', Sort.desc);
     });
   }
 }
@@ -5087,16 +4640,16 @@ extension EventActivityQuerySortBy
 extension EventActivityQuerySortThenBy
     on QueryBuilder<EventActivity, EventActivity, QSortThenBy> {
   QueryBuilder<EventActivity, EventActivity, QAfterSortBy>
-      thenByActivityTypeName() {
+      thenByActivityType() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityTypeName', Sort.asc);
+      return query.addSortBy(r'activityType', Sort.asc);
     });
   }
 
   QueryBuilder<EventActivity, EventActivity, QAfterSortBy>
-      thenByActivityTypeNameDesc() {
+      thenByActivityTypeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'activityTypeName', Sort.desc);
+      return query.addSortBy(r'activityType', Sort.desc);
     });
   }
 
@@ -5115,11 +4668,10 @@ extension EventActivityQuerySortThenBy
 
 extension EventActivityQueryWhereDistinct
     on QueryBuilder<EventActivity, EventActivity, QDistinct> {
-  QueryBuilder<EventActivity, EventActivity, QDistinct>
-      distinctByActivityTypeName({bool caseSensitive = true}) {
+  QueryBuilder<EventActivity, EventActivity, QDistinct> distinctByActivityType(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'activityTypeName',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'activityType', caseSensitive: caseSensitive);
     });
   }
 }
@@ -5132,10 +4684,10 @@ extension EventActivityQueryProperty
     });
   }
 
-  QueryBuilder<EventActivity, String?, QQueryOperations>
-      activityTypeNameProperty() {
+  QueryBuilder<EventActivity, SocialActivityType?, QQueryOperations>
+      activityTypeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'activityTypeName');
+      return query.addPropertyName(r'activityType');
     });
   }
 }
@@ -5935,6 +5487,9 @@ EventStage _$EventStageFromJson(Map<String, dynamic> json) => EventStage(
       stageStartTime: json['stageStartTime'] == null
           ? null
           : DateTime.parse(json['stageStartTime'] as String),
+      stageEndTime: json['stageEndTime'] == null
+          ? null
+          : DateTime.parse(json['stageEndTime'] as String),
       routeType: json['routeType'] as String?,
       stageType:
           $enumDecodeNullable(_$EventStageTypeEnumMap, json['stageType']),
@@ -5949,6 +5504,7 @@ Map<String, dynamic> _$EventStageToJson(EventStage instance) =>
       'title': instance.title,
       'description': instance.description,
       'stageStartTime': instance.stageStartTime?.toIso8601String(),
+      'stageEndTime': instance.stageEndTime?.toIso8601String(),
       'routeType': instance.routeType,
       'stageType': _$EventStageTypeEnumMap[instance.stageType],
       'location': instance.location,
@@ -6002,28 +5558,29 @@ Map<String, dynamic> _$EventStageParticipantToJson(
       'isCompleted': instance.isCompleted,
     };
 
-ActivityType _$ActivityTypeFromJson(Map<String, dynamic> json) => ActivityType(
-      id: (json['id'] as num?)?.toInt(),
-      name: json['name'] as String?,
-    );
-
-Map<String, dynamic> _$ActivityTypeToJson(ActivityType instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-    };
-
 EventActivity _$EventActivityFromJson(Map<String, dynamic> json) =>
     EventActivity(
       id: (json['id'] as num?)?.toInt(),
-      activityTypeName: json['activityTypeName'] as String?,
+      activityType: $enumDecodeNullable(
+          _$SocialActivityTypeEnumMap, json['activityType']),
     );
 
 Map<String, dynamic> _$EventActivityToJson(EventActivity instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'activityTypeName': instance.activityTypeName,
+      'activityType': _$SocialActivityTypeEnumMap[instance.activityType],
     };
+
+const _$SocialActivityTypeEnumMap = {
+  SocialActivityType.Riding: 'Riding',
+  SocialActivityType.Camping: 'Camping',
+  SocialActivityType.Workshop: 'Workshop',
+  SocialActivityType.Social: 'Social',
+  SocialActivityType.TourGuided: 'TourGuided',
+  SocialActivityType.OffRoad: 'OffRoad',
+  SocialActivityType.TrackDay: 'TrackDay',
+  SocialActivityType.Other: 'Other',
+};
 
 EventItem _$EventItemFromJson(Map<String, dynamic> json) => EventItem(
       id: (json['id'] as num?)?.toInt(),

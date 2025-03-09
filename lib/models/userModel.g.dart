@@ -62,23 +62,28 @@ const UserInfoSchema = CollectionSchema(
       name: r'phoneNumber',
       type: IsarType.string,
     ),
-    r'profilePictureUrl': PropertySchema(
+    r'profileImageUrl': PropertySchema(
       id: 9,
+      name: r'profileImageUrl',
+      type: IsarType.string,
+    ),
+    r'profilePictureUrl': PropertySchema(
+      id: 10,
       name: r'profilePictureUrl',
       type: IsarType.string,
     ),
     r'token': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'token',
       type: IsarType.string,
     ),
     r'totalDistance': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'totalDistance',
       type: IsarType.double,
     ),
     r'username': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'username',
       type: IsarType.string,
     )
@@ -189,6 +194,12 @@ int _userInfoEstimateSize(
     }
   }
   {
+    final value = object.profileImageUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.profilePictureUrl;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -224,10 +235,11 @@ void _userInfoSerialize(
   writer.writeString(offsets[6], object.firstName);
   writer.writeString(offsets[7], object.lastName);
   writer.writeString(offsets[8], object.phoneNumber);
-  writer.writeString(offsets[9], object.profilePictureUrl);
-  writer.writeString(offsets[10], object.token);
-  writer.writeDouble(offsets[11], object.totalDistance);
-  writer.writeString(offsets[12], object.username);
+  writer.writeString(offsets[9], object.profileImageUrl);
+  writer.writeString(offsets[10], object.profilePictureUrl);
+  writer.writeString(offsets[11], object.token);
+  writer.writeDouble(offsets[12], object.totalDistance);
+  writer.writeString(offsets[13], object.username);
 }
 
 UserInfo _userInfoDeserialize(
@@ -247,10 +259,11 @@ UserInfo _userInfoDeserialize(
     id: id,
     lastName: reader.readStringOrNull(offsets[7]),
     phoneNumber: reader.readStringOrNull(offsets[8]),
-    profilePictureUrl: reader.readStringOrNull(offsets[9]),
-    token: reader.readStringOrNull(offsets[10]),
-    totalDistance: reader.readDoubleOrNull(offsets[11]),
-    username: reader.readStringOrNull(offsets[12]),
+    profileImageUrl: reader.readStringOrNull(offsets[9]),
+    profilePictureUrl: reader.readStringOrNull(offsets[10]),
+    token: reader.readStringOrNull(offsets[11]),
+    totalDistance: reader.readDoubleOrNull(offsets[12]),
+    username: reader.readStringOrNull(offsets[13]),
   );
   return object;
 }
@@ -285,8 +298,10 @@ P _userInfoDeserializeProp<P>(
     case 10:
       return (reader.readStringOrNull(offset)) as P;
     case 11:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 12:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 13:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1563,6 +1578,160 @@ extension UserInfoQueryFilter
   }
 
   QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'profileImageUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'profileImageUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'profileImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'profileImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'profileImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'profileImageUrl',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'profileImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'profileImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'profileImageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'profileImageUrl',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'profileImageUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
+      profileImageUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'profileImageUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterFilterCondition>
       profilePictureUrlIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2693,6 +2862,18 @@ extension UserInfoQuerySortBy on QueryBuilder<UserInfo, UserInfo, QSortBy> {
     });
   }
 
+  QueryBuilder<UserInfo, UserInfo, QAfterSortBy> sortByProfileImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterSortBy> sortByProfileImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImageUrl', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserInfo, UserInfo, QAfterSortBy> sortByProfilePictureUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profilePictureUrl', Sort.asc);
@@ -2864,6 +3045,18 @@ extension UserInfoQuerySortThenBy
     });
   }
 
+  QueryBuilder<UserInfo, UserInfo, QAfterSortBy> thenByProfileImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserInfo, UserInfo, QAfterSortBy> thenByProfileImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImageUrl', Sort.desc);
+    });
+  }
+
   QueryBuilder<UserInfo, UserInfo, QAfterSortBy> thenByProfilePictureUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profilePictureUrl', Sort.asc);
@@ -2975,6 +3168,14 @@ extension UserInfoQueryWhereDistinct
     });
   }
 
+  QueryBuilder<UserInfo, UserInfo, QDistinct> distinctByProfileImageUrl(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'profileImageUrl',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<UserInfo, UserInfo, QDistinct> distinctByProfilePictureUrl(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3063,6 +3264,12 @@ extension UserInfoQueryProperty
   QueryBuilder<UserInfo, String?, QQueryOperations> phoneNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'phoneNumber');
+    });
+  }
+
+  QueryBuilder<UserInfo, String?, QQueryOperations> profileImageUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'profileImageUrl');
     });
   }
 
@@ -4348,6 +4555,7 @@ UserInfo _$UserInfoFromJson(Map<String, dynamic> json) => UserInfo(
       countryId: (json['countryId'] as num?)?.toInt(),
       totalDistance: (json['totalDistance'] as num?)?.toDouble(),
       token: json['token'] as String?,
+      profileImageUrl: json['profileImageUrl'] as String?,
     );
 
 Map<String, dynamic> _$UserInfoToJson(UserInfo instance) => <String, dynamic>{
@@ -4365,6 +4573,7 @@ Map<String, dynamic> _$UserInfoToJson(UserInfo instance) => <String, dynamic>{
       'countryId': instance.countryId,
       'totalDistance': instance.totalDistance,
       'token': instance.token,
+      'profileImageUrl': instance.profileImageUrl,
     };
 
 UserInfoFollow _$UserInfoFollowFromJson(Map<String, dynamic> json) =>

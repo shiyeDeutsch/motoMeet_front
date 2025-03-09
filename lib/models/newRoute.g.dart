@@ -43,45 +43,60 @@ const RouteSchema = CollectionSchema(
       name: r'elevationGain',
       type: IsarType.double,
     ),
-    r'endPoint': PropertySchema(
+    r'endDate': PropertySchema(
       id: 5,
+      name: r'endDate',
+      type: IsarType.dateTime,
+    ),
+    r'endPoint': PropertySchema(
+      id: 6,
       name: r'endPoint',
       type: IsarType.object,
       target: r'GeoPoint',
     ),
+    r'imageUrl': PropertySchema(
+      id: 7,
+      name: r'imageUrl',
+      type: IsarType.string,
+    ),
     r'isLoop': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'isLoop',
       type: IsarType.bool,
     ),
     r'length': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'length',
       type: IsarType.double,
     ),
     r'name': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'name',
       type: IsarType.string,
     ),
     r'rating': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'rating',
       type: IsarType.double,
     ),
     r'region': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'region',
       type: IsarType.string,
     ),
     r'routeType': PropertySchema(
-      id: 11,
+      id: 13,
       name: r'routeType',
-      type: IsarType.object,
-      target: r'RouteType',
+      type: IsarType.string,
+      enumMap: _RouterouteTypeEnumValueMap,
+    ),
+    r'startDate': PropertySchema(
+      id: 14,
+      name: r'startDate',
+      type: IsarType.dateTime,
     ),
     r'startPoint': PropertySchema(
-      id: 12,
+      id: 15,
       name: r'startPoint',
       type: IsarType.object,
       target: r'GeoPoint',
@@ -123,11 +138,16 @@ const RouteSchema = CollectionSchema(
       name: r'pointsOfInterest',
       target: r'PointOfInterest',
       single: false,
+    ),
+    r'routeCreator': LinkSchema(
+      id: -5764238651711557000,
+      name: r'routeCreator',
+      target: r'UserInfo',
+      single: true,
     )
   },
   embeddedSchemas: {
     r'GeoPoint': GeoPointSchema,
-    r'RouteType': RouteTypeSchema,
     r'DifficultyLevel': DifficultyLevelSchema
   },
   getId: _routeGetId,
@@ -169,6 +189,12 @@ int _routeEstimateSize(
           GeoPointSchema.estimateSize(value, allOffsets[GeoPoint]!, allOffsets);
     }
   }
+  {
+    final value = object.imageUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.name.length * 3;
   {
     final value = object.region;
@@ -179,9 +205,7 @@ int _routeEstimateSize(
   {
     final value = object.routeType;
     if (value != null) {
-      bytesCount += 3 +
-          RouteTypeSchema.estimateSize(
-              value, allOffsets[RouteType]!, allOffsets);
+      bytesCount += 3 + value.name.length * 3;
     }
   }
   {
@@ -210,25 +234,23 @@ void _routeSerialize(
   );
   writer.writeLong(offsets[3], object.durationMinutes);
   writer.writeDouble(offsets[4], object.elevationGain);
+  writer.writeDateTime(offsets[5], object.endDate);
   writer.writeObject<GeoPoint>(
-    offsets[5],
+    offsets[6],
     allOffsets,
     GeoPointSchema.serialize,
     object.endPoint,
   );
-  writer.writeBool(offsets[6], object.isLoop);
-  writer.writeDouble(offsets[7], object.length);
-  writer.writeString(offsets[8], object.name);
-  writer.writeDouble(offsets[9], object.rating);
-  writer.writeString(offsets[10], object.region);
-  writer.writeObject<RouteType>(
-    offsets[11],
-    allOffsets,
-    RouteTypeSchema.serialize,
-    object.routeType,
-  );
+  writer.writeString(offsets[7], object.imageUrl);
+  writer.writeBool(offsets[8], object.isLoop);
+  writer.writeDouble(offsets[9], object.length);
+  writer.writeString(offsets[10], object.name);
+  writer.writeDouble(offsets[11], object.rating);
+  writer.writeString(offsets[12], object.region);
+  writer.writeString(offsets[13], object.routeType?.name);
+  writer.writeDateTime(offsets[14], object.startDate);
   writer.writeObject<GeoPoint>(
-    offsets[12],
+    offsets[15],
     allOffsets,
     GeoPointSchema.serialize,
     object.startPoint,
@@ -251,24 +273,24 @@ Route _routeDeserialize(
     ),
     durationMinutes: reader.readLongOrNull(offsets[3]),
     elevationGain: reader.readDoubleOrNull(offsets[4]),
+    endDate: reader.readDateTimeOrNull(offsets[5]),
     endPoint: reader.readObjectOrNull<GeoPoint>(
-      offsets[5],
+      offsets[6],
       GeoPointSchema.deserialize,
       allOffsets,
     ),
     id: id,
-    isLoop: reader.readBoolOrNull(offsets[6]),
-    length: reader.readDoubleOrNull(offsets[7]),
-    name: reader.readString(offsets[8]),
-    rating: reader.readDoubleOrNull(offsets[9]),
-    region: reader.readStringOrNull(offsets[10]),
-    routeType: reader.readObjectOrNull<RouteType>(
-      offsets[11],
-      RouteTypeSchema.deserialize,
-      allOffsets,
-    ),
+    imageUrl: reader.readStringOrNull(offsets[7]),
+    isLoop: reader.readBoolOrNull(offsets[8]),
+    length: reader.readDoubleOrNull(offsets[9]),
+    name: reader.readString(offsets[10]),
+    rating: reader.readDoubleOrNull(offsets[11]),
+    region: reader.readStringOrNull(offsets[12]),
+    routeType:
+        _RouterouteTypeValueEnumMap[reader.readStringOrNull(offsets[13])],
+    startDate: reader.readDateTimeOrNull(offsets[14]),
     startPoint: reader.readObjectOrNull<GeoPoint>(
-      offsets[12],
+      offsets[15],
       GeoPointSchema.deserialize,
       allOffsets,
     ),
@@ -298,28 +320,31 @@ P _routeDeserializeProp<P>(
     case 4:
       return (reader.readDoubleOrNull(offset)) as P;
     case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 6:
       return (reader.readObjectOrNull<GeoPoint>(
         offset,
         GeoPointSchema.deserialize,
         allOffsets,
       )) as P;
-    case 6:
-      return (reader.readBoolOrNull(offset)) as P;
     case 7:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 9:
       return (reader.readDoubleOrNull(offset)) as P;
     case 10:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 11:
-      return (reader.readObjectOrNull<RouteType>(
-        offset,
-        RouteTypeSchema.deserialize,
-        allOffsets,
-      )) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
+      return (_RouterouteTypeValueEnumMap[reader.readStringOrNull(offset)])
+          as P;
+    case 14:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 15:
       return (reader.readObjectOrNull<GeoPoint>(
         offset,
         GeoPointSchema.deserialize,
@@ -329,6 +354,19 @@ P _routeDeserializeProp<P>(
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _RouterouteTypeEnumValueMap = {
+  r'hiking': r'hiking',
+  r'biking': r'biking',
+  r'motorcycle': r'motorcycle',
+  r'jeep': r'jeep',
+};
+const _RouterouteTypeValueEnumMap = {
+  r'hiking': RouteType.hiking,
+  r'biking': RouteType.biking,
+  r'motorcycle': RouteType.motorcycle,
+  r'jeep': RouteType.jeep,
+};
 
 Id _routeGetId(Route object) {
   return object.id ?? Isar.autoIncrement;
@@ -340,7 +378,8 @@ List<IsarLinkBase<dynamic>> _routeGetLinks(Route object) {
     object.reviews,
     object.tags,
     object.userRoutes,
-    object.pointsOfInterest
+    object.pointsOfInterest,
+    object.routeCreator
   ];
 }
 
@@ -354,6 +393,8 @@ void _routeAttach(IsarCollection<dynamic> col, Id id, Route object) {
       .attach(col, col.isar.collection<UserRoute>(), r'userRoutes', id);
   object.pointsOfInterest.attach(
       col, col.isar.collection<PointOfInterest>(), r'pointsOfInterest', id);
+  object.routeCreator
+      .attach(col, col.isar.collection<UserInfo>(), r'routeCreator', id);
 }
 
 extension RouteQueryWhereSort on QueryBuilder<Route, Route, QWhere> {
@@ -887,6 +928,75 @@ extension RouteQueryFilter on QueryBuilder<Route, Route, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Route, Route, QAfterFilterCondition> endDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> endDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> endDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> endDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> endDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> endDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Route, Route, QAfterFilterCondition> endPointIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -967,6 +1077,152 @@ extension RouteQueryFilter on QueryBuilder<Route, Route, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'imageUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'imageUrl',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'imageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'imageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'imageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'imageUrl',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'imageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'imageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'imageUrl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'imageUrl',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'imageUrl',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> imageUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'imageUrl',
+        value: '',
       ));
     });
   }
@@ -1441,6 +1697,205 @@ extension RouteQueryFilter on QueryBuilder<Route, Route, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeEqualTo(
+    RouteType? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeGreaterThan(
+    RouteType? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeLessThan(
+    RouteType? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeBetween(
+    RouteType? lower,
+    RouteType? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'routeType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'routeType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'routeType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'routeType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> startDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'startDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> startDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'startDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> startDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> startDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> startDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> startDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'startDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Route, Route, QAfterFilterCondition> startPointIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1470,13 +1925,6 @@ extension RouteQueryObject on QueryBuilder<Route, Route, QFilterCondition> {
       FilterQuery<GeoPoint> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'endPoint');
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> routeType(
-      FilterQuery<RouteType> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'routeType');
     });
   }
 
@@ -1773,6 +2221,19 @@ extension RouteQueryLinks on QueryBuilder<Route, Route, QFilterCondition> {
           r'pointsOfInterest', lower, includeLower, upper, includeUpper);
     });
   }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeCreator(
+      FilterQuery<UserInfo> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'routeCreator');
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterFilterCondition> routeCreatorIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'routeCreator', 0, true, 0, true);
+    });
+  }
 }
 
 extension RouteQuerySortBy on QueryBuilder<Route, Route, QSortBy> {
@@ -1821,6 +2282,30 @@ extension RouteQuerySortBy on QueryBuilder<Route, Route, QSortBy> {
   QueryBuilder<Route, Route, QAfterSortBy> sortByElevationGainDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'elevationGain', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByEndDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'imageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'imageUrl', Sort.desc);
     });
   }
 
@@ -1883,6 +2368,30 @@ extension RouteQuerySortBy on QueryBuilder<Route, Route, QSortBy> {
       return query.addSortBy(r'region', Sort.desc);
     });
   }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByRouteType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByRouteTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> sortByStartDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
 }
 
 extension RouteQuerySortThenBy on QueryBuilder<Route, Route, QSortThenBy> {
@@ -1934,6 +2443,18 @@ extension RouteQuerySortThenBy on QueryBuilder<Route, Route, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Route, Route, QAfterSortBy> thenByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByEndDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Route, Route, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1943,6 +2464,18 @@ extension RouteQuerySortThenBy on QueryBuilder<Route, Route, QSortThenBy> {
   QueryBuilder<Route, Route, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'imageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'imageUrl', Sort.desc);
     });
   }
 
@@ -2005,6 +2538,30 @@ extension RouteQuerySortThenBy on QueryBuilder<Route, Route, QSortThenBy> {
       return query.addSortBy(r'region', Sort.desc);
     });
   }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByRouteType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByRouteTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Route, Route, QAfterSortBy> thenByStartDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
 }
 
 extension RouteQueryWhereDistinct on QueryBuilder<Route, Route, QDistinct> {
@@ -2031,6 +2588,19 @@ extension RouteQueryWhereDistinct on QueryBuilder<Route, Route, QDistinct> {
   QueryBuilder<Route, Route, QDistinct> distinctByElevationGain() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'elevationGain');
+    });
+  }
+
+  QueryBuilder<Route, Route, QDistinct> distinctByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'endDate');
+    });
+  }
+
+  QueryBuilder<Route, Route, QDistinct> distinctByImageUrl(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'imageUrl', caseSensitive: caseSensitive);
     });
   }
 
@@ -2063,6 +2633,19 @@ extension RouteQueryWhereDistinct on QueryBuilder<Route, Route, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'region', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Route, Route, QDistinct> distinctByRouteType(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'routeType', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Route, Route, QDistinct> distinctByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'startDate');
     });
   }
 }
@@ -2105,9 +2688,21 @@ extension RouteQueryProperty on QueryBuilder<Route, Route, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Route, DateTime?, QQueryOperations> endDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'endDate');
+    });
+  }
+
   QueryBuilder<Route, GeoPoint?, QQueryOperations> endPointProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'endPoint');
+    });
+  }
+
+  QueryBuilder<Route, String?, QQueryOperations> imageUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'imageUrl');
     });
   }
 
@@ -2144,6 +2739,12 @@ extension RouteQueryProperty on QueryBuilder<Route, Route, QQueryProperty> {
   QueryBuilder<Route, RouteType?, QQueryOperations> routeTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'routeType');
+    });
+  }
+
+  QueryBuilder<Route, DateTime?, QQueryOperations> startDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'startDate');
     });
   }
 
@@ -3975,8 +4576,8 @@ const UserRouteSchema = CollectionSchema(
     r'routeType': PropertySchema(
       id: 5,
       name: r'routeType',
-      type: IsarType.object,
-      target: r'RouteType',
+      type: IsarType.string,
+      enumMap: _UserRouterouteTypeEnumValueMap,
     )
   },
   estimateSize: _userRouteEstimateSize,
@@ -3993,10 +4594,7 @@ const UserRouteSchema = CollectionSchema(
       single: false,
     )
   },
-  embeddedSchemas: {
-    r'DifficultyLevel': DifficultyLevelSchema,
-    r'RouteType': RouteTypeSchema
-  },
+  embeddedSchemas: {r'DifficultyLevel': DifficultyLevelSchema},
   getId: _userRouteGetId,
   getLinks: _userRouteGetLinks,
   attach: _userRouteAttach,
@@ -4020,9 +4618,7 @@ int _userRouteEstimateSize(
   {
     final value = object.routeType;
     if (value != null) {
-      bytesCount += 3 +
-          RouteTypeSchema.estimateSize(
-              value, allOffsets[RouteType]!, allOffsets);
+      bytesCount += 3 + value.name.length * 3;
     }
   }
   return bytesCount;
@@ -4044,12 +4640,7 @@ void _userRouteSerialize(
   writer.writeDouble(offsets[2], object.distance);
   writer.writeLong(offsets[3], object.durationMinutes);
   writer.writeDouble(offsets[4], object.elevationGain);
-  writer.writeObject<RouteType>(
-    offsets[5],
-    allOffsets,
-    RouteTypeSchema.serialize,
-    object.routeType,
-  );
+  writer.writeString(offsets[5], object.routeType?.name);
 }
 
 UserRoute _userRouteDeserialize(
@@ -4069,11 +4660,8 @@ UserRoute _userRouteDeserialize(
     durationMinutes: reader.readLongOrNull(offsets[3]),
     elevationGain: reader.readDoubleOrNull(offsets[4]),
     id: id,
-    routeType: reader.readObjectOrNull<RouteType>(
-      offsets[5],
-      RouteTypeSchema.deserialize,
-      allOffsets,
-    ),
+    routeType:
+        _UserRouterouteTypeValueEnumMap[reader.readStringOrNull(offsets[5])],
   );
   return object;
 }
@@ -4100,15 +4688,25 @@ P _userRouteDeserializeProp<P>(
     case 4:
       return (reader.readDoubleOrNull(offset)) as P;
     case 5:
-      return (reader.readObjectOrNull<RouteType>(
-        offset,
-        RouteTypeSchema.deserialize,
-        allOffsets,
-      )) as P;
+      return (_UserRouterouteTypeValueEnumMap[reader.readStringOrNull(offset)])
+          as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _UserRouterouteTypeEnumValueMap = {
+  r'hiking': r'hiking',
+  r'biking': r'biking',
+  r'motorcycle': r'motorcycle',
+  r'jeep': r'jeep',
+};
+const _UserRouterouteTypeValueEnumMap = {
+  r'hiking': RouteType.hiking,
+  r'biking': RouteType.biking,
+  r'motorcycle': RouteType.motorcycle,
+  r'jeep': RouteType.jeep,
+};
 
 Id _userRouteGetId(UserRoute object) {
   return object.id ?? Isar.autoIncrement;
@@ -4616,6 +5214,138 @@ extension UserRouteQueryFilter
       ));
     });
   }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeEqualTo(
+    RouteType? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
+      routeTypeGreaterThan(
+    RouteType? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeLessThan(
+    RouteType? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeBetween(
+    RouteType? lower,
+    RouteType? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'routeType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'routeType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'routeType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'routeType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
+      routeTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'routeType',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension UserRouteQueryObject
@@ -4624,13 +5354,6 @@ extension UserRouteQueryObject
       FilterQuery<DifficultyLevel> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'difficultyLevel');
-    });
-  }
-
-  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routeType(
-      FilterQuery<RouteType> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'routeType');
     });
   }
 }
@@ -4748,6 +5471,18 @@ extension UserRouteQuerySortBy on QueryBuilder<UserRoute, UserRoute, QSortBy> {
       return query.addSortBy(r'elevationGain', Sort.desc);
     });
   }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterSortBy> sortByRouteType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterSortBy> sortByRouteTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.desc);
+    });
+  }
 }
 
 extension UserRouteQuerySortThenBy
@@ -4811,6 +5546,18 @@ extension UserRouteQuerySortThenBy
       return query.addSortBy(r'id', Sort.desc);
     });
   }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterSortBy> thenByRouteType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QAfterSortBy> thenByRouteTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'routeType', Sort.desc);
+    });
+  }
 }
 
 extension UserRouteQueryWhereDistinct
@@ -4836,6 +5583,13 @@ extension UserRouteQueryWhereDistinct
   QueryBuilder<UserRoute, UserRoute, QDistinct> distinctByElevationGain() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'elevationGain');
+    });
+  }
+
+  QueryBuilder<UserRoute, UserRoute, QDistinct> distinctByRouteType(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'routeType', caseSensitive: caseSensitive);
     });
   }
 }
@@ -6910,227 +7664,6 @@ extension GeoPointQueryObject
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-const RouteTypeSchema = Schema(
-  name: r'RouteType',
-  id: 542760461257275683,
-  properties: {
-    r'name': PropertySchema(
-      id: 0,
-      name: r'name',
-      type: IsarType.string,
-    )
-  },
-  estimateSize: _routeTypeEstimateSize,
-  serialize: _routeTypeSerialize,
-  deserialize: _routeTypeDeserialize,
-  deserializeProp: _routeTypeDeserializeProp,
-);
-
-int _routeTypeEstimateSize(
-  RouteType object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  {
-    final value = object.name;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  return bytesCount;
-}
-
-void _routeTypeSerialize(
-  RouteType object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.name);
-}
-
-RouteType _routeTypeDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = RouteType(
-    name: reader.readStringOrNull(offsets[0]),
-  );
-  return object;
-}
-
-P _routeTypeDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readStringOrNull(offset)) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-extension RouteTypeQueryFilter
-    on QueryBuilder<RouteType, RouteType, QFilterCondition> {
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'name',
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'name',
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'name',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'name',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<RouteType, RouteType, QAfterFilterCondition> nameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'name',
-        value: '',
-      ));
-    });
-  }
-}
-
-extension RouteTypeQueryObject
-    on QueryBuilder<RouteType, RouteType, QFilterCondition> {}
-
-// coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
-
 const DifficultyLevelSchema = Schema(
   name: r'DifficultyLevel',
   id: -5526050935432467796,
@@ -7540,9 +8073,7 @@ Route _$RouteFromJson(Map<String, dynamic> json) => Route(
       endPoint: json['endPoint'] == null
           ? null
           : GeoPoint.fromJson(json['endPoint'] as Map<String, dynamic>),
-      routeType: json['routeType'] == null
-          ? null
-          : RouteType.fromJson(json['routeType'] as Map<String, dynamic>),
+      routeType: $enumDecodeNullable(_$RouteTypeEnumMap, json['routeType']),
       difficultyLevel: json['difficultyLevel'] == null
           ? null
           : DifficultyLevel.fromJson(
@@ -7554,6 +8085,13 @@ Route _$RouteFromJson(Map<String, dynamic> json) => Route(
       isLoop: json['isLoop'] as bool?,
       country: json['country'] as String?,
       region: json['region'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      startDate: json['startDate'] == null
+          ? null
+          : DateTime.parse(json['startDate'] as String),
+      endDate: json['endDate'] == null
+          ? null
+          : DateTime.parse(json['endDate'] as String),
     );
 
 Map<String, dynamic> _$RouteToJson(Route instance) => <String, dynamic>{
@@ -7562,7 +8100,7 @@ Map<String, dynamic> _$RouteToJson(Route instance) => <String, dynamic>{
       'description': instance.description,
       'startPoint': instance.startPoint,
       'endPoint': instance.endPoint,
-      'routeType': instance.routeType,
+      'routeType': _$RouteTypeEnumMap[instance.routeType],
       'difficultyLevel': instance.difficultyLevel,
       'length': instance.length,
       'durationMinutes': instance.durationMinutes,
@@ -7571,7 +8109,17 @@ Map<String, dynamic> _$RouteToJson(Route instance) => <String, dynamic>{
       'isLoop': instance.isLoop,
       'country': instance.country,
       'region': instance.region,
+      'imageUrl': instance.imageUrl,
+      'startDate': instance.startDate?.toIso8601String(),
+      'endDate': instance.endDate?.toIso8601String(),
     };
+
+const _$RouteTypeEnumMap = {
+  RouteType.hiking: 'hiking',
+  RouteType.biking: 'biking',
+  RouteType.motorcycle: 'motorcycle',
+  RouteType.jeep: 'jeep',
+};
 
 GeoPoint _$GeoPointFromJson(Map<String, dynamic> json) => GeoPoint(
       latitude: (json['latitude'] as num?)?.toDouble(),
@@ -7583,14 +8131,6 @@ Map<String, dynamic> _$GeoPointToJson(GeoPoint instance) => <String, dynamic>{
       'latitude': instance.latitude,
       'longitude': instance.longitude,
       'altitude': instance.altitude,
-    };
-
-RouteType _$RouteTypeFromJson(Map<String, dynamic> json) => RouteType(
-      name: json['name'] as String?,
-    );
-
-Map<String, dynamic> _$RouteTypeToJson(RouteType instance) => <String, dynamic>{
-      'name': instance.name,
     };
 
 DifficultyLevel _$DifficultyLevelFromJson(Map<String, dynamic> json) =>
@@ -7653,9 +8193,7 @@ UserRoute _$UserRouteFromJson(Map<String, dynamic> json) => UserRoute(
           ? null
           : DifficultyLevel.fromJson(
               json['difficultyLevel'] as Map<String, dynamic>),
-      routeType: json['routeType'] == null
-          ? null
-          : RouteType.fromJson(json['routeType'] as Map<String, dynamic>),
+      routeType: $enumDecodeNullable(_$RouteTypeEnumMap, json['routeType']),
       dateTraveled: json['dateTraveled'] == null
           ? null
           : DateTime.parse(json['dateTraveled'] as String),
@@ -7667,7 +8205,7 @@ UserRoute _$UserRouteFromJson(Map<String, dynamic> json) => UserRoute(
 Map<String, dynamic> _$UserRouteToJson(UserRoute instance) => <String, dynamic>{
       'id': instance.id,
       'difficultyLevel': instance.difficultyLevel,
-      'routeType': instance.routeType,
+      'routeType': _$RouteTypeEnumMap[instance.routeType],
       'dateTraveled': instance.dateTraveled?.toIso8601String(),
       'durationMinutes': instance.durationMinutes,
       'distance': instance.distance,
