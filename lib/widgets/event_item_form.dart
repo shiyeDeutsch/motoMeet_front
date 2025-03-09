@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/widgets/CustomTextFormField.dart';
 
+import 'customTextFromField.dart';
+ 
 class EventItemForm extends StatefulWidget {
-  final RequiredItem? item;
-  final Function(RequiredItem) onSave;
+  final EventItem? item;
+  final Function(EventItem) onSave;
 
   const EventItemForm({
     Key? key,
@@ -28,7 +29,7 @@ class _EventItemFormState extends State<EventItemForm> {
     
     _nameController = TextEditingController(text: widget.item?.itemName ?? '');
     _descriptionController = TextEditingController(text: widget.item?.description ?? '');
-    _isRequired = widget.item?.isRequired ?? true;
+    // _isRequired = widget.item?.isRequired ?? true;
   }
 
   @override
@@ -79,7 +80,7 @@ class _EventItemFormState extends State<EventItemForm> {
             CustomTextFormField(
               controller: _descriptionController,
               labelText: 'Description (Optional)',
-              maxLines: 3,
+            //  maxLines: 3,
             ),
             const SizedBox(height: 16),
             SwitchListTile(
@@ -99,13 +100,13 @@ class _EventItemFormState extends State<EventItemForm> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     widget.onSave(
-                      RequiredItem(
+                      EventItem(
                         id: widget.item?.id,
                         itemName: _nameController.text,
                         description: _descriptionController.text.isNotEmpty
                             ? _descriptionController.text
                             : null,
-                        isRequired: _isRequired,
+                     //   isRequired: _isRequired,
                       ),
                     );
                   }

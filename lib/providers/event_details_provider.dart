@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/services/events_service.dart';
 import 'package:motomeetfront/services/service_locator.dart';
@@ -11,8 +12,8 @@ class EventDetailsState {
   final bool isParticipant;
   final String? creatorName;
   final int participantCount;
-  
-  bool get hasStages => event?.eventStages.isNotEmpty ?? false;
+
+  bool get hasStages => event?.stages.isNotEmpty ?? false;
   bool get hasRequiredItems => event?.requiredItems.isNotEmpty ?? false;
   bool get hasActivities => event?.eventActivities.isNotEmpty ?? false;
 
@@ -48,13 +49,13 @@ class EventDetailsState {
 }
 
 class EventDetailsNotifier extends StateNotifier<EventDetailsState> {
-  final String eventId;
+  final int eventId;
   final EventsService _eventsService;
 
   EventDetailsNotifier({
     required this.eventId,
     EventsService? eventsService,
-  })  : _eventsService = eventsService ?? getIt<EventsService>(),
+  })  : _eventsService = eventsService ?? GetIt.instance.get<EventsService>(),
         super(EventDetailsState(isLoading: true)) {
     loadEventDetails();
   }
@@ -63,16 +64,17 @@ class EventDetailsNotifier extends StateNotifier<EventDetailsState> {
     if (!refresh && state.event != null) {
       return;
     }
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final event = await _eventsService.getEventById(eventId);
       final isCreator = await _eventsService.isEventCreator(eventId);
       final isParticipant = await _eventsService.isEventParticipant(eventId);
       final creatorName = await _eventsService.getEventCreatorName(eventId);
-      final participantCount = await _eventsService.getEventParticipantCount(eventId);
-      
+      final participantCount =
+          await _eventsService.getEventParticipantCount(eventId);
+
       state = state.copyWith(
         event: event,
         isLoading: false,
@@ -91,7 +93,7 @@ class EventDetailsNotifier extends StateNotifier<EventDetailsState> {
 
   Future<void> joinEvent() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final success = await _eventsService.joinEvent(eventId);
       if (success) {
@@ -112,7 +114,7 @@ class EventDetailsNotifier extends StateNotifier<EventDetailsState> {
 
   Future<void> leaveEvent() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final success = await _eventsService.leaveEvent(eventId);
       if (success) {
@@ -130,34 +132,39 @@ class EventDetailsNotifier extends StateNotifier<EventDetailsState> {
       );
     }
   }
-
-  Future<void> cancelEvent() async {
-    if (!state.isCreator) {
-      state = state.copyWith(
-        error: 'Only the creator can cancel this event',
-      );
-      return;
-    }
-    
-    state = state.copyWith(isLoading: true, error: null);
-    
-    try {
-      final success = await _eventsService.cancelEvent(eventId);
-      if (!success) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Failed to cancel event',
-        );
-      }
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
 }
 
-final eventDetailsProvider = StateNotifierProvider.family<EventDetailsNotifier, EventDetailsState, String>(
+// Provider to store the currently selected event ID
+final eventIdProvider = StateProvider<int>((ref) => 0);
+
+final eventDetailsProvider = StateNotifierProvider.family<EventDetailsNotifier, EventDetailsState, int>(
   (ref, eventId) => EventDetailsNotifier(eventId: eventId),
-);
+);  
+//   Future<void> cancelEvent() async {
+//     if (!state.isCreator) {
+//       state = state.copyWith(
+//         error: 'Only the creator can cancel this event',
+//       );
+//       return;
+//     }
+
+//     state = state.copyWith(isLoading: true, error: null);
+
+//     try {
+//       final success = await _eventsService.cancelEvent(eventId);
+//       if (!success) {
+//         state = state.copyWith(
+//           isLoading: false,
+//           error: 'Failed to cancel event',
+//         );
+//       }
+//     } catch (e) {
+//       state = state.copyWith(
+//         isLoading: false,
+//         error: e.toString(),
+//       );
+//     }
+//   }
+  //}
+
+

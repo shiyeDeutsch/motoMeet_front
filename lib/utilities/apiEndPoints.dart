@@ -178,7 +178,7 @@ class ApiEndpoints {
         path: 'api/events/$eventId/pending-participants',
       );
 
-  static getParticipantCount(String eventId) => Uri(
+  static getParticipantCount(int eventId) => Uri(
         scheme: scheme,
         host: host,
         port: port,
@@ -206,21 +206,21 @@ class ApiEndpoints {
         path: 'api/events/$eventId/participants/$userId',
       );
 
-  static isEventCreator(String eventId) => Uri(
+  static isEventCreator(int eventId) => Uri(
         scheme: scheme,
         host: host,
         port: port,
         path: 'api/events/$eventId/is-creator',
       );
 
-  static isEventParticipant(String eventId) => Uri(
+  static isEventParticipant(int eventId) => Uri(
         scheme: scheme,
         host: host,
         port: port,
         path: 'api/events/$eventId/is-participant',
       );
 
-  static getEventCreatorName(String eventId) => Uri(
+  static getEventCreatorName(int eventId) => Uri(
         scheme: scheme,
         host: host,
         port: port,

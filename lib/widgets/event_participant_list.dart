@@ -59,7 +59,7 @@ class EventParticipantList extends ConsumerWidget {
     );
   }
 
-  Widget _buildParticipantTile(UserModel user) {
+  Widget _buildParticipantTile(UserInfo user) {
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: user.profileImageUrl != null
@@ -74,8 +74,8 @@ class EventParticipantList extends ConsumerWidget {
             : null,
       ),
       title: Text(user.username ?? 'Unknown user'),
-      subtitle: user.fullName != null && user.fullName!.isNotEmpty
-          ? Text(user.fullName!)
+      subtitle: user.username != null && user.username!.isNotEmpty
+          ? Text(user.username!)
           : null,
       onTap: () {
         // Navigate to user profile
@@ -83,7 +83,7 @@ class EventParticipantList extends ConsumerWidget {
     );
   }
 
-  void _showAllParticipants(BuildContext context, List<UserModel> participants) {
+  void _showAllParticipants(BuildContext context, List<UserInfo> participants) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -134,7 +134,7 @@ class EventParticipantList extends ConsumerWidget {
   }
 }
 
-final eventParticipantsProvider = FutureProvider.family<List<UserModel>, String>((ref, eventId) async {
+final eventParticipantsProvider = FutureProvider.family<List<UserInfo>, String>((ref, eventId) async {
   final eventsService = ref.read(eventsServiceProvider);
   return await eventsService.getEventParticipants(eventId);
 });

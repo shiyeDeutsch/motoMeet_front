@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../models/enum.dart';
 
-Future<RouteTypeEnum?> showRouteTypeEnumDialog(BuildContext context) async {
-  return showDialog<RouteTypeEnum>(
+Future<RouteType?> showRouteTypeEnumDialog(BuildContext context) async {
+  return showDialog<RouteType>(
     context: context,
     builder: (BuildContext context) {
       return SimpleDialog(
@@ -11,7 +11,7 @@ Future<RouteTypeEnum?> showRouteTypeEnumDialog(BuildContext context) async {
         children: <Widget>[
           SimpleDialogOption(
             onPressed: () {
-              Navigator.pop(context, RouteTypeEnum.hiking);
+              Navigator.pop(context, RouteType.hiking);
             },
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -24,7 +24,7 @@ Future<RouteTypeEnum?> showRouteTypeEnumDialog(BuildContext context) async {
           ),
           SimpleDialogOption(
             onPressed: () {
-              Navigator.pop(context, RouteTypeEnum.biking);
+              Navigator.pop(context, RouteType.biking);
             },
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -37,7 +37,7 @@ Future<RouteTypeEnum?> showRouteTypeEnumDialog(BuildContext context) async {
           ),
           SimpleDialogOption(
             onPressed: () {
-              Navigator.pop(context, RouteTypeEnum.motorcycle);
+              Navigator.pop(context, RouteType.motorcycle);
             },
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -50,7 +50,7 @@ Future<RouteTypeEnum?> showRouteTypeEnumDialog(BuildContext context) async {
           ),
           SimpleDialogOption(
             onPressed: () {
-              Navigator.pop(context, RouteTypeEnum.jeep);
+              Navigator.pop(context, RouteType.jeep);
             },
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.start,

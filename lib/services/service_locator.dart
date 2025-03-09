@@ -21,10 +21,10 @@ import 'userService.dart';
 
 void setupLocator( )async  {
  
-  GetIt.I.registerLazySingleton<RouteService>(() => RouteService());
+  // GetIt.I.registerLazySingleton<RouteService>(() => RouteService());
   GetIt.I.registerLazySingleton<AuthService>(() => AuthService());
    GetIt.I.registerLazySingleton<EventsService>(() => EventsService());
-   GetIt.I.registerLazySingleton<ActivityService>(() => ActivityService());
+  //  GetIt.I.registerLazySingleton<ActivityService>(() => ActivityService());
    GetIt.I.registerLazySingleton<MapMarkerService>(() => MapMarkerService());
   GetIt.I.registerLazySingleton<UserService>(() => UserService());
 

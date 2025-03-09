@@ -79,7 +79,10 @@ class EventStage {
   String? title;
   String? description;
   DateTime? stageStartTime;
-  String? routeType; // Changed from RouteType? to String? to avoid type issues
+  DateTime? stageEndTime;
+
+    
+  String? routeType;  
   @Enumerated(EnumType.name)
   EventStageType? stageType;
   @Embedded()
@@ -97,6 +100,7 @@ class EventStage {
     this.title,
     this.description,
     this.stageStartTime,
+    this.stageEndTime,
     this.routeType,
     this.stageType,
     this.location,
@@ -112,6 +116,7 @@ class EventStage {
     String? title,
     String? description,
     DateTime? stageStartTime,
+    DateTime? stageEndTime,
     String? routeType,
     EventStageType? stageType,
     GeoPoint? location,
@@ -121,6 +126,7 @@ class EventStage {
       title: title ?? this.title,
       description: description ?? this.description,
       stageStartTime: stageStartTime ?? this.stageStartTime,
+      stageEndTime: stageEndTime ?? this.stageEndTime,
       routeType: routeType ?? this.routeType,
       stageType: stageType ?? this.stageType,
       location: location ?? this.location,

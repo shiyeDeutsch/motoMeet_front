@@ -29,6 +29,8 @@ class Route {
   String? country;
   String? region;
   String? imageUrl;
+   DateTime? startDate;   
+  DateTime? endDate;     
 
   @JsonKey(ignore: true)
   IsarLinks<RoutePoint> routePoints = IsarLinks<RoutePoint>();
@@ -64,6 +66,8 @@ class Route {
     this.country,
     this.region,
     this.imageUrl,
+    this.startDate,
+    this.endDate,
   });
 
   factory Route.fromJson(Map<String, dynamic> json) => _$RouteFromJson(json);
@@ -86,6 +90,8 @@ class Route {
     String? country,
     String? region,
     String? imageUrl,
+    DateTime? startDate,
+    DateTime? endDate,
    }) {
     return Route(
       id: id ?? this.id,
@@ -103,6 +109,8 @@ class Route {
       country: country ?? this.country,
       region: region ?? this.region,
       imageUrl: imageUrl ?? this.imageUrl,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
      );
   }
 }
@@ -396,4 +404,3 @@ class PointOfInterest {
   }
 }
 
- 

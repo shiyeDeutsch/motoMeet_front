@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/widgets/CustomTextFormField.dart';
 
+import 'customTextFromField.dart';
+ 
 class EventStageForm extends StatefulWidget {
   final EventStage? stage;
   final Function(EventStage) onSave;
@@ -163,7 +164,7 @@ class _EventStageFormState extends State<EventStageForm> {
             CustomTextFormField(
               controller: _descriptionController,
               labelText: 'Description (Optional)',
-              maxLines: 3,
+             // maxLines: 3,
             ),
             const SizedBox(height: 16),
             

@@ -7,7 +7,7 @@ import 'package:timeline_tile/timeline_tile.dart';
 
 class EventStagesList extends ConsumerWidget {
   final String eventId;
-  
+
   const EventStagesList({
     Key? key,
     required this.eventId,
@@ -16,8 +16,8 @@ class EventStagesList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eventDetailsState = ref.watch(eventDetailsProvider(eventId));
-    final stages = eventDetailsState.event?.eventStages.toList() ?? [];
-    
+    final stages = eventDetailsState.event?.stages.toList() ?? [];
+
     if (stages.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
@@ -26,7 +26,7 @@ class EventStagesList extends ConsumerWidget {
         ),
       );
     }
-    
+
     // Sort stages by start time
     stages.sort((a, b) {
       if (a.stageStartTime == null && b.stageStartTime == null) return 0;
@@ -34,7 +34,7 @@ class EventStagesList extends ConsumerWidget {
       if (b.stageStartTime == null) return -1;
       return a.stageStartTime!.compareTo(b.stageStartTime!);
     });
-    
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -51,17 +51,15 @@ class EventStagesList extends ConsumerWidget {
     );
   }
 
-  Widget _buildTimelineTile(
-    BuildContext context,
-    EventStage stage,
-    {required bool isFirst, required bool isLast}
-  ) {
+  Widget _buildTimelineTile(BuildContext context, EventStage stage,
+      {required bool isFirst, required bool isLast}) {
     final now = DateTime.now();
-    bool isPast = stage.stageStartTime != null && stage.stageStartTime!.isBefore(now);
-    bool isCurrent = stage.stageStartTime != null && 
-                    stage.stageStartTime!.isBefore(now) && 
-                    (stage.stageEndTime == null || stage.stageEndTime!.isAfter(now));
-    
+    bool isPast =
+        stage.stageStartTime != null && stage.stageStartTime!.isBefore(now);
+    bool isCurrent = stage.stageStartTime != null &&
+        stage.stageStartTime!.isBefore(now) &&
+        (stage.stageEndTime == null || stage.stageEndTime!.isAfter(now));
+
     return TimelineTile(
       alignment: TimelineAlign.manual,
       lineXY: 0.2,
@@ -69,27 +67,27 @@ class EventStagesList extends ConsumerWidget {
       isLast: isLast,
       indicatorStyle: IndicatorStyle(
         width: 20,
-        color: isCurrent 
-            ? Theme.of(context).colorScheme.primary 
-            : isPast 
-                ? Colors.grey 
-                : Colors.grey[300],
+        color: isCurrent
+            ? Colors.blue
+            : isPast
+                ? Colors.grey
+                : Colors.grey[300]!,
         padding: const EdgeInsets.all(6),
         iconStyle: IconStyle(
           color: Colors.white,
-          iconData: isCurrent 
-              ? Icons.play_arrow 
-              : isPast 
-                  ? Icons.check 
+          iconData: isCurrent
+              ? Icons.play_arrow
+              : isPast
+                  ? Icons.check
                   : Icons.circle,
           fontSize: 16,
         ),
       ),
       beforeLineStyle: LineStyle(
-        color: isPast ? Colors.grey : Colors.grey[300],
+        color: isPast ? Colors.grey : Colors.grey[300]!,
       ),
       afterLineStyle: LineStyle(
-        color: isPast ? Colors.grey : Colors.grey[300],
+        color: isPast ? Colors.grey : Colors.grey[300]!,
       ),
       endChild: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
@@ -101,8 +99,8 @@ class EventStagesList extends ConsumerWidget {
               style: TextStyle(
                 fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
                 fontSize: 16,
-                color: isCurrent 
-                    ? Theme.of(context).colorScheme.primary 
+                color: isCurrent
+                    ? Theme.of(context).colorScheme.primary
                     : Colors.black,
               ),
             ),
@@ -127,8 +125,8 @@ class EventStagesList extends ConsumerWidget {
                 DateFormat('HH:mm').format(stage.stageStartTime!),
                 style: TextStyle(
                   fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                  color: isCurrent 
-                      ? Theme.of(context).colorScheme.primary 
+                  color: isCurrent
+                      ? Theme.of(context).colorScheme.primary
                       : Colors.black,
                 ),
               )

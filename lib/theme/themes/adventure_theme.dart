@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../app_theme.dart';
 
-class AdventureTheme extends AppTheme {
+class AdventureTheme extends AppTheme { 
   // Theme identification
   @override
   String get name => 'Adventure';
@@ -36,16 +36,74 @@ class AdventureTheme extends AppTheme {
 
   @override
   ThemeData get lightTheme {
-    // ... existing code ...
+    return ThemeData(
+      primaryColor: _primaryLight,
+      colorScheme: ColorScheme.light(
+        primary: _primaryLight,
+        secondary: _secondaryLight,
+        surface: _surfaceLight,
+        background: _backgroundLight,
+        error: _errorLight,
+      ),
+      textTheme: _buildTextTheme(ThemeData.light().textTheme, Colors.black87),
+      fontFamily: _fontFamily,
+      scaffoldBackgroundColor: _backgroundLight,
+      appBarTheme: appBarTheme,
+      buttonTheme: ButtonThemeData(
+        buttonColor: _primaryLight,
+        textTheme: ButtonTextTheme.primary,
+      ),
+      cardTheme: cardTheme,
+      bottomNavigationBarTheme: bottomNavBarTheme,
+    );
   }
   
   @override
   ThemeData get darkTheme {
-    // ... existing code ...
+    return ThemeData(
+      primaryColor: _primaryDark,
+      colorScheme: ColorScheme.dark(
+        primary: _primaryDark,
+        secondary: _secondaryDark,
+        surface: _surfaceDark,
+        background: _backgroundDark,
+        error: _errorDark,
+      ),
+      textTheme: _buildTextTheme(ThemeData.dark().textTheme, Colors.white),
+      fontFamily: _fontFamily,
+      scaffoldBackgroundColor: _backgroundDark,
+      appBarTheme: appBarTheme.copyWith(backgroundColor: _primaryDark),
+      buttonTheme: ButtonThemeData(
+        buttonColor: _primaryDark,
+        textTheme: ButtonTextTheme.primary,
+      ),
+      cardTheme: cardTheme.copyWith(color: _surfaceDark),
+      bottomNavigationBarTheme: bottomNavBarTheme.copyWith(
+        backgroundColor: _surfaceDark,
+        selectedItemColor: _secondaryDark,
+        unselectedItemColor: Colors.white70,
+      ),
+    );
   }
 
   TextTheme _buildTextTheme(TextTheme base, Color textColor) {
-    // ... existing code ...
+    return base.copyWith(
+      displayLarge: base.displayLarge?.copyWith(color: textColor),
+      displayMedium: base.displayMedium?.copyWith(color: textColor),
+      displaySmall: base.displaySmall?.copyWith(color: textColor),
+      headlineLarge: base.headlineLarge?.copyWith(color: textColor),
+      headlineMedium: base.headlineMedium?.copyWith(color: textColor),
+      headlineSmall: base.headlineSmall?.copyWith(color: textColor),
+      titleLarge: base.titleLarge?.copyWith(color: textColor),
+      titleMedium: base.titleMedium?.copyWith(color: textColor),
+      titleSmall: base.titleSmall?.copyWith(color: textColor),
+      bodyLarge: base.bodyLarge?.copyWith(color: textColor),
+      bodyMedium: base.bodyMedium?.copyWith(color: textColor),
+      bodySmall: base.bodySmall?.copyWith(color: textColor),
+      labelLarge: base.labelLarge?.copyWith(color: textColor),
+      labelMedium: base.labelMedium?.copyWith(color: textColor),
+      labelSmall: base.labelSmall?.copyWith(color: textColor),
+    );
   }
 
   // Core colors

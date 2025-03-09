@@ -13,6 +13,49 @@ class EventsService {
 
   EventRepository get _eventRepository => _repositoryProvider.eventRepository;
 
+  // Get event by ID
+  Future<Event> getEventById(int eventId) async {
+    try {
+      // Try to get from API first
+      final response = await HttpClient.get(
+        Uri(
+          scheme: ApiEndpoints.scheme,
+          host: ApiEndpoints.host,
+          port: ApiEndpoints.port,
+          path: 'api/events/$eventId',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+        final event = Event.fromJson(data);
+
+        // Save to local database
+        await _eventRepository.saveEvents([event]);
+
+        return event;
+      }
+
+      // If API fails, try to get from local database
+      return await _getEventByIdFromLocal(eventId);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching event by ID: $e');
+      }
+
+      // On error, try to get from local database
+      return await _getEventByIdFromLocal(eventId);
+    }
+  }
+
+  Future<Event> _getEventByIdFromLocal(int eventId) async {
+    final event = await _eventRepository.getById(eventId);
+    if (event == null) {
+      throw Exception('Event not found with ID: $eventId');
+    }
+    return event;
+  }
+
   Future<List<Event>> getUpcomingEvents() async {
     try {
       // Try to get from API first
@@ -50,6 +93,111 @@ class EventsService {
   Future<void> _saveEventsToLocal(List<Event> events) async {
     await _eventRepository.saveEvents(events);
   }
+
+  // Join an event
+  Future<bool> joinEvent(int eventId) async {
+    try {
+      final response = await HttpClient.post(
+        uri: Uri(
+          scheme: ApiEndpoints.scheme,
+          host: ApiEndpoints.host,
+          port: ApiEndpoints.port,
+          path: 'api/events/$eventId/join',
+        ),
+        body: '{}', // Empty JSON body or could include user ID if needed
+      );
+
+      if (response.statusCode == 200) {
+        // Update local database to reflect the change
+        final event = await getEventById(eventId);
+        await _eventRepository.addParticipant(
+          eventId,
+          0, // Will use currently authenticated user ID
+          approved: !event.requiresApproval!,
+        );
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('Failed to join event: ${response.statusCode}');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error joining event: $e');
+      }
+      return false;
+    }
+  }
+
+  // Leave an event
+  Future<bool> leaveEvent(int eventId) async {
+    try {
+      final response = await HttpClient.post(
+        uri: Uri(
+          scheme: ApiEndpoints.scheme,
+          host: ApiEndpoints.host,
+          port: ApiEndpoints.port,
+          path: 'api/events/$eventId/leave',
+        ),
+        body: '{}', // Empty JSON body
+      );
+
+      if (response.statusCode == 200) {
+        // Update local database to reflect the change
+        await _eventRepository.removeParticipant(
+          eventId,
+          0, // Will use currently authenticated user ID
+        );
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('Failed to leave event: ${response.statusCode}');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error leaving event: $e');
+      }
+      return false;
+    }
+  }
+
+  // // Cancel an event (only for creator)
+  // Future<bool> cancelEvent(int eventId) async {
+  //   try {
+  //     final response = await HttpClient.post(
+  //       uri: Uri(
+  //         scheme: ApiEndpoints.scheme,
+  //         host: ApiEndpoints.host,
+  //         port: ApiEndpoints.port,
+  //         path: 'api/events/$eventId/cancel',
+  //       ),
+  //       body: '{}', // Empty JSON body
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       // Update local database to reflect the change
+  //       final event = await _eventRepository.getById(eventId);
+  //       if (event != null) {
+  //         event.isCancelled = true;
+  //         await _eventRepository.saveEvents([event]);
+  //       }
+  //       return true;
+  //     } else {
+  //       if (kDebugMode) {
+  //         print('Failed to cancel event: ${response.statusCode}');
+  //       }
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print('Error cancelling event: $e');
+  //     }
+  //     return false;
+  //   }
+ // }
 
   // Get event participants
   Future<List<UserInfo>> getEventParticipants(String eventId) async {
@@ -93,7 +241,7 @@ class EventsService {
   }
 
   // Get event participant count
-  Future<int> getEventParticipantCount(String eventId) async {
+  Future<int> getEventParticipantCount(int eventId) async {
     try {
       final response =
           await HttpClient.get(ApiEndpoints.getParticipantCount(eventId));
@@ -168,7 +316,7 @@ class EventsService {
   }
 
   // Check if the current user is the creator of the event
-  Future<bool> isEventCreator(String eventId) async {
+  Future<bool> isEventCreator(int eventId) async {
     try {
       final response =
           await HttpClient.get(ApiEndpoints.isEventCreator(eventId));
@@ -188,7 +336,7 @@ class EventsService {
   }
 
   // Check if the current user is a participant in the event
-  Future<bool> isEventParticipant(String eventId) async {
+  Future<bool> isEventParticipant(int eventId) async {
     try {
       final response =
           await HttpClient.get(ApiEndpoints.isEventParticipant(eventId));
@@ -208,7 +356,7 @@ class EventsService {
   }
 
   // Get the name of the event creator
-  Future<String> getEventCreatorName(String eventId) async {
+  Future<String> getEventCreatorName(int eventId) async {
     try {
       final response =
           await HttpClient.get(ApiEndpoints.getEventCreatorName(eventId));
