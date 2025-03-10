@@ -5,9 +5,7 @@ import 'package:motomeetfront/models/event.dart';
 // import 'package:motomeetfront/models/route.dart';
 import 'package:motomeetfront/models/enum.dart';
 
-part 'UserRecentActivity.g.dart';
-
-
+part 'activity.g.dart';
 
 @collection
 @JsonSerializable()
@@ -18,16 +16,16 @@ class UserRecentActivity {
   final DateTime timestamp;
   final String? message;
   final String? imageUrl;
-  
+
   // Foreign keys/IDs
   final int? routeId;
   final int? eventId;
   final int? groupId;
   final int? targetUserId;
-  
+
   // Whether this activity has been read/viewed by the user
   final bool isRead;
-  
+
   @JsonKey(ignore: true)
   IsarLink<UserInfo> user = IsarLink<UserInfo>();
 
@@ -44,13 +42,13 @@ class UserRecentActivity {
     this.isRead = false,
   });
 
-  factory UserRecentActivity.fromJson(Map<String, dynamic> json) => 
-    _$UserRecentActivityFromJson(json);
+  factory UserRecentActivity.fromJson(Map<String, dynamic> json) =>
+      _$UserRecentActivityFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserRecentActivityToJson(this);
 
   String get activityTypeString {
-    switch (RecentActivityType) {
+    switch (this.activityType) {
       case RecentActivityType.routeCompleted:
         return 'completed a route';
       case RecentActivityType.routeCreated:
@@ -80,5 +78,3 @@ class UserRecentActivity {
     return '$userName ${activityTypeString}';
   }
 }
-
-
