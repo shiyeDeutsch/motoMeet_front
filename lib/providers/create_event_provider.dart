@@ -1,47 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/event.dart';
+import 'package:motomeetfront/models/enum.dart';
 import 'package:motomeetfront/services/events_service.dart';
-import 'package:motomeetfront/services/service_locator.dart';
-import 'package:motomeetfront/services/activity_service.dart';
 
-class CreateEventState {
-  final Event event;
-  final bool isLoading;
-  final String? error;
-  
-  List<EventStage> get stages => event.eventStages.toList();
-  List<RequiredItem> get requiredItems => event.requiredItems.toList();
-  List<EventActivity> get activities => event.eventActivities.toList();
-
-  CreateEventState({
-    required this.event,
-    this.isLoading = false,
-    this.error,
-  });
-
-  CreateEventState copyWith({
-    Event? event,
-    bool? isLoading,
-    String? error,
-  }) {
-    return CreateEventState(
-      event: event ?? this.event,
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-    );
-  }
-}
-
-class CreateEventNotifier extends StateNotifier<CreateEventState> {
+class CreateEventNotifier extends StateNotifier<Event> {
   final EventsService _eventsService;
 
   CreateEventNotifier({
     EventsService? eventsService,
-  })  : _eventsService = eventsService ?? getIt<EventsService>(),
-        super(CreateEventState(event: Event()));
+  })  : _eventsService = eventsService ?? GetIt.I<EventsService>(),
+        super(Event());
 
   void initializeWithEvent(Event event) {
-    state = state.copyWith(event: event);
+    state = event;
   }
 
   void updateEventDetails({
@@ -52,7 +24,7 @@ class CreateEventNotifier extends StateNotifier<CreateEventState> {
     DateTime? startDateTime,
     DateTime? endDateTime,
   }) {
-    final updatedEvent = state.event.copyWith(
+    state = state.copyWith(
       name: name,
       description: description,
       isPublic: isPublic,
@@ -60,137 +32,147 @@ class CreateEventNotifier extends StateNotifier<CreateEventState> {
       startDateTime: startDateTime,
       endDateTime: endDateTime,
     );
-    
-    state = state.copyWith(event: updatedEvent);
   }
 
   void addStage(EventStage stage) {
-    final stages = List<EventStage>.from(state.event.eventStages);
+    final List<EventStage> stages = List<EventStage>.from(state.stages);
     stages.add(stage);
     
-    final updatedEvent = state.event.copyWith(eventStages: stages);
-    state = state.copyWith(event: updatedEvent);
+    // Since the Event.copyWith() method doesn't accept lists directly,
+    // we need to update the state and then modify its properties
+    final newState = state.copyWith();
+    newState.stages.clear();
+    newState.stages.addAll(stages);
+    
+    state = newState;
   }
 
   void updateStage(int index, EventStage stage) {
-    final stages = List<EventStage>.from(state.event.eventStages);
+    final List<EventStage> stages = List<EventStage>.from(state.stages);
     if (index >= 0 && index < stages.length) {
       stages[index] = stage;
       
-      final updatedEvent = state.event.copyWith(eventStages: stages);
-      state = state.copyWith(event: updatedEvent);
+      final newState = state.copyWith();
+      newState.stages.clear();
+      newState.stages.addAll(stages);
+      
+      state = newState;
     }
   }
 
   void removeStage(int index) {
-    final stages = List<EventStage>.from(state.event.eventStages);
+    final List<EventStage> stages = List<EventStage>.from(state.stages);
     if (index >= 0 && index < stages.length) {
       stages.removeAt(index);
       
-      final updatedEvent = state.event.copyWith(eventStages: stages);
-      state = state.copyWith(event: updatedEvent);
+      final newState = state.copyWith();
+      newState.stages.clear();
+      newState.stages.addAll(stages);
+      
+      state = newState;
     }
   }
 
-  void addRequiredItem(RequiredItem item) {
-    final items = List<RequiredItem>.from(state.event.requiredItems);
+  void addRequiredItem(EventItem item) {
+    final List<EventItem> items = List<EventItem>.from(state.requiredItems);
     items.add(item);
     
-    final updatedEvent = state.event.copyWith(requiredItems: items);
-    state = state.copyWith(event: updatedEvent);
+    final newState = state.copyWith();
+    newState.requiredItems.clear();
+    newState.requiredItems.addAll(items);
+    
+    state = newState;
   }
 
-  void updateRequiredItem(int index, RequiredItem item) {
-    final items = List<RequiredItem>.from(state.event.requiredItems);
+  void updateRequiredItem(int index, EventItem item) {
+    final List<EventItem> items = List<EventItem>.from(state.requiredItems);
     if (index >= 0 && index < items.length) {
       items[index] = item;
       
-      final updatedEvent = state.event.copyWith(requiredItems: items);
-      state = state.copyWith(event: updatedEvent);
+      final newState = state.copyWith();
+      newState.requiredItems.clear();
+      newState.requiredItems.addAll(items);
+      
+      state = newState;
     }
   }
 
   void removeRequiredItem(int index) {
-    final items = List<RequiredItem>.from(state.event.requiredItems);
+    final List<EventItem> items = List<EventItem>.from(state.requiredItems);
     if (index >= 0 && index < items.length) {
       items.removeAt(index);
       
-      final updatedEvent = state.event.copyWith(requiredItems: items);
-      state = state.copyWith(event: updatedEvent);
+      final newState = state.copyWith();
+      newState.requiredItems.clear();
+      newState.requiredItems.addAll(items);
+      
+      state = newState;
     }
   }
 
   void addActivity(EventActivity activity) {
-    final activities = List<EventActivity>.from(state.event.eventActivities);
+    final List<EventActivity> activities = List<EventActivity>.from(state.eventActivities);
     activities.add(activity);
     
-    final updatedEvent = state.event.copyWith(eventActivities: activities);
-    state = state.copyWith(event: updatedEvent);
+    final newState = state.copyWith();
+    newState.eventActivities.clear();
+    newState.eventActivities.addAll(activities);
+    
+    state = newState;
   }
 
   void removeActivity(int index) {
-    final activities = List<EventActivity>.from(state.event.eventActivities);
+    final List<EventActivity> activities = List<EventActivity>.from(state.eventActivities);
     if (index >= 0 && index < activities.length) {
       activities.removeAt(index);
       
-      final updatedEvent = state.event.copyWith(eventActivities: activities);
-      state = state.copyWith(event: updatedEvent);
+      final newState = state.copyWith();
+      newState.eventActivities.clear();
+      newState.eventActivities.addAll(activities);
+      
+      state = newState;
     }
   }
 
   Future<bool> saveEvent() async {
-    state = state.copyWith(isLoading: true, error: null);
-    
     try {
-      final eventWithId = state.event.id;
-      final isUpdate = eventWithId != null;
-      
+      final eventId = state.id;
+      final isUpdate = eventId != null;
       bool success;
+      
       if (isUpdate) {
-        // Update existing event
-        success = await _eventsService.updateEvent(state.event);
+        // Update existing event - we'll need to implement this in the EventsService
+        success = await _eventsService.updateEvent(state);
       } else {
-        // Create new event
-        success = await _eventsService.createEvent(state.event);
+        // Create new event - we'll need to implement this in the EventsService
+        success = await _eventsService.createEvent(state);
       }
       
-      state = state.copyWith(isLoading: false);
       return success;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
       return false;
     }
   }
 
   Future<bool> deleteEvent() async {
-    if (state.event.id == null) {
+    if (state.id == null) {
       return false;
     }
-    
-    state = state.copyWith(isLoading: true, error: null);
-    
     try {
-      final success = await _eventsService.deleteEvent(state.event.id!);
-      state = state.copyWith(isLoading: false);
+      // Delete event - we'll need to implement this in the EventsService
+      final success = await _eventsService.deleteEvent(state.id!);
       return success;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
       return false;
     }
   }
 }
 
-final createEventProvider = StateNotifierProvider<CreateEventNotifier, CreateEventState>(
+final createEventProvider = StateNotifierProvider<CreateEventNotifier, Event>(
   (ref) => CreateEventNotifier(),
 );
 
-final activityTypesProvider = FutureProvider<List<ActivityType>>((ref) {
-  final activityService = getIt<ActivityService>();
-  return activityService.getActivityTypes();
+final activityTypesProvider = FutureProvider<List<SocialActivityType>>((ref) {
+  // Return all available social activity types
+  return SocialActivityType.values.toList();
 });

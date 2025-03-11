@@ -142,6 +142,27 @@ class ApiEndpoints {
     port: port,
   );
 
+  static Uri createEvent = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/events/create',
+    port: port,
+  );
+
+  static updateEvent(int eventId) => Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/events/$eventId',
+    port: port,
+  );
+
+  static deleteEvent(int eventId) => Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/events/$eventId/delete',
+    port: port,
+  );
+
   static Uri upcomingEvents = Uri(
     scheme: scheme,
     host: host,

@@ -4,12 +4,11 @@ import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/providers/create_event_provider.dart';
 import 'package:motomeetfront/widgets/ExpandablePanel.dart';
- import 'package:motomeetfront/widgets/dialogs/confirmation_dialog.dart';
+import 'package:motomeetfront/widgets/dialogs/confirmation_dialog.dart';
 import 'package:motomeetfront/widgets/event_item_form.dart';
 import 'package:motomeetfront/widgets/event_stage_form.dart';
 import 'package:motomeetfront/widgets/loading_indicator.dart';
-
-import '../widgets/customTextFromField.dart';
+import 'package:motomeetfront/widgets/customTextFromField.dart';
 
 class CreateEventScreen extends ConsumerStatefulWidget {
   final Event? eventToEdit;
@@ -208,7 +207,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final createEventState = ref.watch(createEventProvider);
+    final eventState = ref.watch(createEventProvider);
     final isEditing = widget.eventToEdit != null;
 
     return Scaffold(
@@ -247,12 +246,11 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               const Text(
                                 'Basic Details',
                                 style: TextStyle(
-                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 16),
-                               CustomTextFormField(
+                              CustomTextFormField(
                                 controller: _nameController,
                                 labelText: 'Event Name',
                                 validator: (value) {
@@ -263,10 +261,13 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                 },
                               ),
                               const SizedBox(height: 16),
-                              CustomTextFormField(
+                              TextField(
                                 controller: _descriptionController,
-                                labelText: 'Description',
-                              //  maxLines: 5,
+                                decoration: const InputDecoration(
+                                  labelText: 'Description',
+                                  border: OutlineInputBorder(),
+                                ),
+                                maxLines: 5,
                               ),
                               const SizedBox(height: 16),
                               // Event privacy settings
@@ -311,7 +312,6 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               const Text(
                                 'Date and Time',
                                 style: TextStyle(
-                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -325,22 +325,22 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: ListTile(
-                                      title: const Text('Date'),
-                                      subtitle: Text(
-                                        DateFormat('EEE, MMM d, y')
-                                            .format(_startDate),
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => _selectStartDate(context),
+                                      icon: const Icon(Icons.calendar_today),
+                                      label: Text(
+                                        DateFormat('EEE, MMM d, y').format(_startDate),
                                       ),
-                                      onTap: () => _selectStartDate(context),
-                                      trailing: const Icon(Icons.calendar_today),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Expanded(
-                                    child: ListTile(
-                                      title: const Text('Time'),
-                                      subtitle: Text(_startTime.format(context)),
-                                      onTap: () => _selectStartTime(context),
-                                      trailing: const Icon(Icons.access_time),
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => _selectStartTime(context),
+                                      icon: const Icon(Icons.access_time),
+                                      label: Text(
+                                        _startTime.format(context),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -356,22 +356,22 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: ListTile(
-                                      title: const Text('Date'),
-                                      subtitle: Text(
-                                        DateFormat('EEE, MMM d, y')
-                                            .format(_endDate),
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => _selectEndDate(context),
+                                      icon: const Icon(Icons.calendar_today),
+                                      label: Text(
+                                        DateFormat('EEE, MMM d, y').format(_endDate),
                                       ),
-                                      onTap: () => _selectEndDate(context),
-                                      trailing: const Icon(Icons.calendar_today),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Expanded(
-                                    child: ListTile(
-                                      title: const Text('Time'),
-                                      subtitle: Text(_endTime.format(context)),
-                                      onTap: () => _selectEndTime(context),
-                                      trailing: const Icon(Icons.access_time),
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => _selectEndTime(context),
+                                      icon: const Icon(Icons.access_time),
+                                      label: Text(
+                                        _endTime.format(context),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -393,31 +393,24 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: createEventState.stages.length,
+                              itemCount: eventState.stages.length,
                               itemBuilder: (context, index) {
-                                final stage = createEventState.stages[index];
+                                final stage = eventState.stages.toList()[index];
                                 return ListTile(
-                                  title: Text(stage.title ?? 'Unnamed Stage'),
+                                  title: Text(stage.title ?? 'Untitled Stage'),
                                   subtitle: Text(
-                                    stage.stageStartTime != null
-                                        ? DateFormat('MMM d, y - h:mm a').format(stage.stageStartTime!)
-                                        : 'No time set',
+                                    '${DateFormat('MMM d, h:mm a').format(stage.stageStartTime ?? DateTime.now())} - ${stage.stageEndTime != null ? DateFormat('h:mm a').format(stage.stageEndTime!) : 'End time not set'}',
                                   ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          _showStageForm(context, stage, index);
-                                        },
+                                        onPressed: () => _showStageForm(context, stage, index),
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete),
-                                        onPressed: () {
-                                          ref.read(createEventProvider.notifier)
-                                              .removeStage(index);
-                                        },
+                                        onPressed: () => ref.read(createEventProvider.notifier).removeStage(index),
                                       ),
                                     ],
                                   ),
@@ -450,29 +443,22 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: createEventState.requiredItems.length,
+                              itemCount: eventState.requiredItems.length,
                               itemBuilder: (context, index) {
-                                final item = createEventState.requiredItems[index];
+                                final item = eventState.requiredItems.toList()[index];
                                 return ListTile(
                                   title: Text(item.itemName ?? 'Unnamed Item'),
-                                  subtitle: item.description != null && item.description!.isNotEmpty
-                                      ? Text(item.description!)
-                                      : null,
+                                  subtitle: Text(item.description ?? ''),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          _showItemForm(context, item, index);
-                                        },
+                                        onPressed: () => _showItemForm(context, item, index),
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete),
-                                        onPressed: () {
-                                          ref.read(createEventProvider.notifier)
-                                              .removeRequiredItem(index);
-                                        },
+                                        onPressed: () => ref.read(createEventProvider.notifier).removeRequiredItem(index),
                                       ),
                                     ],
                                   ),
@@ -502,7 +488,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                         child: Column(
                           children: [
                             // List existing activities
-                            if (createEventState.activities.isEmpty)
+                            if (eventState.eventActivities.isEmpty)
                               const Padding(
                                 padding: EdgeInsets.all(16.0),
                                 child: Text('No activities added yet'),
@@ -510,16 +496,15 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: createEventState.activities.length,
+                              itemCount: eventState.eventActivities.length,
                               itemBuilder: (context, index) {
-                                final activity = createEventState.activities[index];
+                                final activity = eventState.eventActivities.toList()[index];
                                 return ListTile(
-                                  title: Text(activity.activityType?.name ?? 'Unnamed Activity'),
+                                  title: Text(activity.activityType?.name ?? 'Unknown Activity'),
                                   trailing: IconButton(
                                     icon: const Icon(Icons.delete),
                                     onPressed: () {
-                                      ref.read(createEventProvider.notifier)
-                                          .removeActivity(index);
+                                      ref.read(createEventProvider.notifier).removeActivity(index);
                                     },
                                   ),
                                 );
@@ -530,7 +515,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: ElevatedButton.icon(
-                                onPressed: _showActivitySelector,
+                                onPressed: () => _showActivitySelector(),
                                 icon: const Icon(Icons.add),
                                 label: const Text('Add Activity'),
                               ),
@@ -566,7 +551,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                       context: context,
                                       builder: (context) => const ConfirmationDialog(
                                         title: 'Delete Event',
-                                        content: 'Are you sure you want to delete this event? This cannot be undone.',
+                                        content: 'Are you sure you want to delete this event? This action cannot be undone.',
                                       ),
                                     );
                                     
@@ -576,7 +561,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                       });
                                       
                                       try {
-                                        final success = await ref.read(createEventProvider.notifier)
+                                        final success = await ref
+                                            .read(createEventProvider.notifier)
                                             .deleteEvent();
                                         
                                         if (mounted) {
@@ -586,10 +572,16 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               const SnackBar(content: Text('Failed to delete event')),
                                             );
+                                            setState(() {
+                                              _isLoading = false;
+                                            });
                                           }
                                         }
-                                      } finally {
+                                      } catch (e) {
                                         if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Error: ${e.toString()}')),
+                                          );
                                           setState(() {
                                             _isLoading = false;
                                           });
@@ -681,7 +673,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                         itemBuilder: (context, index) {
                           final type = types[index];
                           return ListTile(
-                            title: Text(type.name ?? 'Unnamed'),
+                            title: Text(type.name),
                             onTap: () {
                               ref.read(createEventProvider.notifier).addActivity(
                                 EventActivity(activityType: type),

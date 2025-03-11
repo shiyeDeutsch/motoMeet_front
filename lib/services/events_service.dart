@@ -94,6 +94,98 @@ class EventsService {
     await _eventRepository.saveEvents(events);
   }
 
+  // Create a new event
+  Future<bool> createEvent(Event event) async {
+    try {
+      final response = await HttpClient.post(
+        uri: ApiEndpoints.createEvent,
+        body: json.encode(event.toJson()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Parse the created event from the response
+        final dynamic data = json.decode(response.body);
+        final createdEvent = Event.fromJson(data);
+        
+        // Save to local database
+        await _eventRepository.saveEvents([createdEvent]);
+        
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('Failed to create event: ${response.statusCode}');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating event: $e');
+      }
+      return false;
+    }
+  }
+  
+  // Update an existing event
+  Future<bool> updateEvent(Event event) async {
+    if (event.id == null) {
+      return false;
+    }
+    
+    try {
+      final response = await HttpClient.post(
+        uri: ApiEndpoints.updateEvent(event.id!),
+        body: json.encode(event.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        // Parse the updated event from the response
+        final dynamic data = json.decode(response.body);
+        final updatedEvent = Event.fromJson(data);
+        
+        // Save to local database
+        await _eventRepository.saveEvents([updatedEvent]);
+        
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('Failed to update event: ${response.statusCode}');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating event: $e');
+      }
+      return false;
+    }
+  }
+  
+  // Delete an event
+  Future<bool> deleteEvent(int eventId) async {
+    try {
+      final response = await HttpClient.post(
+        uri: ApiEndpoints.deleteEvent(eventId),
+        body: '{}',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Remove from local database
+      //  await _eventRepository.removeEvent(eventId);
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('Failed to delete event: ${response.statusCode}');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting event: $e');
+      }
+      return false;
+    }
+  }
+
   // Join an event
   Future<bool> joinEvent(int eventId) async {
     try {
@@ -163,41 +255,6 @@ class EventsService {
       return false;
     }
   }
-
-  // // Cancel an event (only for creator)
-  // Future<bool> cancelEvent(int eventId) async {
-  //   try {
-  //     final response = await HttpClient.post(
-  //       uri: Uri(
-  //         scheme: ApiEndpoints.scheme,
-  //         host: ApiEndpoints.host,
-  //         port: ApiEndpoints.port,
-  //         path: 'api/events/$eventId/cancel',
-  //       ),
-  //       body: '{}', // Empty JSON body
-  //     );
-
-  //     if (response.statusCode == 200) {
-  //       // Update local database to reflect the change
-  //       final event = await _eventRepository.getById(eventId);
-  //       if (event != null) {
-  //         event.isCancelled = true;
-  //         await _eventRepository.saveEvents([event]);
-  //       }
-  //       return true;
-  //     } else {
-  //       if (kDebugMode) {
-  //         print('Failed to cancel event: ${response.statusCode}');
-  //       }
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print('Error cancelling event: $e');
-  //     }
-  //     return false;
-  //   }
- // }
 
   // Get event participants
   Future<List<UserInfo>> getEventParticipants(String eventId) async {
