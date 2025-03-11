@@ -7,14 +7,13 @@ import 'package:motomeetfront/widgets/ExpandablePanel.dart';
 import 'package:motomeetfront/widgets/dialogs/confirmation_dialog.dart';
 import 'package:motomeetfront/widgets/event_participant_list.dart';
 import 'package:motomeetfront/widgets/event_stages_list.dart';
-import 'package:motomeetfront/widgets/loading_indicator.dart';
 
 class EventDetailsScreen extends ConsumerStatefulWidget {
-  final String eventId;
+  final Event event;
 
   const EventDetailsScreen({
     Key? key,
-    required this.eventId,
+    required this.event,
   }) : super(key: key);
 
   @override
@@ -22,89 +21,41 @@ class EventDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
-  late final Future<void> _loadEventFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadEventFuture = _loadEventDetails();
-  }
-
-  Future<void> _loadEventDetails() async {
-    await ref.read(eventDetailsProvider(widget.eventId).notifier).loadEventDetails();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final eventDetailsState = ref.watch(eventDetailsProvider(widget.eventId));
+    final eventDetailsState = ref.watch(eventDetailsProvider(widget.event));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          eventDetailsState.event?.name ?? 'Event Details',
+          eventDetailsState.name ?? 'Event Details',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-          if (eventDetailsState.isCreator)
+          if (eventDetailsState.creator.value?.id == widget.event.creator.value?.id)
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
                 Navigator.pushNamed(
                   context,
                   '/edit-event',
-                  arguments: eventDetailsState.event,
+                  arguments: eventDetailsState,
                 );
               },
             ),
         ],
       ),
       body: SafeArea(
-        child: FutureBuilder(
-          future: _loadEventFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: LoadingIndicator());
-            }
-
-            if (eventDetailsState.error != null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Error: ${eventDetailsState.error}'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        ref.read(eventDetailsProvider(widget.eventId).notifier).loadEventDetails();
-                      },
-                      child: const Text('Try again'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            if (eventDetailsState.event == null) {
-              return const Center(child: Text('Event not found'));
-            }
-
-            final event = eventDetailsState.event!;
-
-            return _buildEventDetails(context, event, eventDetailsState);
-          },
-        ),
+        child: _buildEventDetails(context, eventDetailsState),
       ),
-      bottomNavigationBar: eventDetailsState.event != null
-          ? _buildActionButton(context, eventDetailsState)
-          : null,
+      bottomNavigationBar: _buildActionButton(context, eventDetailsState),
     );
   }
 
-  Widget _buildEventDetails(
-      BuildContext context, Event event, EventDetailsState eventDetailsState) {
+  Widget _buildEventDetails(BuildContext context, Event event) {
     return RefreshIndicator(
       onRefresh: () async {
-        await ref.read(eventDetailsProvider(widget.eventId).notifier).loadEventDetails(refresh: true);
+        // Implement refresh functionality if needed
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -150,12 +101,12 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
                 child: ListTile(
                   leading: CircleAvatar(
                     child: Text(
-                      (eventDetailsState.creatorName?.isNotEmpty ?? false)
-                          ? eventDetailsState.creatorName![0].toUpperCase()
+                      (event.creator.value?.username?.isNotEmpty ?? false)
+                          ? event.creator.value!.username![0].toUpperCase()
                           : 'U',
                     ),
                   ),
-                  title: Text(eventDetailsState.creatorName ?? 'Unknown'),
+                  title: Text(event.creator.value?.username ?? 'Unknown'),
                   subtitle: const Text('Event Organizer'),
                   trailing: IconButton(
                     icon: const Icon(Icons.message),
@@ -173,25 +124,25 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
               
               // Participants list
               ExpandablePanel(
-                title: 'Participants (${eventDetailsState.participantCount})',
+                title: 'Participants (${event.participants.length})',
                 initiallyExpanded: true,
-                child: EventParticipantList(eventId: widget.eventId),
+                child: EventParticipantList(eventId: widget.event.id.toString()),
               ),
               
               const SizedBox(height: 16),
               
               // Event stages
-              if (eventDetailsState.hasStages)
+              if (event.stages.isNotEmpty)
                 ExpandablePanel(
                   title: 'Event Schedule',
                   initiallyExpanded: true,
-                  child: EventStagesList(eventId: widget.eventId),
+                  child: EventStagesList(eventId: widget.event.id.toString()),
                 ),
               
               const SizedBox(height: 16),
               
               // Required items
-              if (eventDetailsState.hasRequiredItems)
+              if (event.requiredItems.isNotEmpty)
                 ExpandablePanel(
                   title: 'Required Equipment',
                   child: _buildRequiredItemsList(event),
@@ -200,7 +151,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
               const SizedBox(height: 16),
               
               // Event activities
-              if (eventDetailsState.hasActivities)
+              if (event.eventActivities.isNotEmpty)
                 ExpandablePanel(
                   title: 'Activities',
                   child: _buildActivitiesList(event),
@@ -354,8 +305,8 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, EventDetailsState state) {
-    if (state.isCreator) {
+  Widget _buildActionButton(BuildContext context, Event state) {
+    if (state.creator.value?.id == widget.event.creator.value?.id) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -373,8 +324,8 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
                   );
                   
                   if (result == true) {
-                    await ref.read(eventDetailsProvider(widget.eventId).notifier)
-                        .cancelEvent();
+                    await ref.read(eventDetailsProvider(widget.event).notifier)
+                        .leaveEvent();
                     if (mounted) Navigator.pop(context);
                   }
                 },
@@ -393,7 +344,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
           ],
         ),
       );
-    } else if (state.isParticipant) {
+    } else if (state.participants.any((p) => p.person.value?.id == widget.event.creator.value?.id)) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: FilledButton(
@@ -407,7 +358,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
             );
             
             if (result == true) {
-              await ref.read(eventDetailsProvider(widget.eventId).notifier)
+              await ref.read(eventDetailsProvider(widget.event).notifier)
                   .leaveEvent();
             }
           },
@@ -422,11 +373,11 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: FilledButton(
           onPressed: () async {
-            await ref.read(eventDetailsProvider(widget.eventId).notifier)
+            await ref.read(eventDetailsProvider(widget.event).notifier)
                 .joinEvent();
           },
           child: Text(
-            state.event?.requiresApproval == true
+            state.requiresApproval == true
                 ? 'Request to Join'
                 : 'Join Event',
           ),
