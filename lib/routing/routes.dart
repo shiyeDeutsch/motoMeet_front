@@ -6,5 +6,6 @@ class Routes {
   static const String saveRoute= '/saveRoute';
   static const String themeSettings = '/theme-settings';
   static const String personalProfile= '/personalProfile';
+  static const String createEvent= '/createEvent';
   
 }

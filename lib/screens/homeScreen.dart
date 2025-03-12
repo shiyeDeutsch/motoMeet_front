@@ -113,6 +113,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       Navigator.pushNamed(context, Routes.themeSettings);
                     },
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.event, color: Colors.black),
+                    onPressed: () {
+                      Navigator.pushNamed(context, Routes.createEvent);
+                    },),
                 ],
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(60),

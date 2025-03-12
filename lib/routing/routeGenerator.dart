@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
+import 'package:motomeetfront/screens/create_event_screen.dart';
 import 'package:motomeetfront/screens/loginScreen.dart';
 import 'package:motomeetfront/screens/singupScreen.dart';
 import '../screens/homeScreen.dart';
@@ -38,17 +39,20 @@ class RouteGenerator {
       case Routes.personalProfile:
         screen = PersonalProfileScreen();
         break;
+         case Routes.createEvent:
+        screen = CreateEventScreen();
+        break;
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();
     }
     return MaterialPageRoute(
       builder: (_) => Scaffold(
-          // bottomNavigationBar: Builder(
-          //   builder: (BuildContext context) {
-          // return RouteService.showBottomNav(context);
-          //   },
-          // ),
+          bottomNavigationBar: Builder(
+            builder: (BuildContext context) {
+          return RouteService.showBottomNav(context);
+            },
+          ),
           body: SafeArea(child: screen)),
     );
   }
