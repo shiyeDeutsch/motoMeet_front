@@ -6,11 +6,14 @@ import 'package:motomeetfront/services/events_service.dart';
 class EventDetailsNotifier extends StateNotifier<Event> {
   final EventsService _eventsService;
 
+  // Create with a default empty event
   EventDetailsNotifier({
-    required Event event,
     EventsService? eventsService,
   })  : _eventsService = eventsService ?? GetIt.instance.get<EventsService>(),
-        super(event);
+        super(Event()); // Initialize with an empty Event
+  Future<void> loadEventById(Event event) async {
+    state = event;
+  }
 
   Future<void> joinEvent() async {
     try {
@@ -43,8 +46,6 @@ class EventDetailsNotifier extends StateNotifier<Event> {
   }
 }
 
-final eventDetailsProvider = StateNotifierProvider.family<EventDetailsNotifier, Event, Event>(
-  (ref, event) => EventDetailsNotifier(event: event),
+final eventDetailsProvider = StateNotifierProvider<EventDetailsNotifier, Event>(
+  (ref) => EventDetailsNotifier(),
 );
-
-

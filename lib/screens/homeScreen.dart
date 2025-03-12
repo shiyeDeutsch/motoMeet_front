@@ -16,6 +16,9 @@ import 'package:motomeetfront/providers/routes_provider.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
 import 'package:motomeetfront/models/enum.dart';
 import 'package:motomeetfront/common/widgets/activity_feed_item.dart';
+import 'package:motomeetfront/screens/theme_settings_screen.dart';
+
+import '../routing/routes.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -41,16 +44,16 @@ class _HomePageState extends ConsumerState<HomePage> {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 200 &&
           !_isRefreshing) {
-        _loadMoreActivities();
+      //  _loadMoreActivities();
       }
     });
   }
 
-  Future<void> _loadMoreActivities() async {
-    setState(() => _isRefreshing = true);
-    await ref.read(activityProvider.notifier).loadMoreActivities();
-    setState(() => _isRefreshing = false);
-  }
+  // Future<void> _loadMoreActivities() async {
+  //   setState(() => _isRefreshing = true);
+  //   await ref.read(activityProvider.notifier).loadMoreActivities();
+  //   setState(() => _isRefreshing = false);
+  // }
 
   Future<void> _handleRefresh() async {
     await ref.read(homeScreenProvider.notifier).refreshAll();
@@ -66,7 +69,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final homeState = ref.watch(homeScreenProvider);
-    final activities = ref.watch(activityProvider);
+   // final activities = ref.watch(activityProvider);
     final upcomingEvents = ref.watch(upcomingEventsProvider);
     final recommendedRoutes = ref.watch(recommendedRoutesProvider);
 
@@ -101,7 +104,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                   IconButton(
                     icon: const Icon(Icons.person_outline, color: Colors.black),
                     onPressed: () {
-                      Navigator.pushNamed(context, '/profile');
+                      Navigator.pushNamed(context, Routes.personalProfile);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.color_lens, color: Colors.black),
+                    onPressed: () {
+                      Navigator.pushNamed(context, Routes.themeSettings);
                     },
                   ),
                 ],
@@ -159,7 +168,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
 
               // Content when loaded
-              if (!homeState.isInitialLoading || activities.isNotEmpty)
+              if (!homeState.isInitialLoading )
                 SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +183,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
 
               // Activity feed heading
-              if (!homeState.isInitialLoading || activities.isNotEmpty)
+              if (!homeState.isInitialLoading)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
@@ -205,70 +214,71 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
                   ),
                 ),
+             
 
-              // Activity feed list
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index >= activities.length) {
-                      return homeState.isLoadingMore
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(
-                                  child: CustomLoadingIndicator(size: 30)),
-                            )
-                          : const SizedBox.shrink();
-                    }
-                    return ActivityFeedItem(
-                      activity: activities[index],
-                      onTap: () {
-                        _navigateToActivityDetail(context, activities[index]);
-                      },
-                    );
-                  },
-                  childCount: activities.isEmpty
-                      ? 0
-                      : homeState.isLoadingMore
-                          ? activities.length + 1
-                          : activities.length,
-                ),
-              ),
+              // // Activity feed list
+              // SliverList(
+              //   delegate: SliverChildBuilderDelegate(
+              //     (context, index) {
+              //       if (index >= activities.length) {
+              //         return homeState.isLoadingMore
+              //             ? const Padding(
+              //                 padding: EdgeInsets.symmetric(vertical: 16.0),
+              //                 child: Center(
+              //                     child: CustomLoadingIndicator(size: 30)),
+              //               )
+              //             : const SizedBox.shrink();
+              //       }
+              //       return ActivityFeedItem(
+              //         activity: activities[index],
+              //         onTap: () {
+              //           _navigateToActivityDetail(context, activities[index]);
+              //         },
+              //       );
+              //     },
+              //     childCount: activities.isEmpty
+              //         ? 0
+              //         : homeState.isLoadingMore
+              //             ? activities.length + 1
+              //             : activities.length,
+              //   ),
+              // ),
 
-              // Empty state
-              if (!homeState.isInitialLoading &&
-                  activities.isEmpty &&
-                  !homeState.hasError)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          const Icon(Icons.auto_awesome,
-                              size: 48, color: Colors.amber),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No activity yet',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Follow friends or join groups to see their activities here',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/discover');
-                            },
-                            child: const Text('Discover People & Groups'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              // // Empty state
+              // if (!homeState.isInitialLoading &&
+              //     activities.isEmpty &&
+              //     !homeState.hasError)
+              //   SliverToBoxAdapter(
+              //     child: Padding(
+              //       padding: const EdgeInsets.all(32.0),
+              //       child: Center(
+              //         child: Column(
+              //           children: [
+              //             const Icon(Icons.auto_awesome,
+              //                 size: 48, color: Colors.amber),
+              //             const SizedBox(height: 16),
+              //             Text(
+              //               'No activity yet',
+              //               style: Theme.of(context).textTheme.titleLarge,
+              //             ),
+              //             const SizedBox(height: 8),
+              //             Text(
+              //               'Follow friends or join groups to see their activities here',
+              //               textAlign: TextAlign.center,
+              //               style: Theme.of(context).textTheme.bodyMedium,
+              //             ),
+              //             const SizedBox(height: 16),
+              //             ElevatedButton(
+              //               onPressed: () {
+              //                 Navigator.pushNamed(context, '/discover');
+              //               },
+              //               child: const Text('Discover People & Groups'),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //     ),
+              //   ),
 
               // Bottom padding
               const SliverToBoxAdapter(

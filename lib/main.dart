@@ -5,12 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import 'package:motomeetfront/routing/routes.dart';
-import 'package:motomeetfront/services/service_locator.dart';
 
 import 'routing/InitialRoute.dart';
 import 'routing/routeGenerator.dart';
+import 'services/service_locator.dart';
 import 'theme/theme_provider.dart';
 
 final providerContainer = ProviderContainer();
@@ -20,19 +18,19 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   if (kDebugMode) {
     ByteData data = await rootBundle.load('assets/images/netfree-ca.crt');
     SecurityContext context = SecurityContext.defaultContext;
     context.setTrustedCertificatesBytes(data.buffer.asUint8List());
   }
-  
+
   // Initialize services
-  setupLocator();
+  await setupLocator();
 
   // Determine the initial route
   String initialRoute = await RouteService.getInitialRoute();
-  
+
   runApp(
     ProviderScope(
       parent: providerContainer,
@@ -45,36 +43,45 @@ class MyApp extends ConsumerWidget {
   final String initialRoute;
 
   const MyApp({required this.initialRoute});
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Set up the context provider override
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(contextProvider.notifier).state = context;
     });
-    
+
     // Get theme state from provider
     final themeState = ref.watch(themeProvider);
-    
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      title: 'MotoMeet',
-      theme: themeState.currentTheme.lightTheme,
-      darkTheme: themeState.currentTheme.darkTheme,
-      themeMode: themeState.flutterThemeMode,
-      home: Scaffold(
-        body: Navigator(
-          initialRoute: initialRoute,
-          onGenerateRoute: RouteGenerator.generateRoute,
-        ),
-      ),
+
+    return Consumer(
+      builder: (context, watch, child) {
+        final contextState = ref.watch(contextProvider);
+        if (contextState == null) {
+          return const SizedBox.shrink(); // or a loading indicator
+        }
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          title: 'MotoMeet',
+          theme: themeState.currentTheme.lightTheme,
+          darkTheme: themeState.currentTheme.darkTheme,
+          themeMode: themeState.flutterThemeMode,
+          home: Scaffold(
+            body: Navigator(
+              initialRoute: initialRoute,
+              onGenerateRoute: RouteGenerator.generateRoute,
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
 /// Provider for accessing BuildContext
-final contextProvider = StateProvider<BuildContext>((ref) {
+final contextProvider = StateProvider<BuildContext?>((ref) {
   // This will be overridden in the MyApp build method
-  throw UnimplementedError('Context provider not initialized');
+  return null;
 });

@@ -4,6 +4,7 @@ import 'package:motomeetfront/providers/events_provider.dart';
 import 'package:motomeetfront/providers/routes_provider.dart';
 import 'package:motomeetfront/services/activity_service.dart';
 import 'package:motomeetfront/services/events_service.dart';
+import 'package:motomeetfront/services/isar/repository_provider.dart';
 import 'package:motomeetfront/services/routeService.dart';
 import 'package:motomeetfront/services/userService.dart';
 import 'package:get_it/get_it.dart';
@@ -37,13 +38,13 @@ class HomeScreenState {
 }
 
 class HomeScreenNotifier extends StateNotifier<HomeScreenState> {
-  final ActivityService _activityService = GetIt.I<ActivityService>();
-  final RouteService _routeService = GetIt.I<RouteService>();
+ // final ActivityService _activityService = GetIt.I<ActivityService>();
+  final RoutesService _routeService = GetIt.I<RoutesService>();
   final EventsService _eventsService = GetIt.I<EventsService>();
-  final UserServce _userService = GetIt.I<UserServce>();
-  final Reader read;
+  final UserService _userService = GetIt.I<UserService>();
+  final Ref _ref;
 
-  HomeScreenNotifier(this.read) : super(HomeScreenState());
+  HomeScreenNotifier(this._ref) : super(HomeScreenState());
 
   Future<void> initialize() async {
     if (state.isInitialLoading) return;
@@ -53,7 +54,7 @@ class HomeScreenNotifier extends StateNotifier<HomeScreenState> {
       // Load all data in parallel
       await Future.wait([
         _loadUserProfile(),
-        _loadActivities(),
+      //  _loadActivities(),
         _loadRecommendedRoutes(),
         _loadUpcomingEvents(),
       ]);
@@ -75,7 +76,7 @@ class HomeScreenNotifier extends StateNotifier<HomeScreenState> {
       // Refresh all data in parallel
       await Future.wait([
         _loadUserProfile(),
-        _loadActivities(refresh: true),
+      //  _loadActivities(refresh: true),
         _loadRecommendedRoutes(refresh: true),
         _loadUpcomingEvents(refresh: true),
       ]);
@@ -89,25 +90,25 @@ class HomeScreenNotifier extends StateNotifier<HomeScreenState> {
 
   Future<void> _loadUserProfile() async {
     // Get the current auth token from storage
-    final token = await _userService.getToken();
+    final token = await  GetIt.I<RepositoryProvider>().userInfoRepository.getToken();
     if (token != null) {
       await _userService.fetchUserProfile(token);
     }
   }
 
-  Future<void> _loadActivities({bool refresh = false}) async {
-    await read(activityProvider.notifier).loadActivities(refresh: refresh);
-  }
+  // Future<void> _loadActivities({bool refresh = false}) async {
+  //   await _ref.read(activityProvider.notifier).loadActivities(refresh: refresh);
+  // }
 
   Future<void> _loadRecommendedRoutes({bool refresh = false}) async {
-    await read(recommendedRoutesProvider.notifier).loadRecommendedRoutes(refresh: refresh);
+    await _ref.read(recommendedRoutesProvider.notifier).loadRecommendedRoutes(refresh: refresh);
   }
 
   Future<void> _loadUpcomingEvents({bool refresh = false}) async {
-    await read(upcomingEventsProvider.notifier).loadUpcomingEvents(refresh: refresh);
+    await _ref.read(upcomingEventsProvider.notifier).loadUpcomingEvents(refresh: refresh);
   }
 }
 
 final homeScreenProvider = StateNotifierProvider<HomeScreenNotifier, HomeScreenState>((ref) {
-  return HomeScreenNotifier(ref.read);
+  return HomeScreenNotifier(ref);
 });

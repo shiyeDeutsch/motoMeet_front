@@ -5,4 +5,6 @@ class Routes {
   static const String homePage= '/homPage';
   static const String saveRoute= '/saveRoute';
   static const String themeSettings = '/theme-settings';
+  static const String personalProfile= '/personalProfile';
+  
 }

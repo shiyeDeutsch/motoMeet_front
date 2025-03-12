@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../models/newRoute.dart';
 import '../../models/theme_preferences.dart';
 
 // Import all model classes with Isar collections
@@ -8,8 +9,7 @@ import '../../models/event.dart';
 import '../../models/group.dart';
 import '../../models/notification.dart';
 import '../../models/activity.dart';
-import '../../models/mapMarker.dart';
-import '../../models/newRoute.dart' as route_model;
+// import '../../models/newRoute.dart' as route_model;
 import '../../models/geoLocationInfo.dart';
 
 class IsarInitializer {
@@ -23,10 +23,14 @@ class IsarInitializer {
         UserInfoSchema,
         UserInfoFollowSchema,
         FavoriteSchema,
-
+        RoutePointSchema,
         // Route related schemas
-        route_model.RouteSchema,
-
+        RouteSchema,
+        ReviewSchema,
+        TagSchema,
+        PointOfInterestSchema,
+        UserRouteSchema,
+        UserRoutePointSchema,
         // Event related schemas
         EventSchema,
         EventStageSchema,
@@ -47,9 +51,6 @@ class IsarInitializer {
         // Notification related schemas
         NotificationSchema,
         ReactionSchema,
-
-        // Map marker related schemas
-        MapMarkerSchema,
 
         // GeoLocation related schemas
         GeoLocationInfoSchema,

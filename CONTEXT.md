@@ -13,7 +13,7 @@ MotoMeet is a mobile application designed for off-road enthusiasts to create, sh
 - **Authentication**: JWT-based
 - **Navigation**: Custom route generator
 - **Maps**: Integration with mapping services for route tracking and visualization
-- **Local Storage**: Shared Preferences for user settings and tokens
+- **Local Storage**: Isar with repository pattren
 
 ## Application Architecture
 
@@ -37,21 +37,36 @@ UI Components <-> Providers <-> Services <-> Local Database (Isar) / Remote API
 
 lib/
 ```
-│   main.dart
-│   
+  main.dart
+│
+├───common
+│   └───widgets
+│           activity_feed_item.dart
+│           event_card.dart
+│           route_card.dart
+│           
 ├───models
 │       activity.dart
+│       activity.g.dart
 │       enum.dart
 │       event.dart
+│       event.g.dart
 │       geoLocationInfo.dart
+│       geoLocationInfo.g.dart
 │       group.dart
+│       group.g.dart
 │       mapMarker.dart
 │       newRoute.dart
+│       newRoute.g.dart
 │       notification.dart
+│       notification.g.dart
+│       register_model.dart
+│       register_model.g.dart
 │       route.dart
-│       route.g.dart
 │       subscriber.dart
 │       tempmodel
+│       theme_preferences.dart
+│       theme_preferences.g.dart
 │       userModel.dart
 │       userModel.g.dart
 │       
@@ -71,7 +86,6 @@ lib/
 │       
 ├───screens
 │       create_event_screen.dart
-│       eventDeailesScreen.dart
 │       event_details_screen.dart
 │       homeScreen.dart
 │       loginScreen.dart
@@ -80,6 +94,7 @@ lib/
 │       saveRouteScreen.dart
 │       singupScreen.dart
 │       step1.dart
+│       theme_settings_screen.dart
 │       userProfileScreen.dart
 │       
 ├───services
@@ -91,19 +106,29 @@ lib/
 │   │   httpClient.dart
 │   │   loctionService.dart
 │   │   MapMarkerService.dart
-│   │   routeService.dart
 │   │   service_locator.dart
 │   │   userService.dart
 │   │   
 │   └───isar
 │           isar_activity.dart
+│           isar_event.dart
 │           isar_geo_location.dart
 │           isar_initializer.dart
-│           isar_reposetory.dart
 │           isar_repository.dart
+│           isar_theme_preferences.dart
 │           isar_user_info.dart
-│           reposetory_provider.dart
 │           repository_provider.dart
+│           
+├───theme
+│   │   app_theme.dart
+│   │   theme_provider.dart
+│   │   
+│   └───themes
+│           adventure_theme.dart
+│           community_adventure_theme.dart
+│           modern_explorer_theme.dart
+│           technical_equipment_theme.dart
+│           trail_map_theme.dart
 │           
 ├───utilities
 │       apiEndPoints.dart
@@ -114,9 +139,8 @@ lib/
 │       
 └───widgets
     │   bottomNavigation.dart
-    │   CustomTextFormField.dart
+    │   customTextFromField.dart
     │   dropdown.dart
-    │   event_card.dart
     │   event_item_form.dart
     │   event_participant_list.dart
     │   event_stages_list.dart
@@ -125,55 +149,15 @@ lib/
     │   ExpandablePanel.dart
     │   loading_indicator.dart
     │   mapButtons.dart
-    │   route_card.dart
     │   selecetMapProvider.dart
+    │   theme_switcher.dart
     │   wayPointBottomSheet.dart
     │   
     └───dialogs
             chooseRouteTypeDialog.dart
             confirmation_dialog.dart
             stopRoutedialog.dart
-
 ```
-
-## Key Data Models
-
-### UserInfo
-
-The primary user model that contains:
-- Basic information (username, name, email, contact details)
-- Profile attributes (bio, profile picture)
-- Statistics (total distance)
-- Authentication data (token)
-- Relationships to other entities (followers, groups, events)
-
-### RouteModel
-
-Represents a tracked route with:
-- Route metadata (name, description, difficulty level, type)
-- Geographic data (coordinates, waypoints, elevation)
-- Statistics (distance, duration, average speed)
-- User association (creator)
-- Media attachments (photos, videos)
-- Reviews and ratings
-
-### GroupModel
-
-Community group structure:
-- Group details (name, description, image)
-- Membership information
-- Associated routes and events
-- Discussion and activity feed
-
-### EventModel
-
-Represents organized activities:
-- Event details (title, description, date/time)
-- Location information
-- Participant management
-- Associated routes
-- Equipment requirements
-- Stages for multi-day events
 
 ## Detailed Screen Implementations
 

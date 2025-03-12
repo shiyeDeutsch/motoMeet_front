@@ -6,7 +6,7 @@ import '../../models/geoLocationInfo.dart';
 
 /// Repository for handling GeoLocationInfo local storage operations
 class IsarGeoLocationRepository extends BaseRepository<GeoLocationInfo> {
-  IsarGeoLocationRepository(Isar isar) : super(isar, isar.GeoLocationInfo);
+  IsarGeoLocationRepository(Isar isar) : super(isar, isar.geoLocationInfos);
 
   // @override
   // Future<void> add(GeoLocationInfo item) async {

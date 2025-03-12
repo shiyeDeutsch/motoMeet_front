@@ -112,6 +112,13 @@ class ApiEndpoints {
     port: port,
   );
 
+  static Uri recommendedRoutes = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/routes/recommended',
+    port: port,
+  );
+
   // Group endpoints
   static Uri groups = Uri(
     scheme: scheme,

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:motomeetfront/providers/home_screen_provider.dart';
 import 'package:motomeetfront/screens/loginScreen.dart';
 import 'package:motomeetfront/screens/singupScreen.dart';
 import '../screens/homeScreen.dart';
 import '../screens/mapScreen.dart';
 import '../screens/saveRouteScreen.dart';
 import '../screens/step1.dart';
+import '../screens/userProfileScreen.dart';
 import 'InitialRoute.dart';
 import 'routes.dart';
 import '../screens/theme_settings_screen.dart';
@@ -16,8 +18,8 @@ class RouteGenerator {
     Widget screen;
     switch (settings.name) {
       case Routes.login:
-     //  screen = LoginScreen();
-       screen = MapMarkerScreen();
+        //  screen = LoginScreen();
+        screen = HomePage();
         break;
       case Routes.signUp:
         screen = SignupScreen();
@@ -26,15 +28,16 @@ class RouteGenerator {
         screen = Step1Screen(email: args!['email'], password: args['password']);
         break;
       case Routes.homePage:
-        screen = MapMarkerScreen();
+        screen = HomePage();
         break;
-      case Routes.saveRoute:
-        screen = SaveRouteScreen(route: args!['newRoute']);
-        break;
+      // case Routes.saveRoute:
+      //    screen = SaveRouteScreen(route: args!['newRoute']);
+      // break;
       case Routes.themeSettings:
-        return MaterialPageRoute(
-          builder: (context) => const ThemeSettingsScreen(),
-        );
+        screen = ThemeSettingsScreen();
+      case Routes.personalProfile:
+        screen = PersonalProfileScreen();
+        break;
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();

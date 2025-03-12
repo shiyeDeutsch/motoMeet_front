@@ -1,18 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/userModel.dart';
 import 'package:motomeetfront/services/events_service.dart';
 import 'package:motomeetfront/services/service_locator.dart';
 
 final eventsServiceProvider = Provider<EventsService>((ref) {
-  return getIt<EventsService>();
+  return GetIt.I<EventsService>();
 });
 
-final eventParticipantsProvider = FutureProvider.family<List<UserModel>, String>((ref, eventId) async {
+final eventParticipantsProvider = FutureProvider.family<List<UserInfo>, String>((ref, eventId) async {
   final eventsService = ref.read(eventsServiceProvider);
   return await eventsService.getEventParticipants(eventId);
 });
 
-final pendingParticipantsProvider = FutureProvider.family<List<UserModel>, String>((ref, eventId) async {
+final pendingParticipantsProvider = FutureProvider.family<List<UserInfo>, String>((ref, eventId) async {
   final eventsService = ref.read(eventsServiceProvider);
   return await eventsService.getPendingParticipants(eventId);
 });
@@ -29,7 +30,7 @@ class ParticipantManagementNotifier extends StateNotifier<AsyncValue<void>> {
   ParticipantManagementNotifier({
     required this.eventId,
     EventsService? eventsService,
-  }) : _eventsService = eventsService ?? getIt<EventsService>(),
+  }) : _eventsService = eventsService ?? GetIt.I<EventsService>(),
        super(const AsyncValue.data(null));
   
   Future<void> approveParticipant(String userId) async {

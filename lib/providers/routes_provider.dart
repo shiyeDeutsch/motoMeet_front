@@ -3,8 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/newRoute.dart';
 import 'package:motomeetfront/services/routeService.dart';
 
-class RecommendedRoutesNotifier extends StateNotifier<List<NewRoute>> {
-  final RouteService _routeService = GetIt.I<RouteService>();
+class RecommendedRoutesNotifier extends StateNotifier<List<Route>> {
+  final RoutesService _routeService = GetIt.I<RoutesService>();
 
   RecommendedRoutesNotifier() : super([]);
 
@@ -21,8 +21,8 @@ class RecommendedRoutesNotifier extends StateNotifier<List<NewRoute>> {
   }
 }
 
-class NearbyRoutesNotifier extends StateNotifier<List<NewRoute>> {
-  final RouteService _routeService = GetIt.I<RouteService>();
+class NearbyRoutesNotifier extends StateNotifier<List<Route>> {
+  final RoutesService _routeService = GetIt.I<RoutesService>();
 
   NearbyRoutesNotifier() : super([]);
 
@@ -39,10 +39,10 @@ class NearbyRoutesNotifier extends StateNotifier<List<NewRoute>> {
   }
 }
 
-final recommendedRoutesProvider = StateNotifierProvider<RecommendedRoutesNotifier, List<NewRoute>>((ref) {
+final recommendedRoutesProvider = StateNotifierProvider<RecommendedRoutesNotifier, List<Route>>((ref) {
   return RecommendedRoutesNotifier();
 });
 
-final nearbyRoutesProvider = StateNotifierProvider<NearbyRoutesNotifier, List<NewRoute>>((ref) {
+final nearbyRoutesProvider = StateNotifierProvider<NearbyRoutesNotifier, List<Route>>((ref) {
   return NearbyRoutesNotifier();
 });

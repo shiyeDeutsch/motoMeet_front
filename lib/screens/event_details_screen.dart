@@ -23,7 +23,7 @@ class EventDetailsScreen extends ConsumerStatefulWidget {
 class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
   @override
   Widget build(BuildContext context) {
-    final eventDetailsState = ref.watch(eventDetailsProvider(widget.event));
+    final eventDetailsState = ref.watch(eventDetailsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +136,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
                 ExpandablePanel(
                   title: 'Event Schedule',
                   initiallyExpanded: true,
-                  child: EventStagesList(eventId: widget.event.id.toString()),
+                  child: EventStagesList(),
                 ),
               
               const SizedBox(height: 16),
@@ -324,7 +324,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
                   );
                   
                   if (result == true) {
-                    await ref.read(eventDetailsProvider(widget.event).notifier)
+                    await ref.read(eventDetailsProvider.notifier)
                         .leaveEvent();
                     if (mounted) Navigator.pop(context);
                   }
@@ -358,7 +358,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
             );
             
             if (result == true) {
-              await ref.read(eventDetailsProvider(widget.event).notifier)
+              await ref.read(eventDetailsProvider.notifier)
                   .leaveEvent();
             }
           },
@@ -373,7 +373,7 @@ class _EventDetailsScreenState extends ConsumerState<EventDetailsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: FilledButton(
           onPressed: () async {
-            await ref.read(eventDetailsProvider(widget.event).notifier)
+            await ref.read(eventDetailsProvider.notifier)
                 .joinEvent();
           },
           child: Text(

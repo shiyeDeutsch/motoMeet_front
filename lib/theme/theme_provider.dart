@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
+import '../main.dart';
 import '../models/theme_preferences.dart';
 import '../services/isar/repository_provider.dart';
 import '../services/isar/isar_theme_preferences.dart';
@@ -168,11 +169,6 @@ final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeState>((ref) {
 /// Provider for current theme data
 final themeDataProvider = Provider<ThemeData>((ref) {
   final themeState = ref.watch(themeProvider);
-  final context = ref.read(contextProvider);
-  return themeState.getThemeData(context);
-});
-
-/// Provider for accessing BuildContext
-final contextProvider = Provider<BuildContext>((ref) {
-  throw UnimplementedError('Context provider must be overridden');
+  final context = ref.read(contextProvider.notifier).state;
+  return themeState.getThemeData(context!);
 });

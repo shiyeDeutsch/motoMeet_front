@@ -6,17 +6,17 @@ import 'package:motomeetfront/providers/event_details_provider.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
 class EventStagesList extends ConsumerWidget {
-  final String eventId;
+  
 
   const EventStagesList({
     Key? key,
-    required this.eventId,
+     
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final eventDetailsState = ref.watch(eventDetailsProvider(eventId));
-    final stages = eventDetailsState.event?.stages.toList() ?? [];
+    final eventDetailsState = ref.watch(eventDetailsProvider);
+    final stages = eventDetailsState.stages.toList() ?? [];
 
     if (stages.isEmpty) {
       return const Padding(
