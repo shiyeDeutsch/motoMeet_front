@@ -1,73 +1,78 @@
-import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../routing/routes.dart';
 
 class BottomNavigation extends ConsumerStatefulWidget {
   @override
   ConsumerState<BottomNavigation> createState() => _BottomNavigationState();
 }
 
-class _BottomNavigationState extends ConsumerState<BottomNavigation>
-    with TickerProviderStateMixin {
-  var _selectedTab = _SelectedTab.home;
+class _BottomNavigationState extends ConsumerState<BottomNavigation> {
+  var _selectedIndex = 0;
 
-  void _handleIndexChanged(int i) {
+  void _handleIndexChanged(int index) {
     setState(() {
-      _selectedTab = _SelectedTab.values[i];
+      _selectedIndex = index;
     });
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, Routes.homePage);
+        break;
+      case 1:
+        Navigator.pushNamed(context, Routes.saveRoute);
+        break;
+      case 2:
+        Navigator.pushNamed(context, Routes.personalProfile);
+        break;
+      case 3:
+        Navigator.pushNamed(context, Routes.createEvent);
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var anim = AnimationController(
-      vsync: this,
-      value: 1,
-      duration: const Duration(milliseconds: 500),
-    );
-    
     // Get theme data using Theme.of(context)
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
-    return DotNavigationBar(
-      marginR: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-      enableFloatingNavBar: false,
-      backgroundColor: theme.cardColor,
-      margin: EdgeInsets.only(left: 10, right: 10),
-      currentIndex: _SelectedTab.values.indexOf(_selectedTab),
-      dotIndicatorColor: colorScheme.secondary,
-      // Using a darker grey for better visibility of unselected icons
-      unselectedItemColor: Colors.grey[600],
-      splashBorderRadius: 50,
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
       onTap: _handleIndexChanged,
-      itemPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 16),
-      items: [
-        /// Home
-        DotNavigationBarItem(
-          icon: Icon(Icons.home),
-          selectedColor: colorScheme.primary,
+      backgroundColor: theme.cardColor,
+      selectedItemColor: colorScheme.secondary,
+      unselectedItemColor: Colors.grey[600],
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'Home',
         ),
-
-        /// map
-        DotNavigationBarItem(
-          icon: Icon(Icons.map),
-          selectedColor: colorScheme.primary,
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map_outlined),
+          activeIcon: Icon(Icons.map),
+          label: 'Explore',
         ),
-
-        /// Search
-        DotNavigationBarItem(
-          icon: Icon(Icons.groups),
-          selectedColor: colorScheme.primary,
+        BottomNavigationBarItem(
+          icon: Icon(Icons.groups_outlined),
+          activeIcon: Icon(Icons.groups),
+          label: 'Groups',
         ),
-
-        /// Profile
-        DotNavigationBarItem(
-          icon: Icon(Icons.person),
-          selectedColor: colorScheme.primary,
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profile',
         ),
       ],
     );
   }
 }
 
-enum _SelectedTab { home, favorite, search, person }
+// Mapping for navigation destinations to keep the same functionality
+// but using the new navigation index approach
+enum NavigationDestination {
+  home,
+  explore, 
+  groupsEvents,
+  profile
+}

@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motomeetfront/models/userModel.dart';
-import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/providers/event_details_provider.dart';
 
-class EventParticipantList extends ConsumerWidget {
-  final String eventId;
+class PendingParticipantList extends ConsumerWidget {
   final int maxToShow;
 
-  const EventParticipantList({
+  const PendingParticipantList({
     Key? key,
-    required this.eventId,
-    this.maxToShow = 10,
+    this.maxToShow = 5,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final event = ref.watch(eventDetailsProvider);
-    final participants = ref.watch(eventDetailsProvider.notifier).getParticipants();
+    final pendingParticipants = ref.watch(eventDetailsProvider.notifier).getPendingParticipants();
 
-    if (participants.isEmpty) {
+    if (pendingParticipants.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
         child: Center(
-          child: Text('No participants yet'),
+          child: Text('No pending requests'),
         ),
       );
     }
@@ -33,28 +29,26 @@ class EventParticipantList extends ConsumerWidget {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: maxToShow < participants.length
+          itemCount: maxToShow < pendingParticipants.length
               ? maxToShow
-              : participants.length,
+              : pendingParticipants.length,
           itemBuilder: (context, index) {
-            final participant = participants[index];
-            return _buildParticipantTile(participant, ref, event, context);
+            final participant = pendingParticipants[index];
+            return _buildPendingParticipantTile(participant, ref, context);
           },
         ),
-        if (participants.length > maxToShow)
+        if (pendingParticipants.length > maxToShow)
           TextButton(
             onPressed: () {
-              _showAllParticipants(context, participants, ref, event);
+              _showAllPendingParticipants(context, pendingParticipants, ref);
             },
-            child: Text('View all ${participants.length} participants'),
+            child: Text('View all ${pendingParticipants.length} requests'),
           ),
       ],
     );
   }
 
-  Widget _buildParticipantTile(UserInfo user, WidgetRef ref, Event event, BuildContext context) {
-    final isEventCreator = event.creator.value?.id == user.id;
-    
+  Widget _buildPendingParticipantTile(UserInfo user, WidgetRef ref, BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: user.profileImageUrl != null
@@ -68,45 +62,32 @@ class EventParticipantList extends ConsumerWidget {
               )
             : null,
       ),
-      title: Row(
+      title: Text(user.username ?? 'Unknown user'),
+      subtitle: const Text('Requesting to join'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(user.username ?? 'Unknown user'),
-          if (isEventCreator)
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Chip(
-                label: const Text('Creator'),
-                padding: EdgeInsets.zero,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                labelStyle: const TextStyle(fontSize: 10),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.check_circle, color: Colors.green),
+            onPressed: () => _approveParticipant(context, ref, user.id.toString()),
+            tooltip: 'Approve',
+          ),
+          IconButton(
+            icon: const Icon(Icons.cancel, color: Colors.red),
+            onPressed: () => _rejectParticipant(context, ref, user.id.toString()),
+            tooltip: 'Reject',
+          ),
         ],
       ),
-      subtitle: user.username != null && user.username!.isNotEmpty
-          ? Text(user.username!)
-          : null,
-      onTap: () {
-        // Navigate to user profile
-      },
-      // Only show remove option for event creator
-      trailing: event.creator.value?.id == event.creator.value?.id && !isEventCreator
-          ? IconButton(
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: () {
-                _confirmRemoveParticipant(context, ref, user.id.toString());
-              },
-            )
-          : null,
     );
   }
 
-  void _confirmRemoveParticipant(BuildContext context, WidgetRef ref, String userId) {
+  void _approveParticipant(BuildContext context, WidgetRef ref, String userId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Participant'),
-        content: const Text('Are you sure you want to remove this participant from the event?'),
+        title: const Text('Approve Participant'),
+        content: const Text('Are you sure you want to approve this participant?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -114,10 +95,33 @@ class EventParticipantList extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              ref.read(eventDetailsProvider.notifier).removeParticipant(userId);
+              ref.read(eventDetailsProvider.notifier).approveParticipant(userId);
               Navigator.of(context).pop();
             },
-            child: const Text('Remove'),
+            child: const Text('Approve'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _rejectParticipant(BuildContext context, WidgetRef ref, String userId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reject Participant'),
+        content: const Text('Are you sure you want to reject this participant?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(eventDetailsProvider.notifier).rejectParticipant(userId);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Reject'),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
           ),
         ],
@@ -125,7 +129,7 @@ class EventParticipantList extends ConsumerWidget {
     );
   }
 
-  void _showAllParticipants(BuildContext context, List<UserInfo> participants, WidgetRef ref, Event event) {
+  void _showAllPendingParticipants(BuildContext context, List<UserInfo> pendingParticipants, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -144,7 +148,7 @@ class EventParticipantList extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Participants (${participants.length})',
+                        'Pending Requests (${pendingParticipants.length})',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -161,9 +165,10 @@ class EventParticipantList extends ConsumerWidget {
                 Expanded(
                   child: ListView.builder(
                     controller: scrollController,
-                    itemCount: participants.length,
+                    itemCount: pendingParticipants.length,
                     itemBuilder: (context, index) {
-                      return _buildParticipantTile(participants[index], ref, event, context);
+                      return _buildPendingParticipantTile(
+                        pendingParticipants[index], ref, context);
                     },
                   ),
                 ),
