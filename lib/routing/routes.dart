@@ -7,5 +7,5 @@ class Routes {
   static const String themeSettings = '/theme-settings';
   static const String personalProfile= '/personalProfile';
   static const String createEvent= '/createEvent';
-  
+  static const String discoverRoutes = '/discover-routes';
 }

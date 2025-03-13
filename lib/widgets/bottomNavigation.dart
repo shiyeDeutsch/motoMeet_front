@@ -19,7 +19,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         Navigator.pushNamed(context, Routes.homePage);
         break;
       case 1:
-        Navigator.pushNamed(context, Routes.saveRoute);
+        Navigator.pushNamed(context, Routes.discoverRoutes);
         break;
       case 2:
         Navigator.pushNamed(context, Routes.personalProfile);
@@ -49,19 +49,19 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.map_outlined),
-          activeIcon: Icon(Icons.map),
-          label: 'Explore',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.groups_outlined),
-          activeIcon: Icon(Icons.groups),
-          label: 'Groups',
+          icon: Icon(Icons.explore_outlined),
+          activeIcon: Icon(Icons.explore),
+          label: 'Discover',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           activeIcon: Icon(Icons.person),
           label: 'Profile',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle_outline),
+          activeIcon: Icon(Icons.add_circle),
+          label: 'Create',
         ),
       ],
     );
@@ -69,10 +69,9 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
 }
 
 // Mapping for navigation destinations to keep the same functionality
-// but using the new navigation index approach
 enum NavigationDestination {
   home,
-  explore, 
-  groupsEvents,
-  profile
+  discover,
+  profile,
+  create
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
 import 'package:motomeetfront/screens/create_event_screen.dart';
+import 'package:motomeetfront/screens/discover_routes_screen.dart';
 import 'package:motomeetfront/screens/loginScreen.dart';
 import 'package:motomeetfront/screens/singupScreen.dart';
 import '../screens/homeScreen.dart';
@@ -30,6 +31,9 @@ class RouteGenerator {
         break;
       case Routes.homePage:
         screen = HomePage();
+        break;
+      case Routes.discoverRoutes:
+        screen = const DiscoverRoutesScreen();
         break;
       // case Routes.saveRoute:
       //    screen = SaveRouteScreen(route: args!['newRoute']);

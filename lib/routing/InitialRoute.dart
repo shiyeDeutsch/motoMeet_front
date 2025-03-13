@@ -17,7 +17,7 @@ static Future<String> getInitialRoute() async {
   //  print(isarService.getAll());
   return token != null ? Routes.homePage : Routes.login;
 }
- static Widget  showBottomNav(BuildContext context) {
+ static Widget showBottomNav(BuildContext context) {
     print(ModalRoute.of(context)?.settings.name ?? '');
     bool showNav = true;
     if ((ModalRoute.of(context)?.settings.name ?? '') == Routes.login ||
@@ -25,8 +25,7 @@ static Future<String> getInitialRoute() async {
       showNav = false;
     }
 
-    return showNav ?  BottomNavigation ():Container();
-  
+    return showNav ? BottomNavigation() : Container();
   }
 }
 
