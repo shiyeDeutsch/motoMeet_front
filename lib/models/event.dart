@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:motomeetfront/models/newRoute.dart'; // Import for GeoPoint
+import 'package:motomeetfront/models/NewRoute.dart'; // Import for GeoPoint
 import 'package:motomeetfront/models/userModel.dart'; // Import for UserInfo
 import 'package:motomeetfront/models/group.dart'; // Import for Group
 import 'package:motomeetfront/models/enum.dart'; // Import for enums

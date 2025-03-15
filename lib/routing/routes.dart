@@ -8,4 +8,5 @@ class Routes {
   static const String personalProfile= '/personalProfile';
   static const String createEvent= '/createEvent';
   static const String discoverRoutes = '/discover-routes';
+  static const String map = '/map';
 }

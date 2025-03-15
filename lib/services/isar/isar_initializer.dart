@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../models/newRoute.dart';
+import '../../models/NewRoute.dart';
 import '../../models/theme_preferences.dart';
 
 // Import all model classes with Isar collections
@@ -9,7 +9,7 @@ import '../../models/event.dart';
 import '../../models/group.dart';
 import '../../models/notification.dart';
 import '../../models/activity.dart';
-// import '../../models/newRoute.dart' as route_model;
+// import '../../models/NewRoute.dart' as route_model;
 import '../../models/geoLocationInfo.dart';
 
 class IsarInitializer {

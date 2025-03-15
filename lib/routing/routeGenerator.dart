@@ -35,15 +35,19 @@ class RouteGenerator {
       case Routes.discoverRoutes:
         screen = const DiscoverRoutesScreen();
         break;
-      // case Routes.saveRoute:
-      //    screen = SaveRouteScreen(route: args!['newRoute']);
-      // break;
+      case Routes.map:
+        screen = const MapMarkerScreen();
+        break;
+      case Routes.saveRoute:
+        screen = SaveRouteScreen(userRoute: args!['UserRoute']);
+        break;
       case Routes.themeSettings:
         screen = ThemeSettingsScreen();
+        break;
       case Routes.personalProfile:
         screen = PersonalProfileScreen();
         break;
-         case Routes.createEvent:
+      case Routes.createEvent:
         screen = CreateEventScreen();
         break;
       default:

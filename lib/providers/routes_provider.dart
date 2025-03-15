@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:motomeetfront/models/newRoute.dart';
+import 'package:motomeetfront/models/NewRoute.dart';
 import 'package:motomeetfront/services/routeService.dart';
 import '../models/route.dart';
 import '../services/isar/isar_repository.dart';

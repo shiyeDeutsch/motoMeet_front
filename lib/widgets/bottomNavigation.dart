@@ -8,7 +8,28 @@ class BottomNavigation extends ConsumerStatefulWidget {
 }
 
 class _BottomNavigationState extends ConsumerState<BottomNavigation> {
-  var _selectedIndex = 0;
+  int _selectedIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateSelectedIndex();
+  }
+
+  void _updateSelectedIndex() {
+    final String? currentRoute = ModalRoute.of(context)?.settings.name;
+    if (currentRoute == Routes.homePage) {
+      setState(() => _selectedIndex = 0);
+    } else if (currentRoute == Routes.discoverRoutes) {
+      setState(() => _selectedIndex = 1);
+    } else if (currentRoute == Routes.map) {
+      setState(() => _selectedIndex = 2);
+    } else if (currentRoute == Routes.personalProfile) {
+      setState(() => _selectedIndex = 3);
+    } else if (currentRoute == Routes.createEvent) {
+      setState(() => _selectedIndex = 4);
+    }
+  }
 
   void _handleIndexChanged(int index) {
     setState(() {
@@ -22,9 +43,12 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         Navigator.pushNamed(context, Routes.discoverRoutes);
         break;
       case 2:
-        Navigator.pushNamed(context, Routes.personalProfile);
+        Navigator.pushNamed(context, Routes.map);
         break;
       case 3:
+        Navigator.pushNamed(context, Routes.personalProfile);
+        break;
+      case 4:
         Navigator.pushNamed(context, Routes.createEvent);
         break;
     }
@@ -42,6 +66,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       backgroundColor: theme.cardColor,
       selectedItemColor: colorScheme.secondary,
       unselectedItemColor: Colors.grey[600],
+      type: BottomNavigationBarType.fixed, // Required for more than 4 items
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
@@ -52,6 +77,11 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
           icon: Icon(Icons.explore_outlined),
           activeIcon: Icon(Icons.explore),
           label: 'Discover',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map_outlined),
+          activeIcon: Icon(Icons.map),
+          label: 'Map',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
@@ -72,6 +102,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
 enum NavigationDestination {
   home,
   discover,
+  map,
   profile,
   create
 }

@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:motomeetfront/models/newRoute.dart';
+import 'package:motomeetfront/models/NewRoute.dart';
 
 part 'geoLocationInfo.g.dart';
 

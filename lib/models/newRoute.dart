@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import  './enum.dart'; 
  import './userModel.dart'; 
   import 'package:latlong2/latlong.dart';
-  part 'newRoute.g.dart';
+  part 'NewRoute.g.dart';
 
 
 @collection

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:motomeetfront/utilities/duration_formatter.dart';
-import 'package:motomeetfront/models/newRoute.dart' as route_model;
+import 'package:motomeetfront/models/NewRoute.dart' as route_model;
 
 class RouteCard extends StatelessWidget {
   final route_model.Route route;

@@ -8,7 +8,7 @@ import 'package:motomeetfront/common/widgets/route_card.dart';
 // import 'package:motomeetfront/common/widgets/search_bar.dart';
 import 'package:motomeetfront/models/activity.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/models/newRoute.dart' as route_model;
+import 'package:motomeetfront/models/NewRoute.dart' as route_model;
 import 'package:motomeetfront/providers/activity_provider.dart';
 import 'package:motomeetfront/providers/events_provider.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
