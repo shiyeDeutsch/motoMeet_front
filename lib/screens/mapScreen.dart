@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:latlong2/latlong.dart' as latlong2;
 import 'package:get_it/get_it.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/route.dart' as app_models;
@@ -34,6 +35,9 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
   bool _isExpanded = false;
   bool _isMapInitialized = false;
   bool _isStyleLoaded = false;
+  Position? _currentUserPosition;
+  Symbol? _userLocationSymbol;
+  List<Symbol> _waypointSymbols = [];
   
   // Animation controllers
   late AnimationController _pulseController;
@@ -56,7 +60,94 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    
+    // Start listening for location updates from the LocationService
+    _setupLocationTracking();
   }
+
+  void _setupLocationTracking() async {
+    try {
+      // Ensure LocationService is started
+      await LocationService.startListening();
+      
+      // Subscribe to location updates
+      _locationUpdatesSubscription = LocationService.locationUpdates.listen((Position position) {
+        // Update user position
+        setState(() {
+          _currentUserPosition = position;
+        });
+        
+        // Update user location on map if map is initialized
+        _updateUserLocationOnMap(position);
+        
+        // DO NOT update userRouteService with new position here - that's already
+        // handled by the UserRouteService itself which listens to LocationService directly
+        // This way we avoid duplicate updates
+      });
+      
+      // Try to get initial location
+      final initialLocation = await LocationService.getCurrentLocation();
+      if (initialLocation != null) {
+        final position = Position(
+          latitude: initialLocation.latitude,
+          longitude: initialLocation.longitude,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          heading: 0,
+          speed: 0,
+          speedAccuracy: 0,
+          altitudeAccuracy: 0,
+          headingAccuracy: 0,
+        );
+        
+        setState(() {
+          _currentUserPosition = position;
+        });
+        
+        if (_mapController != null && _isStyleLoaded) {
+          _updateUserLocationOnMap(position);
+        }
+      }
+    } catch (e) {
+      print('Error setting up location tracking: $e');
+    }
+  }
+  
+  void _updateUserLocationOnMap(Position position) async {
+    if (_mapController == null || !_isStyleLoaded) return;
+    
+    final latLng = LatLng(position.latitude, position.longitude);
+    
+    // Remove previous symbol if exists
+    if (_userLocationSymbol != null) {
+      await _mapController!.removeSymbol(_userLocationSymbol!);
+    }
+    
+    // Add new user location symbol
+    try {
+      _userLocationSymbol = await _mapController!.addSymbol(
+        SymbolOptions(
+          geometry: latLng,
+          iconSize: 1.0,
+          iconImage: "marker-15", // Use a built-in Mapbox icon
+          iconColor: "#3E6C51", // Customize color to match app theme
+        ),
+      );
+      
+      // If we're tracking the user, update camera
+      if (_isTrackingUser) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(latLng),
+        );
+      }
+    } catch (e) {
+      print('Error updating user location on map: $e');
+    }
+  }
+  
+  // Flag to track if we're following user location
+  bool _isTrackingUser = true;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +155,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     final currentUserRoute = ref.watch(userRouteServiceProvider);
     // Read the userRouteService to get the currentPosition and baseRoute
     final userRouteService = ref.read(userRouteServiceProvider.notifier);
-    final currentPosition = userRouteService.currentPosition;
+    final currentPosition = _currentUserPosition ?? userRouteService.currentPosition;
     final baseRoute = userRouteService.baseRoute;
 
     // Prepare the "committed" polyline from route points
@@ -94,18 +185,27 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     return MapboxMap(
       accessToken: MAPBOX_ACCESS_TOKEN,
       styleString: MAPBOX_STYLE,
-      initialCameraPosition: const CameraPosition(
-        target: LatLng(0, 0), // Will be updated once we get user location
+      initialCameraPosition: CameraPosition(
+        target: userPos != null 
+            ? LatLng(userPos.latitude, userPos.longitude) 
+            : const LatLng(0, 0), // Will be updated once we get user location
         zoom: 13.0,
       ),
       onMapCreated: _onMapCreated,
       onStyleLoadedCallback: _onStyleLoaded,
-      myLocationEnabled: true,
-      myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
-      myLocationRenderMode: MyLocationRenderMode.COMPASS,
+      // IMPORTANT: Disable built-in location tracking to avoid the crash
+      myLocationEnabled: false,
+      myLocationTrackingMode: MyLocationTrackingMode.None,
+      myLocationRenderMode: MyLocationRenderMode.NORMAL,
       compassEnabled: true,
       compassViewPosition: CompassViewPosition.TopRight,
       attributionButtonPosition: AttributionButtonPosition.BottomLeft,
+      onMapClick: (point, coordinates) {
+        // Deselect tracking when user interacts with the map
+        setState(() {
+          _isTrackingUser = false;
+        });
+      },
     );
   }
 
@@ -126,22 +226,54 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     
     // Add route line and waypoints once style is loaded
     _updateMapFeatures();
+    
+    // Update user location on map if we already have it
+    if (_currentUserPosition != null) {
+      _updateUserLocationOnMap(_currentUserPosition!);
+    }
   }
   
   Future<void> _centerOnUserLocation() async {
     try {
-      final latLng = await LocationService.getCurrentLocation();
-      if (latLng != null && _mapController != null) {
+      // First try to use our cached position
+      Position? position = _currentUserPosition;
+      
+      // If no cached position, try to get current location from service
+      if (position == null) {
+        final latLng = await LocationService.getCurrentLocation();
+        if (latLng != null) {
+          position = Position(
+            latitude: latLng.latitude,
+            longitude: latLng.longitude,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
+            speedAccuracy: 0,
+            altitudeAccuracy: 0,
+            headingAccuracy: 0,
+          );
+        }
+      }
+      
+      // If we have a position and the map is initialized, center on it
+      if (position != null && _mapController != null) {
         _mapController!.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
-              target: LatLng(latLng.latitude, latLng.longitude),
+              target: LatLng(position.latitude, position.longitude),
               zoom: 15.0,
               bearing: 0.0,
               tilt: 0.0,
             ),
           ),
         );
+        
+        // Re-enable tracking
+        setState(() {
+          _isTrackingUser = true;
+        });
       }
     } catch (e) {
       print('Error centering on user location: $e');
@@ -155,9 +287,11 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     final committedPoints = userRouteService.committedPoints;
     final baseRoute = userRouteService.baseRoute;
     
-    // Clear existing route lines and markers
+    // Clear existing route lines
     _mapController!.clearLines();
-    _mapController!.clearSymbols();
+    
+    // Clear existing waypoint symbols
+    _clearWaypointSymbols();
     
     // Add route line if we have points
     if (committedPoints.isNotEmpty) {
@@ -168,6 +302,15 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     if (baseRoute?.pointsOfInterest != null) {
       _addWaypointMarkers(baseRoute!.pointsOfInterest);
     }
+  }
+  
+  void _clearWaypointSymbols() async {
+    if (_mapController == null) return;
+    
+    for (final symbol in _waypointSymbols) {
+      await _mapController!.removeSymbol(symbol);
+    }
+    _waypointSymbols.clear();
   }
   
   void _addRouteLine(List<app_models.GeoPoint> points) {
@@ -196,7 +339,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
       
       final iconImage = _getWaypointIconImage(waypoint.waypointType!);
       
-      await _mapController!.addSymbol(
+      final symbol = await _mapController!.addSymbol(
         SymbolOptions(
           geometry: LatLng(
             waypoint.location!.latitude!, 
@@ -211,21 +354,22 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
           textHaloWidth: 1.0,
         ),
       );
+      
+      _waypointSymbols.add(symbol);
     }
   }
   
   String _getWaypointIconImage(WaypointType type) {
-    // Note: You'll need to add these icons to your Mapbox style
-    // or use built-in Mapbox icons
+    // Use built-in Mapbox icons instead of custom ones to avoid resource issues
     switch (WaypointTypeExtension.getCategory(type)) {
       case WaypointCategory.Natural:
-        return "mountain";
+        return "mountain-15";
       case WaypointCategory.Informative:
-        return "information";
+        return "information-15";
       case WaypointCategory.Warning:
-        return "danger";
+        return "danger-15";
       default:
-        return "marker";
+        return "marker-15";
     }
   }
 
@@ -237,7 +381,12 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
         children: [
           _buildMapControlButton(
             icon: Icons.my_location,
-            onPressed: _centerOnUserLocation,
+            onPressed: () {
+              _centerOnUserLocation();
+              setState(() {
+                _isTrackingUser = true;
+              });
+            },
             tooltip: 'Center on my location',
           ),
           const SizedBox(height: 12),
@@ -320,14 +469,23 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
             title: Text(style['name']!),
             onTap: () {
               if (_mapController != null) {
-                _mapController!.animateCamera(
-                  CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                      target: _mapController!.cameraPosition!.target,
-                      zoom: _mapController!.cameraPosition!.zoom,
-                    ),
-                  ),
-                );
+                // Store current camera position
+                final cameraPosition = _mapController!.cameraPosition;
+                
+                // Update map style
+               // _mapController!.setStyleString(style['style']!);
+                
+                // After style changes, we need to reinitialize some state
+                setState(() {
+                  _isStyleLoaded = false;
+                });
+                
+                // Restore camera position after style is loaded
+                if (cameraPosition != null) {
+                  _mapController!.animateCamera(
+                    CameraUpdate.newCameraPosition(cameraPosition),
+                  );
+                }
               }
               Navigator.pop(context);
             },
@@ -385,8 +543,41 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     if (routeType == null) return;
 
     // Determine user's current location (or last known)
-    final location = await LocationService.getCurrentLocation();
-    if (location == null) return;
+    Position? location = _currentUserPosition;
+    
+    // If we don't have current position, try to get it from LocationService
+    if (location == null) {
+      try {
+        final latLng = await LocationService.getCurrentLocation();
+        if (latLng != null) {
+          location = Position(
+            latitude: latLng.latitude,
+            longitude: latLng.longitude,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
+            speedAccuracy: 0,
+            altitudeAccuracy: 0,
+            headingAccuracy: 0,
+          );
+        }
+      } catch (e) {
+        print('Failed to get location: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not determine your location')),
+        );
+        return;
+      }
+    }
+    
+    if (location == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not determine your location')),
+      );
+      return;
+    }
 
     final userRouteService = ref.read(userRouteServiceProvider.notifier);
 
@@ -399,29 +590,49 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
       ),
     );
     
-    // Update map features
+    // We don't need to start location updates here since UserRouteService
+    // handles that internally when startNewRoute is called
+    
+    // Update map features to show the initial point
     _updateMapFeatures();
+    
+    // Ensure we're tracking the user
+    setState(() {
+      _isTrackingUser = true;
+    });
   }
  
   /// Stop the route
   Future<void> _onStopRoutePressed(BuildContext context) async {
     final shouldStop = await showStopDialog(context);
     if (shouldStop == true) {
-      // After stopping, you could navigate to the route-saving screen, etc.
+      // Stop the route in the service
       final userRouteService = ref.read(userRouteServiceProvider.notifier);
       await userRouteService.stopUserRoute();
+      
+      // Store references to route and userRoute before navigation
+      final baseRoute = userRouteService.baseRoute;
+      final userRoute = ref.read(userRouteServiceProvider);
 
+      // Navigate to save screen
       Navigator.of(context).pushNamed(
         Routes.saveRoute,
-        arguments: {'Route': userRouteService.baseRoute, 'UserRoute': ref.read(userRouteServiceProvider)},
+        arguments: {'Route': baseRoute, 'UserRoute': userRoute},
       );
     }
   }
 
   @override
   void dispose() {
+    // Cancel our own location updates subscription
     _locationUpdatesSubscription?.cancel();
     _pulseController.dispose();
+    
+    // We don't call LocationService.dispose() here since other screens
+    // might still need location updates. The UserRouteService will handle
+    // stopping updates when the route is stopped.
+    
+    // Dispose map controller
     _mapController?.dispose();
     super.dispose();
   }
@@ -444,6 +655,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // Ensure the column takes minimum required space
         children: [
           // Handle for dragging
           Container(
@@ -455,7 +667,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Expanded(
+          Expanded( // Using Expanded to make sure the content fits in available space
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -501,39 +713,56 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     required String value,
     required Color color,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 12,
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
+    return Flexible( // Wrap in Flexible to ensure it adapts to available space
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Scale icon size based on available width
+          final iconSize = constraints.maxWidth * 0.4;
+          
+          return Column(
+            mainAxisSize: MainAxisSize.min, // Use minimum space needed
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6), // Slightly smaller padding
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon, 
+                  color: color, 
+                  size: 20, // Smaller fixed icon size
+                ),
+              ),
+              const SizedBox(height: 2), // Reduced vertical spacing
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 10, // Smaller text
+                ),
+                overflow: TextOverflow.ellipsis, // Prevent overflow with ellipsis
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12, // Smaller text
+                ),
+                overflow: TextOverflow.ellipsis, // Prevent overflow with ellipsis
+                textAlign: TextAlign.center,
+              ),
+            ],
+          );
+        }
+      ),
     );
   }
   
   Widget _buildRouteActionButtons() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // Reduced vertical padding
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -577,17 +806,17 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Reduced vertical padding
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color),
-            const SizedBox(height: 4),
+            Icon(icon, color: color, size: 20), // Smaller icon
+            const SizedBox(height: 2), // Reduced spacing
             Text(
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 12,
+                fontSize: 11, // Smaller text
                 fontWeight: FontWeight.w500,
               ),
             ),
