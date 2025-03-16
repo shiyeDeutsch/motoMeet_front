@@ -1,284 +1,219 @@
 import 'package:flutter/material.dart';
-import 'package:motomeetfront/utilities/duration_formatter.dart';
-import 'package:motomeetfront/models/NewRoute.dart' as route_model;
+import 'package:intl/intl.dart';
+import '../../models/newRoute.dart' as app_models;
+import '../../services/distanceFormatter.dart';
+import '../../routing/routes.dart';
 
 class RouteCard extends StatelessWidget {
-  final route_model.Route route;
-  final VoidCallback? onTap;
-  final bool showCreator;
+  final app_models.Route route;
 
   const RouteCard({
     Key? key,
     required this.route,
-    this.onTap,
-    this.showCreator = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: SizedBox(
-          width: 220,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Route thumbnail or map preview
-              Stack(
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).pushNamed(
+            Routes.routeDetails,
+            arguments: {'route': route},
+          );
+        },
+        borderRadius: BorderRadius.circular(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Route image
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
+              child: route.imageUrl != null && route.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      route.imageUrl!,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      'https://images.unsplash.com/photo-1520531158340-44015069e78e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1272&q=80',
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 120,
-                    width: double.infinity,
-                    child: route.imageUrl != null
-                        ? Image.network(
-                            route.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildPlaceholderImage(),
-                          )
-                        : _buildPlaceholderImage(),
-                  ),
-                  // Route type indicator
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                  // Route name and rating
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          route.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      Row(
                         children: [
-                          Icon(
-                            _getRouteTypeIcon(route.routeType?.name),
-                            color: Colors.white,
-                            size: 16,
+                          const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                            size: 20,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            route.routeType?.name ?? 'Unknown',
+                            '${route.rating?.toStringAsFixed(1) ?? 'N/A'}',
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Difficulty indicator
-                  if (route.difficultyLevel != null)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getDifficultyColor(
-                              route.difficultyLevel!.level ?? ''),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          route.difficultyLevel!.level ?? 'Unknown',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              // Route details
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      route.name ?? 'Unnamed Route',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Location info
-                    if (route.region != null)
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on,
-                              size: 14, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              "${route.region!},${route.country!}",
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                    const SizedBox(height: 8),
-
-                    // Route stats
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Distance
-                        _buildStat(
-                          Icons.straighten,
-                          '${route.length != null ? (route.length! / 1000).toStringAsFixed(1) : '?'} km',
-                        ),
-
-                        // Duration
-                        _buildStat(
-                          Icons.timer,
-                          route.durationMinutes != null
-                              ? DurationFormatter.formatDuration(
-                                  Duration(minutes: route.durationMinutes!))
-                              : '?',
-                        ),
-
-                        // Elevation
-                        _buildStat(
-                          Icons.terrain,
-                          route.elevationGain != null
-                              ? '${route.elevationGain!.round()} m'
-                              : '?',
-                        ),
-                      ],
-                    ),
-
-                    // Creator info (optional)
-                    if (showCreator &&
-                        route.routeCreator.value?.username != null) ...[
-                      const SizedBox(height: 8),
-                      const Divider(height: 1),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 10,
-                            backgroundImage: route
-                                        .routeCreator.value?.profileImageUrl !=
-                                    null
-                                ? NetworkImage(
-                                    route.routeCreator.value!.profileImageUrl!)
-                                : null,
-                            child: route.routeCreator.value?.profileImageUrl ==
-                                    null
-                                ? Text(
-                                    route.routeCreator.value!.username![0]
-                                        .toUpperCase(),
-                                    style: const TextStyle(fontSize: 8),
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'by ${route.routeCreator.value!.username!}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ],
-                  ],
-                ),
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Location
+                  if (route.region != null || route.country != null)
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            [
+                              if (route.region != null) route.region,
+                              if (route.country != null) route.country,
+                            ].where((e) => e != null).join(', '),
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Route stats
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStat(
+                        Icons.straighten,
+                        route.length != null
+                            ? DistanceFormatter.formatDistance(route.length!)
+                            : 'N/A',
+                        'Distance',
+                      ),
+                      _buildStat(
+                        Icons.timer,
+                        route.durationMinutes != null
+                            ? '${(route.durationMinutes! / 60).toStringAsFixed(1)} h'
+                            : 'N/A',
+                        'Duration',
+                      ),
+                      _buildStat(
+                        Icons.terrain,
+                        route.difficultyLevel?.level ?? 'N/A',
+                        'Difficulty',
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Route type and date
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          route.routeType?.toString().split('.').last ?? 'Unknown',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      if (route.startDate != null)
+                        Text(
+                          DateFormat('MMM d, yyyy').format(route.startDate!),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildPlaceholderImage() {
-    return Container(
-      color: Colors.grey[200],
-      child: const Center(
-        child: Icon(Icons.map, color: Colors.grey, size: 40),
-      ),
-    );
-  }
-
-  Widget _buildStat(IconData icon, String value) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildStat(IconData icon, String value, String label) {
+    return Column(
       children: [
-        Icon(icon, size: 14, color: Colors.black54),
-        const SizedBox(width: 4),
+        Icon(
+          icon,
+          size: 18,
+          color: Colors.grey[700],
+        ),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
             fontSize: 12,
-            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
-  }
-
-  IconData _getRouteTypeIcon(String? routeType) {
-    switch (routeType?.toLowerCase()) {
-      case 'motorcycle':
-        return Icons.motorcycle;
-      case 'bicycle':
-        return Icons.pedal_bike;
-      case 'hiking':
-        return Icons.directions_walk;
-      case 'driving':
-        return Icons.directions_car;
-      case 'off-road':
-        return Icons.terrain;
-      default:
-        return Icons.route;
-    }
-  }
-
-  Color _getDifficultyColor(String difficulty) {
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return Colors.green;
-      case 'moderate':
-        return Colors.orange;
-      case 'difficult':
-        return Colors.red;
-      case 'expert':
-        return Colors.purple;
-      default:
-        return Colors.blue;
-    }
   }
 }

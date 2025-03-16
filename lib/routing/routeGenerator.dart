@@ -7,6 +7,7 @@ import 'package:motomeetfront/screens/singupScreen.dart';
 import '../screens/homeScreen.dart';
 import '../screens/mapScreen.dart';
 import '../screens/saveRouteScreen.dart';
+import '../screens/routeDetailsScreen.dart';
 import '../screens/step1.dart';
 import '../screens/userProfileScreen.dart';
 import 'InitialRoute.dart';
@@ -39,7 +40,13 @@ class RouteGenerator {
         screen = const MapMarkerScreen();
         break;
       case Routes.saveRoute:
-        screen = SaveRouteScreen(userRoute: args!['UserRoute']);
+        screen = SaveRouteScreen(
+          route: args!['Route'],
+          userRoute: args['UserRoute'],
+        );
+        break;
+      case Routes.routeDetails:
+        screen = RouteDetailsScreen(route: args!['route']);
         break;
       case Routes.themeSettings:
         screen = ThemeSettingsScreen();

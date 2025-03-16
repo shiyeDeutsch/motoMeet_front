@@ -4,6 +4,7 @@ import 'package:motomeetfront/services/isar/isar_geo_location.dart';
 import 'package:motomeetfront/services/isar/isar_user_info.dart';
 import 'package:motomeetfront/services/isar/isar_theme_preferences.dart';
 import 'package:motomeetfront/services/isar/isar_event.dart';
+import 'package:motomeetfront/services/isar/isar_route_repository.dart';
 
 /// Provider for all Isar repositories
 class RepositoryProvider {
@@ -14,6 +15,13 @@ class RepositoryProvider {
   late final IsarGeoLocationRepository _geoLocationRepository;
   late final IsarThemePreferencesRepository _themePreferencesRepository;
   late final EventRepository _eventRepository;
+  
+  // New route repositories
+  late final IsarRouteRepository _routeRepository;
+  late final IsarUserRouteRepository _userRouteRepository;
+  late final IsarRoutePointRepository _routePointRepository;
+  late final IsarUserRoutePointRepository _userRoutePointRepository;
+  late final IsarPointOfInterestRepository _pointOfInterestRepository;
 
   RepositoryProvider(this._isar) {
     _userInfoRepository = IsarUserInfoRepository(_isar);
@@ -21,6 +29,13 @@ class RepositoryProvider {
     _geoLocationRepository = IsarGeoLocationRepository(_isar);
     _themePreferencesRepository = IsarThemePreferencesRepository(_isar);
     _eventRepository = EventRepository(_isar);
+    
+    // Initialize new repositories
+    _routeRepository = IsarRouteRepository(_isar);
+    _userRouteRepository = IsarUserRouteRepository(_isar);
+    _routePointRepository = IsarRoutePointRepository(_isar);
+    _userRoutePointRepository = IsarUserRoutePointRepository(_isar);
+    _pointOfInterestRepository = IsarPointOfInterestRepository(_isar);
   }
 
   IsarUserInfoRepository get userInfoRepository => _userInfoRepository;
@@ -30,4 +45,11 @@ class RepositoryProvider {
   IsarThemePreferencesRepository get themePreferencesRepository =>
       _themePreferencesRepository;
   EventRepository get eventRepository => _eventRepository;
+  
+  // Getters for new repositories
+  IsarRouteRepository get routeRepository => _routeRepository;
+  IsarUserRouteRepository get userRouteRepository => _userRouteRepository;
+  IsarRoutePointRepository get routePointRepository => _routePointRepository;
+  IsarUserRoutePointRepository get userRoutePointRepository => _userRoutePointRepository;
+  IsarPointOfInterestRepository get pointOfInterestRepository => _pointOfInterestRepository;
 }

@@ -9,4 +9,5 @@ class Routes {
   static const String createEvent= '/createEvent';
   static const String discoverRoutes = '/discover-routes';
   static const String map = '/map';
+  static const String routeDetails = '/route-details';
 }

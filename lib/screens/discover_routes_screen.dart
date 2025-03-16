@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/route.dart';
+import '../models/newRoute.dart' as app_models;
 import '../providers/routes_provider.dart';
 import '../common/widgets/route_card.dart';
 import '../widgets/loading_indicator.dart';
-import '../services/distanceFormatter.dart';
 
 class DiscoverRoutesScreen extends ConsumerStatefulWidget {
   const DiscoverRoutesScreen({Key? key}) : super(key: key);
@@ -23,8 +22,8 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
     'All',
     'Motorcycle',
     'Hiking',
-    'Cycling',
-    'Off-road',
+    'Biking',
+    'Jeep',
   ];
 
   final List<String> _sortOptions = [
@@ -33,6 +32,15 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
     'Rating',
     'Recent',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Refresh routes when the screen is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(routesProvider.notifier).fetchRoutes();
+    });
+  }
 
   @override
   void dispose() {

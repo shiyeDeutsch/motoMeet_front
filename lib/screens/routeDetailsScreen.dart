@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../models/newRoute.dart' as app_models;
+import '../models/enum.dart';
+import '../services/distanceFormatter.dart';
+import '../services/userRouteService.dart';
+import '../routing/routes.dart';
+
 // -------------- Route Screen --------------
-class RouteScreen extends StatefulWidget {
-  const RouteScreen({Key? key}) : super(key: key);
+class RouteDetailsScreen extends ConsumerStatefulWidget {
+  final app_models.Route route;
+
+  const RouteDetailsScreen({
+    Key? key,
+    required this.route,
+  }) : super(key: key);
 
   @override
-  _RouteScreenState createState() => _RouteScreenState();
+  ConsumerState<RouteDetailsScreen> createState() => _RouteDetailsScreenState();
 }
 
-class _RouteScreenState extends State<RouteScreen>
+class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
     with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
   late TabController _tabController;
@@ -18,7 +31,7 @@ class _RouteScreenState extends State<RouteScreen>
   final GlobalKey _reviewsKey = GlobalKey();
   final GlobalKey _mediaKey = GlobalKey();
 
-  // Store the top offsets for each section (we’ll calculate after the layout)
+  // Store the top offsets for each section (we'll calculate after the layout)
   final List<double> _sectionOffsets = [0, 0, 0, 0];
 
   // Adjust this if you want to account for pinned heights (AppBar, Tab bar).
@@ -95,6 +108,15 @@ class _RouteScreenState extends State<RouteScreen>
     );
   }
 
+  // Start a trip on this route
+  void _startTrip() {
+    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    userRouteService.startExistingRoute(widget.route);
+    
+    // Navigate to the map screen
+    Navigator.of(context).pushReplacementNamed(Routes.map);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,14 +128,19 @@ class _RouteScreenState extends State<RouteScreen>
             pinned: true,
             expandedHeight: 200,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Scenic Mountain Route',
-                style: TextStyle(color: Colors.white),
+              title: Text(
+                widget.route.name,
+                style: const TextStyle(color: Colors.white),
               ),
-              background: Image.network(
-                'https://via.placeholder.com/800x400.png?text=Hero+Image',
-                fit: BoxFit.cover,
-              ),
+              background: widget.route.imageUrl != null && widget.route.imageUrl!.isNotEmpty
+                ? Image.network(
+                    widget.route.imageUrl!,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    'https://images.unsplash.com/photo-1520531158340-44015069e78e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1272&q=80',
+                    fit: BoxFit.cover,
+                  ),
             ),
             actions: [
               IconButton(
@@ -162,13 +189,11 @@ class _RouteScreenState extends State<RouteScreen>
           SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
-      // Optional FAB for "Start Route" or any main action
+      // FAB for "Start Trip" action
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Start route logic
-        },
+        onPressed: _startTrip,
         icon: const Icon(Icons.navigation),
-        label: const Text('Start Route'),
+        label: const Text('Start Trip'),
       ),
     );
   }
@@ -187,29 +212,123 @@ class _RouteScreenState extends State<RouteScreen>
               'Route Details',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              '• Hardcoded info about region, route type, difficulty.\n'
-              '• Points of interest: waterfalls, scenic lookouts, etc.\n'
-              '• Family/child-friendly or not.\n'
-              '• Loop or one-way route.\n'
-              '• Elevation profile, approximate length.',
-            ),
             const SizedBox(height: 16),
-            Container(
-              height: 120,
-              color: Colors.blueGrey[200],
-              alignment: Alignment.center,
-              child: const Text('Placeholder for Miniature Map/Elevation Graph'),
+            
+            // Route type and difficulty
+            Row(
+              children: [
+                _buildInfoChip(
+                  icon: Icons.category,
+                  label: widget.route.routeType?.toString().split('.').last ?? 'Unknown',
+                ),
+                const SizedBox(width: 8),
+                if (widget.route.difficultyLevel?.level != null)
+                  _buildInfoChip(
+                    icon: Icons.trending_up,
+                    label: widget.route.difficultyLevel!.level!,
+                  ),
+              ],
             ),
+            
             const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                // External nav logic
-              },
-              icon: const Icon(Icons.map),
-              label: const Text('Open in External Map'),
+            
+            // Route stats
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatColumn(
+                      icon: Icons.straighten,
+                      value: widget.route.length != null
+                          ? DistanceFormatter.formatDistance(widget.route.length!)
+                          : 'N/A',
+                      label: 'Distance',
+                    ),
+                    _buildStatColumn(
+                      icon: Icons.timer,
+                      value: widget.route.durationMinutes != null
+                          ? '${(widget.route.durationMinutes! / 60).toStringAsFixed(1)} h'
+                          : 'N/A',
+                      label: 'Duration',
+                    ),
+                    _buildStatColumn(
+                      icon: Icons.terrain,
+                      value: widget.route.elevationGain != null
+                          ? '${widget.route.elevationGain!.toStringAsFixed(0)} m'
+                          : 'N/A',
+                      label: 'Elevation',
+                    ),
+                  ],
+                ),
+              ),
             ),
+            
+            const SizedBox(height: 16),
+            
+            // Description
+            if (widget.route.description != null && widget.route.description!.isNotEmpty) ...[
+              const Text(
+                'Description',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(widget.route.description!),
+              const SizedBox(height: 16),
+            ],
+            
+            // Location
+            if (widget.route.region != null || widget.route.country != null) ...[
+              const Text(
+                'Location',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.red),
+                  const SizedBox(width: 8),
+                  Text(
+                    [
+                      if (widget.route.region != null) widget.route.region,
+                      if (widget.route.country != null) widget.route.country,
+                    ].where((e) => e != null).join(', '),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            
+            // Points of Interest
+            if (widget.route.pointsOfInterest.isNotEmpty) ...[
+              const Text(
+                'Points of Interest',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...widget.route.pointsOfInterest.map((poi) => ListTile(
+                leading: Icon(_getPoiIcon(poi.waypointType)),
+                title: Text(poi.name ?? 'Unnamed Point'),
+                subtitle: Text(poi.description ?? ''),
+              )),
+              const SizedBox(height: 16),
+            ],
+            
+            // Created date
+            if (widget.route.startDate != null) ...[
+              const Text(
+                'Created',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                DateFormat('MMMM d, yyyy').format(widget.route.startDate!),
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
           ],
         ),
       ),
@@ -261,13 +380,30 @@ class _RouteScreenState extends State<RouteScreen>
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            _buildReviewCard('John Doe', 4, 'Beautiful route, somewhat challenging.'),
-            _buildReviewCard('Jane Smith', 5, 'Perfect for a family weekend.'),
-            _buildReviewCard('Maxwell', 3, 'Muddy in spots, but worth it.'),
+            if (widget.route.reviews.isEmpty) ...[
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('No reviews yet. Be the first to review!'),
+                ),
+              ),
+            ] else ...[
+              ...widget.route.reviews.map((review) => 
+                _buildReviewCard(
+                  review.username ?? 'Anonymous',
+                  review.rating?.toInt() ?? 0,
+                  review.comment ?? '',
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {},
-              child: const Text('See All Reviews'),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Add review logic
+                },
+                child: const Text('Add Review'),
+              ),
             ),
           ],
         ),
@@ -280,7 +416,21 @@ class _RouteScreenState extends State<RouteScreen>
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
         leading: CircleAvatar(child: Text(user[0])),
-        title: Text('$user — ${'⭐' * rating}'),
+        title: Row(
+          children: [
+            Text(user),
+            const SizedBox(width: 8),
+            Row(
+              children: List.generate(5, (index) => 
+                Icon(
+                  index < rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
         subtitle: Text(text),
       ),
     );
@@ -315,17 +465,127 @@ class _RouteScreenState extends State<RouteScreen>
               }),
             ),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                // open camera/gallery logic
-              },
-              icon: const Icon(Icons.file_upload),
-              label: const Text('Upload Your Photos'),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // open camera/gallery logic
+                },
+                icon: const Icon(Icons.file_upload),
+                label: const Text('Upload Photos'),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildInfoChip({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.blue),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatColumn({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.blue),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getPoiIcon(WaypointType? type) {
+    if (type == null) return Icons.location_on;
+    
+    switch (type) {
+      case WaypointType.Lake:
+      case WaypointType.River:
+      case WaypointType.Waterfall:
+      case WaypointType.WaterSpring:
+      case WaypointType.Beach:
+        return Icons.water;
+      
+      case WaypointType.MountainPeak:
+      case WaypointType.Cliff:
+      case WaypointType.Valley:
+      case WaypointType.Glacier:
+      case WaypointType.Volcano:
+        return Icons.terrain;
+      
+      case WaypointType.Forest:
+      case WaypointType.Meadow:
+        return Icons.nature;
+      
+      case WaypointType.Cave:
+        return Icons.dark_mode;
+      
+      case WaypointType.HistoricalSite:
+      case WaypointType.Museum:
+      case WaypointType.CulturalSite:
+        return Icons.history_edu;
+      
+      case WaypointType.VisitorCenter:
+      case WaypointType.ParkOffice:
+        return Icons.info;
+      
+      case WaypointType.Viewpoint:
+        return Icons.photo_camera;
+      
+      case WaypointType.EducationalTrail:
+        return Icons.school;
+      
+      case WaypointType.SteepDrop:
+      case WaypointType.SlipperyPath:
+      case WaypointType.HighTide:
+      case WaypointType.FloodingArea:
+      case WaypointType.Rockfall:
+      case WaypointType.RestrictedArea:
+        return Icons.warning;
+      
+      case WaypointType.WildlifeSighting:
+        return Icons.pets;
+      
+      default:
+        return Icons.location_on;
+    }
   }
 }
 

@@ -16,11 +16,11 @@ import '../utilities/apiEndPoints.dart';
 
 /// Riverpod provider for the RouteService
 final routeServiceProvider =
-    StateNotifierProvider<RouteService, NewRoute?>((ref) {
+    StateNotifierProvider<RouteService, Route?>((ref) {
   return RouteService();
 });
 
-class RouteService extends StateNotifier<NewRoute?> {
+class RouteService extends StateNotifier<Route?> {
   RouteService() : super(null);
 
   final _repoProvider = GetIt.I<RepositoryProvider>();
@@ -42,7 +42,7 @@ class RouteService extends StateNotifier<NewRoute?> {
   bool _forceStateUpdate = false;
 
   /// Start a brand new route
-  void startNewRoute(RouteTypeEnum routeType, GeoPoint startPoint) {
+  void startRoute(RouteTypeEnum routeType, GeoPoint startPoint) {
     // Cancel anything lingering
     _locationUpdatesSubscription?.cancel();
     _timer?.cancel();
@@ -65,7 +65,7 @@ class RouteService extends StateNotifier<NewRoute?> {
     }
 
     // Build a fresh route
-    final newRoute = NewRoute(
+    final Route = Route(
       isarId: null,
       startDate: DateTime.now().toUtc(),
       endDate: null,
@@ -90,7 +90,7 @@ class RouteService extends StateNotifier<NewRoute?> {
       tips: '',
       difficulty: null,
     );
-    state = newRoute;
+    state = Route;
 
     _committedPoints.add(startPoint);
 
@@ -175,7 +175,7 @@ class RouteService extends StateNotifier<NewRoute?> {
   /// The public method called from the SaveRouteScreen
   /// 1) Updates the route with the user’s chosen name, description, tags
   /// 2) Calls server-saving method
-  Future<NewRoute?> saveRoute(
+  Future<Route?> saveRoute(
     String name,
     String? description,
     List<TagEnum>? tags,
@@ -197,7 +197,7 @@ class RouteService extends StateNotifier<NewRoute?> {
 
   /// Actually save to server (or local DB).
   /// If successful, return the route (or some updated route).
-  Future<NewRoute?> _saveRouteToServer(NewRoute route) async {
+  Future<Route?> _saveRouteToServer(Route route) async {
     final user = _repoProvider.userInfoRepository.getLastSync();
     if (user == null) {
       if (kDebugMode) print('No user found. Cannot save route.');
@@ -225,7 +225,7 @@ class RouteService extends StateNotifier<NewRoute?> {
 
       // Fire the request
       final response = await HttpClient.post(
-        uri: EndPoints.addNewRoute,
+        uri: EndPoints.addRoute,
         body: jsonEncode(jsonPayload),
       );
 
