@@ -119,6 +119,9 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       body: CustomScrollView(
         controller: _scrollController,
@@ -130,7 +133,7 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.route.name,
-                style: const TextStyle(color: Colors.white),
+                style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
               ),
               background: widget.route.imageUrl != null && widget.route.imageUrl!.isNotEmpty
                 ? Image.network(
@@ -172,10 +175,11 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
                   Tab(text: 'Reviews'),
                   Tab(text: 'Media'),
                 ],
-                labelColor: Colors.blue,
+                labelColor: colorScheme.primary,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.blue,
+                indicatorColor: colorScheme.secondary,
               ),
+              theme.scaffoldBackgroundColor,
             ),
           ),
 
@@ -192,6 +196,8 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
       // FAB for "Start Trip" action
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _startTrip,
+        backgroundColor: colorScheme.secondary,
+        foregroundColor: colorScheme.onSecondary,
         icon: const Icon(Icons.navigation),
         label: const Text('Start Trip'),
       ),
@@ -200,17 +206,23 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 
   // SECTION: DETAILS
   Widget _buildDetailsSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final backgroundColor = theme.brightness == Brightness.light 
+        ? colorScheme.background 
+        : theme.scaffoldBackgroundColor;
+    
     return SliverToBoxAdapter(
       key: _detailsKey,
       child: Container(
-        color: Colors.grey[100],
+        color: backgroundColor,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Route Details',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             
@@ -234,7 +246,8 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
             
             // Route stats
             Card(
-              elevation: 2,
+              elevation: theme.cardTheme.elevation,
+              shape: theme.cardTheme.shape,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -270,32 +283,35 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
             
             // Description
             if (widget.route.description != null && widget.route.description!.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Description',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
-              Text(widget.route.description!),
+              Text(
+                widget.route.description!,
+                style: theme.textTheme.bodyMedium,
+              ),
               const SizedBox(height: 16),
             ],
             
             // Location
             if (widget.route.region != null || widget.route.country != null) ...[
-              const Text(
+              Text(
                 'Location',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.location_on, color: Colors.red),
+                  Icon(Icons.location_on, color: colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
                     [
                       if (widget.route.region != null) widget.route.region,
                       if (widget.route.country != null) widget.route.country,
                     ].where((e) => e != null).join(', '),
-                    style: const TextStyle(fontSize: 16),
+                    style: theme.textTheme.bodyLarge,
                   ),
                 ],
               ),
@@ -304,29 +320,29 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
             
             // Points of Interest
             if (widget.route.pointsOfInterest.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Points of Interest',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               ...widget.route.pointsOfInterest.map((poi) => ListTile(
-                leading: Icon(_getPoiIcon(poi.waypointType)),
-                title: Text(poi.name ?? 'Unnamed Point'),
-                subtitle: Text(poi.description ?? ''),
+                leading: Icon(_getPoiIcon(poi.waypointType), color: colorScheme.primary),
+                title: Text(poi.name ?? 'Unnamed Point', style: theme.textTheme.bodyLarge),
+                subtitle: Text(poi.description ?? '', style: theme.textTheme.bodySmall),
               )),
               const SizedBox(height: 16),
             ],
             
             // Created date
             if (widget.route.startDate != null) ...[
-              const Text(
+              Text(
                 'Created',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               Text(
                 DateFormat('MMMM d, yyyy').format(widget.route.startDate!),
-                style: const TextStyle(fontSize: 16),
+                style: theme.textTheme.bodyLarge,
               ),
             ],
           ],
@@ -337,26 +353,33 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 
   // SECTION: WEATHER
   Widget _buildWeatherSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final altBackgroundColor = theme.brightness == Brightness.light
+        ? colorScheme.background.withOpacity(0.7)
+        : theme.canvasColor;
+    
     return SliverToBoxAdapter(
       key: _weatherKey,
       child: Container(
-        color: Colors.grey[200],
+        color: altBackgroundColor,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               '5-Day Weather Forecast',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             for (int i = 1; i <= 5; i++)
               Card(
                 margin: const EdgeInsets.symmetric(vertical: 4.0),
+                shape: theme.cardTheme.shape,
                 child: ListTile(
-                  leading: const Icon(Icons.wb_sunny),
-                  title: Text('Day $i: Sunny, 24°C'),
-                  subtitle: const Text('Wind: 5km/h, Humidity: 60%'),
+                  leading: Icon(Icons.wb_sunny, color: colorScheme.tertiary),
+                  title: Text('Day $i: Sunny, 24°C', style: theme.textTheme.bodyLarge),
+                  subtitle: Text('Wind: 5km/h, Humidity: 60%', style: theme.textTheme.bodySmall),
                 ),
               ),
           ],
@@ -367,24 +390,33 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 
   // SECTION: REVIEWS
   Widget _buildReviewsSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final backgroundColor = theme.brightness == Brightness.light 
+        ? colorScheme.background 
+        : theme.scaffoldBackgroundColor;
+    
     return SliverToBoxAdapter(
       key: _reviewsKey,
       child: Container(
-        color: Colors.grey[100],
+        color: backgroundColor,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'User Reviews',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             if (widget.route.reviews.isEmpty) ...[
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('No reviews yet. Be the first to review!'),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'No reviews yet. Be the first to review!',
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 ),
               ),
             ] else ...[
@@ -396,7 +428,7 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -412,13 +444,21 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
   }
 
   Widget _buildReviewCard(String user, int rating, String text) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: theme.cardTheme.shape,
+      elevation: theme.cardTheme.elevation,
       child: ListTile(
-        leading: CircleAvatar(child: Text(user[0])),
+        leading: CircleAvatar(
+          backgroundColor: colorScheme.primary,
+          child: Text(user[0], style: TextStyle(color: colorScheme.onPrimary)),
+        ),
         title: Row(
           children: [
-            Text(user),
+            Text(user, style: theme.textTheme.titleMedium),
             const SizedBox(width: 8),
             Row(
               children: List.generate(5, (index) => 
@@ -431,24 +471,30 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
             ),
           ],
         ),
-        subtitle: Text(text),
+        subtitle: Text(text, style: theme.textTheme.bodyMedium),
       ),
     );
   }
 
   // SECTION: MEDIA
   Widget _buildMediaSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final altBackgroundColor = theme.brightness == Brightness.light
+        ? colorScheme.background.withOpacity(0.7)
+        : theme.canvasColor;
+    
     return SliverToBoxAdapter(
       key: _mediaKey,
       child: Container(
-        color: Colors.grey[200],
+        color: altBackgroundColor,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Photos & Videos',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -458,9 +504,22 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
                 return Container(
                   width: 100,
                   height: 80,
-                  color: Colors.blueGrey[300],
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   alignment: Alignment.center,
-                  child: Text('Media ${index + 1}'),
+                  child: Text(
+                    'Media ${index + 1}',
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 );
               }),
             ),
@@ -481,22 +540,25 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
   }
 
   Widget _buildInfoChip({required IconData icon, required String label}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: colorScheme.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.blue),
+          Icon(icon, size: 16, color: colorScheme.primary),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.blue,
+            style: TextStyle(
+              color: colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -510,23 +572,22 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
     required String value,
     required String label,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Column(
       children: [
-        Icon(icon, color: Colors.blue),
+        Icon(icon, color: colorScheme.primary),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 12,
-          ),
+          style: theme.textTheme.bodySmall,
         ),
       ],
     );
@@ -593,8 +654,9 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 // This builds a pinned area of fixed height with a TabBar widget.
 class _SliverTabHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
+  final Color backgroundColor;
 
-  _SliverTabHeaderDelegate(this.tabBar);
+  _SliverTabHeaderDelegate(this.tabBar, this.backgroundColor);
 
   @override
   double get minExtent => tabBar.preferredSize.height;
@@ -605,13 +667,14 @@ class _SliverTabHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Colors.white, // Tab bar background
+      color: backgroundColor, // Using theme background color
       child: tabBar,
     );
   }
 
   @override
   bool shouldRebuild(_SliverTabHeaderDelegate oldDelegate) {
-    return false;
+    return tabBar != oldDelegate.tabBar ||
+           backgroundColor != oldDelegate.backgroundColor;
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import '../models/route.dart';
+import '../models/sample_routes.dart';
 import '../services/httpClient.dart';
 import '../services/isar/repository_provider.dart';
 import '../services/routeService.dart';
@@ -28,7 +29,8 @@ class RoutesNotifier extends StateNotifier<AsyncValue<List<Route>>> {
   Future<void> fetchRoutes() async {
     try {
       state = const AsyncValue.loading();
-      
+      //  final sampleRoutes = await SampleRoutes.getSampleRoutes();
+      // state = AsyncValue.data(sampleRoutes); // Wrap the list in AsyncValue.data
       // First, get routes from local database
       final localRoutes = await _repoProvider.routeRepository.getAll();
       
