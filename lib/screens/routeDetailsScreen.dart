@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../models/newRoute.dart' as app_models;
+import '../models/route.dart' as app_models;
 import '../models/enum.dart';
 import '../services/distanceFormatter.dart';
 import '../services/userRouteService.dart';

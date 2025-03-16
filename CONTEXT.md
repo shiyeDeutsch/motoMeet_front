@@ -56,8 +56,8 @@ lib/
 │       group.dart
 │       group.g.dart
 │       mapMarker.dart
-│       newRoute.dart
-│       newRoute.g.dart
+│       rute.dart
+│       route.g.dart
 │       notification.dart
 │       notification.g.dart
 │       register_model.dart

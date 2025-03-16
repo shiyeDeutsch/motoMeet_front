@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/newRoute.dart' as app_models;
+import '../models/route.dart' as app_models;
 import '../providers/routes_provider.dart';
 import '../common/widgets/route_card.dart';
 import '../widgets/loading_indicator.dart';

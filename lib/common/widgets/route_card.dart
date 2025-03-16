@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/newRoute.dart' as app_models;
+import '../../models/route.dart' as app_models;
 import '../../services/distanceFormatter.dart';
 import '../../routing/routes.dart';
 

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/geoLocationInfo.dart';
-import 'package:motomeetfront/models/NewRoute.dart';
+import 'package:motomeetfront/models/route.dart';
 import 'package:motomeetfront/services/httpClient.dart';
 import 'package:motomeetfront/services/loctionService.dart';
 import 'package:motomeetfront/services/isar/isar_geo_location.dart';

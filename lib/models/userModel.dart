@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'event.dart';
 import 'group.dart';
-import 'NewRoute.dart';
+import 'route.dart';
 import 'notification.dart';
 
 part 'userModel.g.dart';

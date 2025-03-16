@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:get_it/get_it.dart';
-import '../models/newRoute.dart' as app_models;
+import '../models/route.dart' as app_models;
 import '../models/enum.dart';
 import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';

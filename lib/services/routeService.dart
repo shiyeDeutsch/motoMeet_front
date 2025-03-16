@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:motomeetfront/models/NewRoute.dart';
+import 'package:motomeetfront/models/route.dart';
 import 'package:motomeetfront/utilities/apiEndPoints.dart';
 
 class RoutesService {

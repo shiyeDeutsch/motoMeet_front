@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'NewRoute.dart';
+part of 'route.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator

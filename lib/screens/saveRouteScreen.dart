@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart'; 
 import '../models/enum.dart';
-import '../models/newRoute.dart' as app_models;
+import '../models/route.dart' as app_models;
 import '../services/userRouteService.dart';
 
 class SaveRouteScreen extends ConsumerStatefulWidget {

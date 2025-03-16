@@ -112,3 +112,4 @@ class HomeScreenNotifier extends StateNotifier<HomeScreenState> {
 final homeScreenProvider = StateNotifierProvider<HomeScreenNotifier, HomeScreenState>((ref) {
   return HomeScreenNotifier(ref);
 });
+

@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
 import '../models/userModel.dart';
-import '../models/NewRoute.dart' as route_model;
+import '../models/route.dart' as route_model;
 import '../services/isar/repository_provider.dart';
 
 class PersonalProfileScreen extends ConsumerStatefulWidget {

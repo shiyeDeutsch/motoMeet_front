@@ -9,7 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/enum.dart';
-import '../models/newRoute.dart';
+import '../models/route.dart';
 import '../services/httpClient.dart';
 import '../services/loctionService.dart';
 import 'isar/repository_provider.dart';

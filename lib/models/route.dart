@@ -1,381 +1,406 @@
-// import 'dart:math';
-// import 'dart:convert';
+import 'dart:convert';
+import 'package:isar/isar.dart';
+import 'package:json_annotation/json_annotation.dart';
+import  './enum.dart'; 
+ import './userModel.dart'; 
+  import 'package:latlong2/latlong.dart';
+  part 'route.g.dart';
 
-// import 'package:flutter/material.dart';
-// import 'package:intl/intl.dart';
-// import 'package:latlong2/latlong.dart';
-// import 'package:isar/isar.dart';
-// import 'package:motomeetfront/models/enum.dart';
-// import '../utilities/isarConverters.dart';
-// import 'enum.dart';
-// import 'package:json_annotation/json_annotation.dart';
 
-// //  part 'new_route.g.dart'; // Ensure this part directive is included for generated code
-// part 'route.g.dart';
+@collection
+@JsonSerializable()
+class Route {
+  Id? id;
+  String name;
+  String? description;
+  @Embedded()
+  GeoPoint? startPoint;
+  @Embedded()
+  GeoPoint? endPoint;
+  @Enumerated(EnumType.name)
+  RouteType? routeType;
+  @Embedded()
+  DifficultyLevel? difficultyLevel;
+  double? length;
+  int? durationMinutes;
+  double? elevationGain;
+  double? rating;
+  bool? isLoop;
+  String? country;
+  String? region;
+  String? imageUrl;
+   DateTime? startDate;   
+  DateTime? endDate;     
 
-// @collection
-// class NewRoute {
-//   Id? isarId;
-//   String name;
-//   String? description;
-//   GeoPoint startPoint;
-//   GeoPoint? endPoint;
-//   RouteType? routeType;
-//   double? length;
-//   int? durationMinutes;
+  @JsonKey(ignore: true)
+  IsarLinks<RoutePoint> routePoints = IsarLinks<RoutePoint>();
+  
+  @JsonKey(ignore: true)
+  IsarLinks<Review> reviews = IsarLinks<Review>();
+  
+  @JsonKey(ignore: true)
+  IsarLinks<Tag> tags = IsarLinks<Tag>();
+  
+  @JsonKey(ignore: true)
+  IsarLinks<UserRoute> userRoutes = IsarLinks<UserRoute>();
+  
+  @JsonKey(ignore: true)
+  IsarLinks<PointOfInterest> pointsOfInterest = IsarLinks<PointOfInterest>();
 
-//   // NEW FIELDS
-//   String? coverImageUrl;
-//   String? country;
-//   String? region;
-//   bool? isLoop;
-//   double? rating;
-//   String? natureReserveUrl;
-//   String? tips;
+  @JsonKey(ignore: true)
+  IsarLink<UserInfo> routeCreator = IsarLink<UserInfo>();
 
-//   @Enumerated(EnumType.name)
-//   DifficultyEnum? difficulty;
+  Route({
+    this.id,
+    required this.name,
+    this.description,
+    this.startPoint,
+    this.endPoint,
+    this.routeType,
+    this.difficultyLevel,
+    this.length,
+    this.durationMinutes,
+    this.elevationGain,
+    this.rating,
+    this.isLoop,
+    this.country,
+    this.region,
+    this.imageUrl,
+    this.startDate,
+    this.endDate,
+  });
 
-//   @Ignore()
-//   List<Review>? reviews;
+  factory Route.fromJson(Map<String, dynamic> json) => _$RouteFromJson(json);
 
-//   @Ignore()
-//   List<RouteMedia>? media;
+  Map<String, dynamic> toJson() => _$RouteToJson(this);
 
-//   List<GeoPoint>? routePoints;
-//   @Enumerated(EnumType.name)
-//   List<TagEnum> routeTags;
-//   bool isActive;
-//   bool isComplited;
-//   DateTime startDate;
-//   DateTime? endDate;
-//   List<Waypoint>? pointOfInterest;
+  Route copyWith({
+    Id? id,
+    String? name,
+    String? description,
+    GeoPoint? startPoint,
+    GeoPoint? endPoint,
+    RouteType? routeType,
+    DifficultyLevel? difficultyLevel,
+    double? length,
+    int? durationMinutes,
+    double? elevationGain,
+    double? rating,
+    bool? isLoop,
+    String? country,
+    String? region,
+    String? imageUrl,
+    DateTime? startDate,
+    DateTime? endDate,
+   }) {
+    return Route(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      startPoint: startPoint ?? this.startPoint,
+      endPoint: endPoint ?? this.endPoint,
+      routeType: routeType ?? this.routeType,
+      difficultyLevel: difficultyLevel ?? this.difficultyLevel,
+      length: length ?? this.length,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      elevationGain: elevationGain ?? this.elevationGain,
+      rating: rating ?? this.rating,
+      isLoop: isLoop ?? this.isLoop,
+      country: country ?? this.country,
+      region: region ?? this.region,
+      imageUrl: imageUrl ?? this.imageUrl,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+     );
+  }
+}
 
-//   NewRoute({
-//     required this.isarId,
-//     required this.name,
-//     required this.description,
-//     required this.startPoint,
-//     required this.endPoint,
-//     required this.routeType,
-//     required this.length,
-//     required this.durationMinutes,
-//     required this.coverImageUrl,
-//     required this.country,
-//     required this.region,
-//     required this.isLoop,
-//     required this.rating,
-//     required this.natureReserveUrl,
-//     required this.tips,
-//     required this.difficulty,
-//     required this.routePoints,
-//     required this.routeTags,
-//     required this.isActive,
-//     required this.isComplited,
-//     required this.startDate,
-//     required this.endDate,
-//     required this.pointOfInterest,
-//   });
+@embedded
+@JsonSerializable()
+class GeoPoint {
+  double? latitude;
+  double? longitude;
+  double? altitude;
 
-//   @Ignore()
-//   Duration? get routeDuration {
-//     if (durationMinutes != null) return Duration(minutes: durationMinutes!);
-//     return null;
-//   }
+  GeoPoint({this.latitude, this.longitude, this.altitude});
 
-//   set routeDuration(Duration? duration) {
-//     durationMinutes = duration!.inMilliseconds;
-//   }
+  factory GeoPoint.fromJson(Map<String, dynamic> json) =>
+      _$GeoPointFromJson(json);
 
-//   factory NewRoute.fromJson(Map<String, dynamic> json) => NewRoute(
-//         isarId: json['isarId'],
-//         name: json['name'],
-//         startDate: json['startDate'],
-//         endDate: json['endDate'],
-//         isActive: json['isActive'],
-//         isComplited: json['isComplited'],
-//         description: json['description'],
-//         startPoint: GeoPoint.fromJson(json['startPoint']),
-//         endPoint: GeoPoint.fromJson(json['endPoint']),
-//         routeType: RouteType.fromJson(json['routeType']),
-//         length: json['length'].toDouble(),
-//         durationMinutes: json['durationMinutes'],
-//         coverImageUrl: json['coverImageUrl'],
-//         country: json['country'],
-//         region: json['region'],
-//         isLoop: json['isLoop'],
-//         rating: json['rating'],
-//         natureReserveUrl: json['natureReserveUrl'],
-//         tips: json['tips'],
-//         difficulty: DifficultyEnum.values.firstWhere((e) => e.name == json['difficulty']),
-//         routePoints: List<GeoPoint>.from(json['routePoints'].map((x) => GeoPoint.fromJson(x))),
-//         routeTags: List<TagEnum>.from(json['routeTags'].map((x) => TagEnum.values.firstWhere((e) => e.name == x))),
-//         pointOfInterest: List<Waypoint>.from(json['pointOfInterest'].map((x) => Waypoint.fromJson(x))),
-//       );
+  Map<String, dynamic> toJson() => _$GeoPointToJson(this);
 
-//   Map<String, dynamic> toJson() => {
-//         'name': name,
-//         'description': description,
-//         'startDate': startDate.toIso8601String(),
-//         'endDate': endDate?.toIso8601String(),
-//         'isComplited': isComplited,
-//         'isActive': isActive,
-//         'startPoint': startPoint.toJson(),
-//         'endPoint': endPoint?.toJson(),
-//         'routeType': routeType?.toJson(),
-//         'length': length,
-//         'durationMinutes': durationMinutes,
-//         'coverImageUrl': coverImageUrl,
-//         'country': country,
-//         'region': region,
-//         'isLoop': isLoop,
-//         'rating': rating,
-//         'natureReserveUrl': natureReserveUrl,
-//         'tips': tips,
-//         'difficulty': difficulty?.name,
-//         'routePoints': routePoints != null ? List<dynamic>.from(routePoints!.map((x) => x.toJson())) : null,
-//         'routeTags': List<String>.from(routeTags.map((x) => x.name)),
-//         'pointOfInterest': pointOfInterest != null ? List<dynamic>.from(pointOfInterest!.map((x) => x.toJson())) : null,
-//       };
+  GeoPoint copyWith({
+    double? latitude,
+    double? longitude,
+    double? altitude,
+  }) {
+    return GeoPoint(
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      altitude: altitude ?? this.altitude,
+    );
+  }
+  factory GeoPoint.fromLatLng(LatLng latLng, double? altitude) => GeoPoint(
+      latitude: latLng.latitude,
+      longitude: latLng.longitude,
+      altitude: altitude);
+  // Method for converting a GeoPoint instance to a map
+  
+  LatLng toLatLng() {
+    return LatLng(latitude!, longitude!);
+  }
+}
 
-//   NewRoute copyWith({
+// @embedded
+// @JsonSerializable()
+// class RouteType {
+//   String? name;
+
+//   RouteType({this.name});
+
+//   factory RouteType.fromJson(Map<String, dynamic> json) =>
+//       _$RouteTypeFromJson(json);
+
+//   Map<String, dynamic> toJson() => _$RouteTypeToJson(this);
+
+//   RouteType copyWith({
 //     String? name,
-//     String? description,
-//     GeoPoint? startPoint,
-//     GeoPoint? endPoint,
-//     RouteType? routeType,
-//     double? length,
-//     Duration? duration,
-//     String? coverImageUrl,
-//     String? country,
-//     String? region,
-//     bool? isLoop,
-//     double? rating,
-//     String? natureReserveUrl,
-//     String? tips,
-//     DifficultyEnum? difficulty,
-//     List<GeoPoint>? routePoints,
-//     List<TagEnum>? routeTags,
-//     bool? isActive,
-//     bool? isComplited,
-//     DateTime? startDate,
-//     DateTime? endDate,
-//     int? durationMinutes,
-//     Id? isarId,
-//     List<Waypoint>? pointOfInterest,
 //   }) {
-//     return NewRoute(
-//       isarId: isarId ?? this.isarId,
+//     return RouteType(
 //       name: name ?? this.name,
-//       isComplited: isComplited ?? this.isComplited,
-//       endDate: endDate ?? this.endDate,
-//       startDate: startDate ?? this.startDate,
-//       isActive: isActive ?? this.isActive,
-//       description: description ?? this.description,
-//       startPoint: startPoint ?? this.startPoint,
-//       endPoint: endPoint ?? this.endPoint,
-//       routeType: routeType ?? this.routeType,
-//       length: length ?? this.length,
-//       durationMinutes: durationMinutes ?? this.durationMinutes,
-//       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
-//       country: country ?? this.country,
-//       region: region ?? this.region,
-//       isLoop: isLoop ?? this.isLoop,
-//       rating: rating ?? this.rating,
-//       natureReserveUrl: natureReserveUrl ?? this.natureReserveUrl,
-//       tips: tips ?? this.tips,
-//       difficulty: difficulty ?? this.difficulty,
-//       routePoints: routePoints ?? this.routePoints,
-//       routeTags: routeTags ?? this.routeTags,
-//       pointOfInterest: pointOfInterest ?? this.pointOfInterest,
 //     );
 //   }
 // }
-// @embedded
-// class Waypoint {
-//   final GeoPoint? location;
-//   final String imageUrl;
-//   final String name;
-//   final String description;
-//   @Enumerated(EnumType.name)
-//   final WaypointType? type;
-//   Waypoint({
-//     this.location,
-//     this.imageUrl = '',
-//     this.name = '',
-//     this.description = '',
-//     this.type,
-//   });
 
-//   // Method for converting a Waypoint instance to a map
-//   Map<String, dynamic> toJson() => {
-//         'location': location?.toJson(),
-//         'imageUrl': imageUrl,
-//         'name': name,
-//         'description': description,
-//         'type': type!.name,
-//       };
+@embedded
+@JsonSerializable()
+class DifficultyLevel {
+  String? level;
+  String? description;
 
-//   // Factory constructor for creating a Waypoint instance from a map
-//   factory Waypoint.fromJson(Map<String, dynamic> json) => Waypoint(
-//         location: json['location'] != null
-//             ? GeoPoint.fromJson(json['location'])
-//             : null,
-//         imageUrl: json['imageUrl'] ?? '',
-//         name: json['name'] ?? '',
-//         description: json['description'] ?? '',
-//         type: json['type'] != null
-//             ? json['type'].map((x) => WaypointTypeExtension.fromString(x))
-//             : null,
-//       );
-// } 
-// class RoutePoint {
-//   final int id;
-//   final int routeId;
-//   final int sequenceNumber;
-//   final GeoPoint point;
+  DifficultyLevel({this.level, this.description});
 
-//   RoutePoint({
-//     required this.id,
-//     required this.routeId,
-//     required this.sequenceNumber,
-//     required this.point,
-//   });
+  factory DifficultyLevel.fromJson(Map<String, dynamic> json) =>
+      _$DifficultyLevelFromJson(json);
 
-//   factory RoutePoint.fromJson(Map<String, dynamic> json) => RoutePoint(
-//         id: json['id'],
-//         routeId: json['routeId'],
-//         sequenceNumber: json['sequenceNumber'],
-//         // Ensure your GeoPoint class has a fromJson method similar to this one
-//         point: GeoPoint.fromJson(json['point']),
-//       );
+  Map<String, dynamic> toJson() => _$DifficultyLevelToJson(this);
 
-//   // Method for converting a RoutePoint instance to a map
-//   Map<String, dynamic> toJson() => {
-//         'id': id,
-//         'routeId': routeId,
-//         'sequenceNumber': sequenceNumber,
-//         // Ensure your GeoPoint class has a toJson method similar to this one
-//         'point': point.toJson(),
-//       };
-// }
-//  class Review {
-//   final int id;
-//   final String username;
-//   final double rating;
-//   final String comment;
-//   final DateTime date;
-//   final int routeId;
-//  final String review;
+  DifficultyLevel copyWith({
+    String? level,
+    String? description,
+  }) {
+    return DifficultyLevel(
+      level: level ?? this.level,
+      description: description ?? this.description,
+    );
+  }
+}
 
-// Review({
-//   required this.id,
-//   required this.username,
-//   required this.rating,
-//   required this.comment,
-//   required this.date,
-//   required this.routeId,
-//   required this.review,
-// });
-// }
-// @embedded
-// class RouteType {
-//   // final int id;
-//   @Enumerated(EnumType.name)
-//   final RouteTypeEnum? type;
+@collection
+@JsonSerializable()
+class RoutePoint {
+  Id? id;
+  int? sequenceNumber;
+  @Embedded()
+  GeoPoint? point;
 
-//   RouteType({
-//     //  required this.id,
-//     this.type,
-//   });
-//   factory RouteType.fromJson(Map<String, dynamic> json) => RouteType(
-//         //    id: json['id'],
-//         type: json['type'],
-//       );
+  RoutePoint({this.id, this.sequenceNumber, this.point});
 
-//   // Method for converting a RouteType instance to a map
-//   Map<String, dynamic> toJson() => {
-//         //   'id': id,
-//         'name': type?.name,
-//       };
-// }
-// @embedded
-// class GeoPoint {
-//   final double? latitude;
-//   final double? longitude;
-//   final double? altitude;
+  factory RoutePoint.fromJson(Map<String, dynamic> json) =>
+      _$RoutePointFromJson(json);
 
-//   GeoPoint({
-//     this.latitude,
-//     this.longitude,
-//     this.altitude,
-//   });
-//   factory GeoPoint.fromJson(Map<String, dynamic> json) => GeoPoint(
-//         latitude: json['latitude'].toDouble(),
-//         longitude: json['longitude'].toDouble(),
-//         altitude: json['altitude'].toDouble() ?? false,
-//       );
-//   factory GeoPoint.fromLatLng(LatLng latLng, double? altitude) => GeoPoint(
-//       latitude: latLng.latitude,
-//       longitude: latLng.longitude,
-//       altitude: altitude);
-//   // Method for converting a GeoPoint instance to a map
-//   Map<String, dynamic> toJson() => {
-//         'latitude': latitude,
-//         'longitude': longitude,
-//         'altitude': altitude,
-//       };
-//   LatLng toLatLng() {
-//     return LatLng(latitude!, longitude!);
-//   }
-// }
-// class RouteMedia {
-//   final String url;     // The URL/path to the image/video
-//   final String type;    // "image", "video", or "live"
-//   final String? title;  // Optional: title or caption
-//   final String? owner;  // Optional: user who uploaded it
-//   final DateTime? uploadedOn; // When was it uploaded?
+  Map<String, dynamic> toJson() => _$RoutePointToJson(this);
 
-//   RouteMedia({
-//     required this.url,
-//     required this.type,
-//     this.title,
-//     this.owner,
-//     this.uploadedOn,
-//   });
+  RoutePoint copyWith({
+    Id? id,
+    int? sequenceNumber,
+    GeoPoint? point,
+  }) {
+    return RoutePoint(
+      id: id ?? this.id,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      point: point ?? this.point,
+    );
+  }
+}
 
-//   factory RouteMedia.fromJson(Map<String, dynamic> json) => RouteMedia(
-//     url: json['url'],
-//     type: json['type'],
-//     title: json['title'],
-//     owner: json['owner'],
-//     uploadedOn: json['uploadedOn'] != null
-//         ? DateTime.parse(json['uploadedOn'])
-//         : null,
-//   );
+@collection
+@JsonSerializable()
+class Review {
+  Id? id;
+  String? username;
+  double? rating;
+  String? comment;
+  DateTime? date;
 
-//   Map<String, dynamic> toJson() => {
-//     'url': url,
-//     'type': type,
-//     'title': title,
-//     'owner': owner,
-//     'uploadedOn': uploadedOn?.toIso8601String(),
-//   };
-// }
-// class WeatherForecast {
-//   final DateTime date;
-//   final double temperature; 
-//   final double windSpeed;
-//   final double humidity;
-//   final double precipitation;
-//   final String condition; // "Cloudy", "Sunny", etc.
+  Review({this.id, this.username, this.rating, this.comment, this.date});
 
-//   WeatherForecast({
-//     required this.date,
-//     required this.temperature,
-//     required this.windSpeed,
-//     required this.humidity,
-//     required this.precipitation,
-//     required this.condition,
-//   });
-// }
+  factory Review.fromJson(Map<String, dynamic> json) => _$ReviewFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ReviewToJson(this);
+
+  Review copyWith({
+    Id? id,
+    String? username,
+    double? rating,
+    String? comment,
+    DateTime? date,
+  }) {
+    return Review(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      rating: rating ?? this.rating,
+      comment: comment ?? this.comment,
+      date: date ?? this.date,
+    );
+  }
+}
+
+@collection
+@JsonSerializable()
+class Tag {
+  Id? id;
+  String? name;
+
+  Tag({this.id, this.name});
+
+  factory Tag.fromJson(Map<String, dynamic> json) => _$TagFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
+
+  Tag copyWith({
+    Id? id,
+    String? name,
+  }) {
+    return Tag(
+      id: id ?? this.id,
+      name: name ?? this.name,
+    );
+  }
+}
+
+@collection
+@JsonSerializable()
+class UserRoute {
+  Id? id;
+  @Embedded()
+  DifficultyLevel? difficultyLevel;
+   @Enumerated(EnumType.name)
+  RouteType? routeType;
+  DateTime? dateTraveled;
+  int? durationMinutes;
+  double? distance;
+  double? elevationGain;
+
+  @JsonKey(ignore: true)
+  IsarLinks<UserRoutePoint> userRoutePoints = IsarLinks<UserRoutePoint>();
+
+  UserRoute({
+    this.id,
+    this.difficultyLevel,
+    this.routeType,
+    this.dateTraveled,
+    this.durationMinutes,
+    this.distance,
+    this.elevationGain,
+  });
+
+  factory UserRoute.fromJson(Map<String, dynamic> json) =>
+      _$UserRouteFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserRouteToJson(this);
+
+  UserRoute copyWith({
+    Id? id,
+    DifficultyLevel? difficultyLevel,
+    RouteType? routeType,
+    DateTime? dateTraveled,
+    int? durationMinutes,
+    double? distance,
+    double? elevationGain,
+  }) {
+    return UserRoute(
+      id: id ?? this.id,
+      difficultyLevel: difficultyLevel ?? this.difficultyLevel,
+      routeType: routeType ?? this.routeType,
+      dateTraveled: dateTraveled ?? this.dateTraveled,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      distance: distance ?? this.distance,
+      elevationGain: elevationGain ?? this.elevationGain,
+    );
+  }
+}
+
+@collection
+@JsonSerializable()
+class UserRoutePoint {
+  Id? id;
+  int? sequenceNumber;
+  @Embedded()
+  GeoPoint? point;
+
+  UserRoutePoint({this.id, this.sequenceNumber, this.point});
+
+  factory UserRoutePoint.fromJson(Map<String, dynamic> json) =>
+      _$UserRoutePointFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserRoutePointToJson(this);
+
+  UserRoutePoint copyWith({
+    Id? id,
+    int? sequenceNumber,
+    GeoPoint? point,
+  }) {
+    return UserRoutePoint(
+      id: id ?? this.id,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      point: point ?? this.point,
+    );
+  }
+}
+
+@collection
+@JsonSerializable()
+class PointOfInterest {
+  Id? id;
+  @Embedded()
+  GeoPoint? location;
+  String? imageUrl;
+  String? name;
+  String? description;
+  @Enumerated(EnumType.name)
+  WaypointType? waypointType;
+
+  PointOfInterest({
+    this.id,
+    this.location,
+    this.imageUrl,
+    this.name,
+    this.description,
+    this.waypointType,
+  });
+
+  factory PointOfInterest.fromJson(Map<String, dynamic> json) =>
+      _$PointOfInterestFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PointOfInterestToJson(this);
+
+  PointOfInterest copyWith({
+    Id? id,
+    GeoPoint? location,
+    String? imageUrl,
+    String? name,
+    String? description,
+    WaypointType? waypointType,
+  }) {
+    return PointOfInterest(
+      id: id ?? this.id,
+      location: location ?? this.location,
+      imageUrl: imageUrl ?? this.imageUrl,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      waypointType: waypointType ?? this.waypointType,
+    );
+  }
+}
+

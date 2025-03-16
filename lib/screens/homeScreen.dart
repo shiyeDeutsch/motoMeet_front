@@ -8,7 +8,7 @@ import 'package:motomeetfront/common/widgets/route_card.dart';
 // import 'package:motomeetfront/common/widgets/search_bar.dart';
 import 'package:motomeetfront/models/activity.dart';
 import 'package:motomeetfront/models/event.dart';
-import 'package:motomeetfront/models/NewRoute.dart' as route_model;
+import 'package:motomeetfront/models/route.dart' as route_model;
 import 'package:motomeetfront/providers/activity_provider.dart';
 import 'package:motomeetfront/providers/events_provider.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
@@ -358,13 +358,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: RouteCard(
                   route: routes[index],
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/routes/detail',
-                      arguments: routes[index].id,
-                    );
-                  },
+                  
                 ),
               );
             },

@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import '../models/newRoute.dart';
+import '../models/route.dart';
 import '../services/httpClient.dart';
 import '../services/isar/repository_provider.dart';
+import '../services/routeService.dart';
 import '../utilities/apiEndPoints.dart';
 
 /// Provider for routes data
@@ -140,6 +141,26 @@ class RoutesNotifier extends StateNotifier<AsyncValue<List<Route>>> {
       final filteredRoutes = _filterRoutes(state.value!);
       final sortedRoutes = _sortRoutes(filteredRoutes);
       state = AsyncValue.data(sortedRoutes);
+    }
+  }
+}
+final recommendedRoutesProvider = StateNotifierProvider<RecommendedRoutesNotifier, List<Route>>((ref) {
+  return RecommendedRoutesNotifier();
+});
+class RecommendedRoutesNotifier extends StateNotifier<List<Route>> {
+  final RoutesService _routeService = GetIt.I<RoutesService>();
+
+  RecommendedRoutesNotifier() : super([]);
+
+  Future<void> loadRecommendedRoutes({bool refresh = false}) async {
+    if (state.isNotEmpty && !refresh) return;
+
+    try {
+      final routes = await _routeService.getRecommendedRoutes();
+      state = routes;
+    } catch (e) {
+      // Handle error
+      rethrow;
     }
   }
 }
