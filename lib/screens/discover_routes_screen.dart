@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/route.dart' as app_models;
+import '../models/enum.dart';
 import '../providers/routes_provider.dart';
 import '../common/widgets/route_card.dart';
 import '../widgets/loading_indicator.dart';
@@ -15,16 +16,20 @@ class DiscoverRoutesScreen extends ConsumerStatefulWidget {
 class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isMapView = false;
-  String _selectedCategory = 'All';
+  RouteType? _selectedRouteType;
   String _sortBy = 'Popular';
 
-  final List<String> _categories = [
-    'All',
-    'Motorcycle',
-    'Hiking',
-    'Biking',
-    'Jeep',
-  ];
+  // Map string display names to RouteType enum values
+  final Map<String, RouteType?> _routeTypeMap = {
+    'All': null,
+    'Motorcycle': RouteType.motorcycle,
+    'Hiking': RouteType.hiking,
+    'Biking': RouteType.biking,
+    'Jeep': RouteType.jeep,
+  };
+
+  // Get the display names for the UI
+  List<String> get _categories => _routeTypeMap.keys.toList();
 
   final List<String> _sortOptions = [
     'Popular',
@@ -157,7 +162,8 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             children: _categories.map((category) {
-              final isSelected = _selectedCategory == category;
+              final routeType = _routeTypeMap[category];
+              final isSelected = _selectedRouteType == routeType;
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: FilterChip(
@@ -171,9 +177,9 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
                   selected: isSelected,
                   onSelected: (selected) {
                     setState(() {
-                      _selectedCategory = category;
+                      _selectedRouteType = routeType;
                     });
-                    ref.read(routesProvider.notifier).filterByCategory(category);
+                    ref.read(routesProvider.notifier).filterByRouteType(routeType);
                   },
                   backgroundColor: Theme.of(context).cardColor,
                   selectedColor: Theme.of(context).colorScheme.primary,
@@ -352,4 +358,4 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
       ),
     );
   }
-} 
+}
