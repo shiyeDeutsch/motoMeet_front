@@ -5,7 +5,7 @@ import 'package:motomeetfront/providers/routes_provider.dart';
 import 'package:motomeetfront/services/activity_service.dart';
 import 'package:motomeetfront/services/events_service.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
-import 'package:motomeetfront/services/routeService.dart';
+import 'package:motomeetfront/services/routesService.dart';
 import 'package:motomeetfront/services/userService.dart';
 import 'package:get_it/get_it.dart';
 
