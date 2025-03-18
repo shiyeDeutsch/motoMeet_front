@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart'; 
 import '../models/enum.dart';
 import '../models/route.dart' as app_models;
+import '../providers/route_creation_provider.dart';
 import '../services/userRouteService.dart';
 
 class SaveRouteScreen extends ConsumerStatefulWidget {
@@ -181,7 +182,7 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     // Get the UserRouteService
-    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    final userRouteService = ref.read(routeCreationProvider.notifier);
 
     // Finalize the route with user-provided data
     final updatedRoute = await userRouteService.finalizeRoute(

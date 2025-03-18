@@ -2,202 +2,179 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/route.dart' as app_models;
+import '../providers/route_creation_provider.dart';
 import '../services/distanceFormatter.dart';
 import '../utilities/duration_formatter.dart';
 import '../services/userRouteService.dart';
 import '../services/bottomSheetServices.dart';
 import '../widgets/wayPointBottomSheet.dart';
+import 'ExpandablePanel.dart';
+import 'expandableFAB.dart';
 
 class ActiveRouteDetails extends ConsumerWidget {
   final app_models.UserRoute currentUserRoute;
   final app_models.Route? baseRoute;
   final Position? currentPosition;
   final VoidCallback onStopPressed;
-
+  final BuildContext context;
   const ActiveRouteDetails({
     Key? key,
     required this.currentUserRoute,
     this.baseRoute,
     this.currentPosition,
     required this.onStopPressed,
+    required this.context,
   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      height: 120.0,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
+ @override
+  Widget build (BuildContext context, WidgetRef ref ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    if (currentUserRoute == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Handle for dragging
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _buildRouteActionButtons(context, onStopPressed),
           ),
-          Expanded(
+          Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildDetailItem(
-                    icon: Icons.speed,
-                    title: 'Speed',
-                    value: '${currentPosition?.speed != null ? (currentPosition!.speed * 3.6).toStringAsFixed(0) : 'N/A'} km/h',
-                    color: const Color(0xFF3E6C51),
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
                   ),
-                  _buildDetailItem(
-                    icon: Icons.terrain,
-                    title: 'Elevation',
-                    value: '${currentPosition?.altitude?.toStringAsFixed(0) ?? 'N/A'} m',
-                    color: const Color(0xFFD59F33),
-                  ),
-                  _buildDetailItem(
-                    icon: Icons.timer,
-                    title: 'Duration',
-                    value: DurationFormatter.formatDuration(ref.read(userRouteServiceProvider.notifier).routeDuration),
-                    color: const Color(0xFFE76F51),
-                  ),
-                  _buildDetailItem(
-                    icon: Icons.alt_route,
-                    title: 'Distance',
-                    value: DistanceFormatter.formatDistance(ref.read(userRouteServiceProvider.notifier).distance),
-                    color: const Color(0xFF1976D2),
-                  ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      spreadRadius: 0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildMainDetails(context, ref, currentPosition),
+                  ],
+                ),
               ),
             ),
           ),
-          _buildRouteActionButtons(context),
         ],
       ),
+    );
+  }}
+
+  Widget _buildMainDetails(BuildContext context, WidgetRef ref, Position? currentPosition) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildDetailColumn(
+            context: context,
+            icon: Icons.speed,
+            title: 'Speed',
+            value: '${currentPosition?.speed?.toStringAsFixed(0) ?? 'N/A'} km/h',
+          ),
+        _buildDetailColumn(
+          context: context,
+          icon: Icons.terrain,
+          title: 'Elevation',
+          value: '${currentPosition?.altitude?.toStringAsFixed(1) ?? 'N/A'} m',
+        ),
+        _buildDetailColumn(
+          context: context,
+          icon: Icons.timer,
+          title: 'Duration',
+          value: DurationFormatter.formatDuration(ref.read(routeCreationProvider.notifier).routeDuration),
+        ),
+        _buildDetailColumn(
+          context: context,
+          icon: Icons.alt_route,
+          title: 'Distance',
+          value: DistanceFormatter.formatDistance(ref.read(routeCreationProvider.notifier).distance),
+        ),
+      ],
     );
   }
 
-  Widget _buildDetailItem({
+  Widget _buildDetailColumn({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String value,
-    required Color color,
   }) {
-    return Flexible(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 10,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Column(
+      children: [
+        Icon(icon, color: colorScheme.primary),
+        const SizedBox(height: 4),
+        Text(
+          title, 
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurface,
+          )
+        ),
+        Text(
+          value, 
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          )
+        ),
+      ],
     );
   }
-  
-  Widget _buildRouteActionButtons(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildActionButton(
-            icon: Icons.add_location,
-            label: 'Add Waypoint',
+
+  Widget _buildRouteActionButtons(BuildContext context, VoidCallback onStopPressed) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return SizedBox(
+      height: 50,
+      child: ExpandableButtons(
+        isOpen: true,
+        alignment: Alignment.topRight,
+        buttons: [
+          IconButton(
+            icon: Icon(Icons.add_location, color: colorScheme.primary),
             onPressed: () {
               BottomSheetService.showLargeBottomSheet(
                 context: context,
                 content: WayPointBottomSheet(),
               );
             },
-            color: const Color(0xFF3E6C51),
           ),
-          _buildActionButton(
-            icon: Icons.share,
-            label: 'Share',
+          IconButton(
+            icon: Icon(Icons.share, color: colorScheme.primary),
             onPressed: () {
               // Implement share route
             },
-            color: const Color(0xFF1976D2),
           ),
-          _buildActionButton(
-            icon: Icons.stop,
-            label: 'Stop',
+          IconButton(
+            icon: Icon(Icons.pause, color: colorScheme.error),
             onPressed: onStopPressed,
-            color: const Color(0xFFE76F51),
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    required Color color,
-  }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+
+

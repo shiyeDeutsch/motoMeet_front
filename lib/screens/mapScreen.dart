@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/route.dart' as app_models;
 import '../models/enum.dart';
+import '../providers/route_creation_provider.dart';
 import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/distanceFormatter.dart';
@@ -71,9 +72,9 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
   @override
   Widget build(BuildContext context) {
     // Watch the UserRoute from the userRouteService
-    final currentUserRoute = ref.watch(userRouteServiceProvider);
+    final currentUserRoute = ref.watch(routeCreationProvider);
     // Read the userRouteService to get the currentPosition and baseRoute
-    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    final userRouteService = ref.read(routeCreationProvider.notifier);
     final currentPosition = userRouteService.currentPosition;
     final baseRoute = userRouteService.baseRoute;
 
@@ -124,6 +125,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
               left: 0,
               right: 0,
               child: ActiveRouteDetails(
+                context: context,
                 currentUserRoute: currentUserRoute,
                 baseRoute: baseRoute,
                 currentPosition: currentPosition,
@@ -154,14 +156,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     _updateMapFeatures();
     
     // Update user location on map if available
-    final userPosition = ref.read(userRouteServiceProvider.notifier).currentPosition;
+    final userPosition = ref.read(routeCreationProvider.notifier).currentPosition;
     if (userPosition != null) {
       _updateUserLocationOnMap(userPosition);
     }
   }
   
   Future<void> _centerOnUserLocation() async {
-    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    final userRouteService = ref.read(routeCreationProvider.notifier);
     final userPosition = userRouteService.currentPosition;
     
     if (userPosition != null && _mapController != null) {
@@ -186,7 +188,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
   void _updateMapFeatures() {
     if (!_isMapInitialized || !_isStyleLoaded || _mapController == null) return;
     
-    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    final userRouteService = ref.read(routeCreationProvider.notifier);
     final committedPoints = userRouteService.committedPoints;
     final baseRoute = userRouteService.baseRoute;
     
@@ -345,7 +347,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     final routeType = await showRouteTypeEnumDialog(context);
     if (routeType == null) return;
 
-    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    final userRouteService = ref.read(routeCreationProvider.notifier);
     final userPosition = userRouteService.currentPosition;
     
     // If we don't have current position from UserRouteService, try with LocationService
@@ -398,12 +400,12 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen> with TickerPr
     final shouldStop = await showStopDialog(context);
     if (shouldStop == true) {
       // Stop the route in the service
-      final userRouteService = ref.read(userRouteServiceProvider.notifier);
+      final userRouteService = ref.read(routeCreationProvider.notifier);
       await userRouteService.stopUserRoute();
       
       // Store references to route and userRoute before navigation
       final baseRoute = userRouteService.baseRoute;
-      final userRoute = ref.read(userRouteServiceProvider);
+      final userRoute = ref.read(routeCreationProvider);
 
       // Navigate to save screen
       Navigator.of(context).pushNamed(

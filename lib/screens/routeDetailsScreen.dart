@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../models/route.dart' as app_models;
 import '../models/enum.dart';
+import '../providers/route_creation_provider.dart';
 import '../services/distanceFormatter.dart';
 import '../services/userRouteService.dart';
 import '../routing/routes.dart';
@@ -110,7 +111,7 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 
   // Start a trip on this route
   void _startTrip() {
-    final userRouteService = ref.read(userRouteServiceProvider.notifier);
+    final userRouteService = ref.read(routeCreationProvider.notifier);
     userRouteService.startExistingRoute(widget.route);
     
     // Navigate to the map screen
