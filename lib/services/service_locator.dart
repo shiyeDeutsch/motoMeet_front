@@ -5,7 +5,7 @@ import 'package:motomeetfront/services/authService.dart';
 import 'package:motomeetfront/services/events_service.dart';
 import 'package:motomeetfront/services/userService.dart';
 import 'package:motomeetfront/services/isar/isar_initializer.dart';
-import 'package:motomeetfront/services/userRouteService.dart';
+import 'package:motomeetfront/services/route_creation_service.dart';
 
 
 import 'isar/repository_provider.dart';
@@ -20,8 +20,8 @@ Future<void> setupLocator( )async  {
   // GetIt.I.registerLazySingleton<MapMarkerService>(() => MapMarkerService());
   GetIt.I.registerLazySingleton<UserService>(() => UserService());
   
-  // Register the new UserRouteService
-  GetIt.I.registerLazySingleton<UserRouteService>(() => UserRouteService());
+  // Register the RouteCreationService (replaces UserRouteService)
+  GetIt.I.registerLazySingleton<RouteCreationService>(() => RouteCreationService());
 
   // Register the IsarInitializer
   final IsarInitializer isarInitializer = IsarInitializer();

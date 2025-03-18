@@ -37,8 +37,8 @@ UI Components <-> Providers <-> Services <-> Local Database (Isar) / Remote API
 
 lib/
 ```
-  main.dart
-│
+│   main.dart
+│   
 ├───common
 │   └───widgets
 │           activity_feed_item.dart
@@ -56,15 +56,14 @@ lib/
 │       group.dart
 │       group.g.dart
 │       mapMarker.dart
-│       rute.dart
-│       route.g.dart
 │       notification.dart
 │       notification.g.dart
 │       register_model.dart
 │       register_model.g.dart
 │       route.dart
+│       route.g.dart
+│       sample_routes.dart
 │       subscriber.dart
-│       tempmodel
 │       theme_preferences.dart
 │       theme_preferences.g.dart
 │       userModel.dart
@@ -86,6 +85,7 @@ lib/
 │       
 ├───screens
 │       create_event_screen.dart
+│       discover_routes_screen.dart
 │       event_details_screen.dart
 │       homeScreen.dart
 │       loginScreen.dart
@@ -105,8 +105,9 @@ lib/
 │   │   events_service.dart
 │   │   httpClient.dart
 │   │   loctionService.dart
-│   │   MapMarkerService.dart
+│   │   routesService.dart
 │   │   service_locator.dart
+│   │   userRouteService.dart
 │   │   userService.dart
 │   │   
 │   └───isar
@@ -115,6 +116,7 @@ lib/
 │           isar_geo_location.dart
 │           isar_initializer.dart
 │           isar_repository.dart
+│           isar_route_repository.dart
 │           isar_theme_preferences.dart
 │           isar_user_info.dart
 │           repository_provider.dart
@@ -138,6 +140,7 @@ lib/
 │       isarConverters.dart
 │       
 └───widgets
+    │   active_route_details.dart
     │   bottomNavigation.dart
     │   customTextFromField.dart
     │   dropdown.dart
@@ -148,8 +151,13 @@ lib/
     │   expandableFAB.dart
     │   ExpandablePanel.dart
     │   loading_indicator.dart
+    │   mapbox_widget.dart
     │   mapButtons.dart
+    │   map_controls_widget.dart
+    │   map_layers_bottom_sheet.dart
+    │   pending_participant_list.dart
     │   selecetMapProvider.dart
+    │   start_route_button.dart
     │   theme_switcher.dart
     │   wayPointBottomSheet.dart
     │   
