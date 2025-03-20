@@ -26,8 +26,8 @@ class ActiveRouteDetails extends ConsumerWidget {
     required this.context,
   }) : super(key: key);
 
- @override
-  Widget build (BuildContext context, WidgetRef ref ) {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
@@ -35,48 +35,46 @@ class ActiveRouteDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _buildRouteActionButtons(context, onStopPressed),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+    // Removed the outer Positioned widget to avoid nesting with AnimatedPositioned
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildRouteActionButtons(context, onStopPressed),
+        ),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    spreadRadius: 0,
+                    offset: const Offset(0, 4),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    _buildMainDetails(context, ref, currentPosition),
-                  ],
-                ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildMainDetails(context, ref, currentPosition),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
-  }}
+  }
 
   Widget _buildMainDetails(BuildContext context, WidgetRef ref, Position? currentPosition) {
     final theme = Theme.of(context);
@@ -176,5 +174,6 @@ class ActiveRouteDetails extends ConsumerWidget {
       ),
     );
   }
+}
 
 
