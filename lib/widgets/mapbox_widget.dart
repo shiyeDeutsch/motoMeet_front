@@ -5,7 +5,6 @@ import 'package:geolocator/geolocator.dart';
 
 // You'll need to get a Mapbox access token from https://account.mapbox.com/
 const String MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoiam9zaGRldXRzY2giLCJhIjoiY204Ymt4bDFhMWh1aTJsczVzNDNlcTRpbSJ9.dzh1waA8zdT90jwmyOzpiQ';
-const String MAPBOX_STYLE = 'mapbox://styles/mapbox/outdoors-v12';
 
 class MapboxWidget extends StatelessWidget {
   final List<app_models.GeoPoint> committedPoints;
@@ -14,6 +13,7 @@ class MapboxWidget extends StatelessWidget {
   final Function(MapboxMapController) onMapCreated;
   final Function() onStyleLoaded;
   final Function(dynamic, LatLng) onMapClick;
+  final String styleString;
 
   const MapboxWidget({
     Key? key,
@@ -23,13 +23,14 @@ class MapboxWidget extends StatelessWidget {
     required this.onMapCreated,
     required this.onStyleLoaded,
     required this.onMapClick,
+    required this.styleString,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MapboxMap(
       accessToken: MAPBOX_ACCESS_TOKEN,
-      styleString: MAPBOX_STYLE,
+      styleString: styleString,
       initialCameraPosition: CameraPosition(
         target: userPos != null 
             ? LatLng(userPos!.latitude, userPos!.longitude) 

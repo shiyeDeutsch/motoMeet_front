@@ -5,8 +5,7 @@ import '../models/route.dart' as app_models;
 import '../models/enum.dart';
 import '../providers/route_creation_provider.dart';
 import '../services/distanceFormatter.dart';
-import '../services/userRouteService.dart';
-import '../routing/routes.dart';
+ import '../routing/routes.dart';
 
 // -------------- Route Screen --------------
 class RouteDetailsScreen extends ConsumerStatefulWidget {

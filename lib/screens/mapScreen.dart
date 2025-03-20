@@ -2,8 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:latlong2/latlong.dart' as latlong2;
+ import 'package:latlong2/latlong.dart' as latlong2;
 import 'package:get_it/get_it.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/route.dart' as app_models;
@@ -13,8 +12,7 @@ import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/distanceFormatter.dart';
 import '../services/loctionService.dart';
-import '../services/userRouteService.dart';
-import '../utilities/duration_formatter.dart';
+ import '../utilities/duration_formatter.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
 import '../widgets/wayPointBottomSheet.dart';
@@ -43,6 +41,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   bool _isMapInitialized = false;
   bool _isStyleLoaded = false;
   Symbol? _userLocationSymbol;
+  String _currentStyle = 'mapbox://styles/mapbox/outdoors-v12';
 
   // Animation controllers
   late AnimationController _pulseController;
@@ -93,6 +92,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                 _isTrackingUser = false;
               });
             },
+            styleString: _currentStyle,
           ),
 
           // Use the extracted MapControlsWidget
@@ -339,25 +339,10 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       ),
       builder: (context) => MapLayersBottomSheet(
         onMapStyleSelected: (styleString) {
-          if (_mapController != null) {
-            // Store current camera position
-            final cameraPosition = _mapController!.cameraPosition;
-
-            // Update map style
-           // _mapController!.setStyleString(styleString);
-
-            // After style changes, we need to reinitialize some state
-            setState(() {
-              _isStyleLoaded = false;
-            });
-
-            // Restore camera position after style is loaded
-            if (cameraPosition != null) {
-              _mapController!.animateCamera(
-                CameraUpdate.newCameraPosition(cameraPosition),
-              );
-            }
-          }
+          setState(() {
+            _currentStyle = styleString;
+            _isStyleLoaded = false;
+          });
         },
       ),
     );
