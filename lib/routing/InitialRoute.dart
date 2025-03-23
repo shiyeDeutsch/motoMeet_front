@@ -4,7 +4,6 @@ import 'package:motomeetfront/routing/routes.dart';
 
 import '../services/isar/isar_user_info.dart';
 
- 
 import '../services/isar/repository_provider.dart';
 import '../widgets/bottomNavigation.dart';
  
@@ -20,8 +19,17 @@ static Future<String> getInitialRoute() async {
  static Widget showBottomNav(BuildContext context) {
     print(ModalRoute.of(context)?.settings.name ?? '');
     bool showNav = true;
-    if ((ModalRoute.of(context)?.settings.name ?? '') == Routes.login ||
-        (ModalRoute.of(context)?.settings.name ?? '') == Routes.signUp) {
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? '';
+    
+    // List of routes where bottom navigation should be hidden
+    final List<String> hiddenNavRoutes = [
+      Routes.login,
+      Routes.signUp,
+      Routes.map,        // Hide on map screen
+      Routes.saveRoute,  // Also hide on save route screen for consistency
+    ];
+    
+    if (hiddenNavRoutes.contains(currentRoute)) {
       showNav = false;
     }
 

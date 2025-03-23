@@ -37,14 +37,20 @@ class RouteGenerator {
         screen = const DiscoverRoutesScreen();
         break;
       case Routes.map:
-        screen = const MapMarkerScreen();
-        break;
-      case Routes.saveRoute:
-        screen = SaveRouteScreen(
-          route: args!['Route'],
-          userRoute: args['UserRoute'],
+        // Special case for map - return directly without the bottom nav scaffold wrapper
+        return MaterialPageRoute(
+          builder: (_) => const MapMarkerScreen(),
+          settings: settings,
         );
-        break;
+      case Routes.saveRoute:
+        // Special case for save route - return directly without the bottom nav scaffold wrapper
+        return MaterialPageRoute(
+          builder: (_) => SaveRouteScreen(
+            route: args!['Route'], 
+            userRoute: args['UserRoute'],
+          ),
+          settings: settings,
+        );
       case Routes.routeDetails:
         screen = RouteDetailsScreen(route: args!['route']);
         break;

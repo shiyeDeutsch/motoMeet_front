@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
  import 'package:latlong2/latlong.dart' as latlong2;
 import 'package:get_it/get_it.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:shimmer/shimmer.dart';
-import '../models/route.dart' as app_models;
+import '../models/route.dart' as route_model;
 import '../models/enum.dart';
 import '../providers/route_creation_provider.dart';
 import '../routing/routes.dart';
@@ -16,16 +17,18 @@ import '../services/loctionService.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
 import '../widgets/wayPointBottomSheet.dart';
-// Import the newly created widgets
+// Import the widgets
 import '../widgets/mapbox_widget.dart';
 import '../widgets/map_controls_widget.dart';
 import '../widgets/start_route_button.dart';
 import '../widgets/active_route_details.dart';
 import '../widgets/map_layers_bottom_sheet.dart';
+import '../controllers/map_controller.dart';
+import '../controllers/navigation_controller.dart';
 
 // You'll need to get a Mapbox access token from https://account.mapbox.com/
 const String MAPBOX_ACCESS_TOKEN =
-    'pk.eyJ1Ijoiam9zaGRldXRzY2giLCJhIjoiY204Ymt4bDFhMWh1aTJsczVzNDNlcTRpbSJ9.dzh1waA8zdT90jwmyOzpiQ';
+    'pk.eyJ1Ijoiam9zaGRldXRzY2giLCJhIjoiY204Ymt4bDFhMWh1aTJzY1zNDNlcTRpbSJ9.dzh1waA8zdT90jwmyOzpiQ';
 const String MAPBOX_STYLE = 'mapbox://styles/mapbox/outdoors-v12';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
@@ -37,18 +40,16 @@ class MapMarkerScreen extends ConsumerStatefulWidget {
 
 class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     with TickerProviderStateMixin {
-  MapboxMapController? _mapController;
-  bool _isMapInitialized = false;
-  bool _isStyleLoaded = false;
-  Symbol? _userLocationSymbol;
-  String _currentStyle = 'mapbox://styles/mapbox/outdoors-v12';
+  MapboxMapControllerWrapper? _mapControllerWrapper;
+  NavigationController? _navigationController;
+  String _currentStyle = MAPBOX_STYLE;
 
   // Animation controllers
   late AnimationController _pulseController;
-
-  // UI state
-  bool _isBottomSheetVisible = true;
-  double _bottomSheetHeight = 120.0;
+  
+  // Navigation state
+  bool _isTrackingUser = true;
+  StreamSubscription? _navigationEventSubscription;
 
   @override
   void initState() {
@@ -61,60 +62,59 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     )..repeat(reverse: true);
   }
 
-  // Flag to track if we're following user location
-  bool _isTrackingUser = true;
-
   @override
   Widget build(BuildContext context) {
-    // Watch the UserRoute from the userRouteService
+    // Watch the UserRoute from the userRouteProvider
     final currentUserRoute = ref.watch(routeCreationProvider);
-    // Read the userRouteService to get the currentPosition and baseRoute
-    final userRouteService = ref.read(routeCreationProvider.notifier);
-    final currentPosition = userRouteService.currentPosition;
-    final baseRoute = userRouteService.baseRoute;
+    // Read the userRouteProvider to get the currentPosition and baseRoute
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    final currentPosition = userRouteProvider.currentPosition;
+    final baseRoute = userRouteProvider.baseRoute;
 
     // Prepare the "committed" polyline from route points
-    final committedPoints = userRouteService.committedPoints;
+    final committedPoints = userRouteProvider.committedPoints;
 
     return Scaffold(
+      // Remove bottom navigation bar for this screen
+      resizeToAvoidBottomInset: false,
+      bottomNavigationBar: null,
       body: Stack(
         children: [
-          // Use the extracted MapboxWidget
+          // Use the improved MapboxWidget
           MapboxWidget(
             committedPoints: committedPoints,
             userPos: currentPosition,
             baseRoute: baseRoute,
-            onMapCreated: _onMapCreated,
-            onStyleLoaded: _onStyleLoaded,
+            onMapInitialized: _onMapInitialized,
             onMapClick: (point, coordinates) {
               // Deselect tracking when user interacts with the map
               setState(() {
                 _isTrackingUser = false;
+                
+                // If navigation controller exists, update tracking state
+                if (_navigationController != null) {
+                  _navigationController!.toggleTracking(false);
+                }
               });
             },
             styleString: _currentStyle,
           ),
 
-          // Use the extracted MapControlsWidget
+          // Use the MapControlsWidget with back button only
           MapControlsWidget(
-            onCenterLocationPressed: () {
-              _centerOnUserLocation();
-            },
+            onCenterLocationPressed: _centerOnUserLocation,
             onLayersPressed: _toggleMapLayers,
-            onToggleBottomSheetPressed: _toggleBottomSheet,
-            isBottomSheetVisible: _isBottomSheetVisible,
+            onBackPressed: () => Navigator.of(context).pop(),
           ),
 
-          // Use the extracted StartRouteButton
+          // Only show Start Route Button when no active route
           if (currentUserRoute == null)
             StartRouteButton(onPressed: _onPressStartRoute),
 
-          // Use the extracted ActiveRouteDetails
+          // Always show the ActiveRouteDetails when we have a route
           if (currentUserRoute != null)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              bottom: _isBottomSheetVisible ? 0 : -_bottomSheetHeight,
+            Positioned(
+              bottom: 0,
               left: 0,
               right: 0,
               child: ActiveRouteDetails(
@@ -130,85 +130,78 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     );
   }
 
-  void _onMapCreated(MapboxMapController controller) {
-    _mapController = controller;
-    setState(() {
-      _isMapInitialized = true;
+  /// Called when the map is initialized
+  void _onMapInitialized(MapboxMapControllerWrapper controller) {
+    _mapControllerWrapper = controller;
+    
+    // Initialize navigation controller with the map controller
+    _navigationController = NavigationController(_mapControllerWrapper!);
+    
+    // Listen for navigation events to handle special cases
+    _navigationEventSubscription = _navigationController!.navigationEvents.listen((event) {
+      switch (event) {
+        case NavigationEvent.offRoute:
+          // Alert if user is off route
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('You appear to be off route')),
+          );
+          break;
+        case NavigationEvent.arrivedAtDestination:
+          // Alert when arrived at destination
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You have arrived at your destination!'),
+              backgroundColor: Color(0xFF3E6C51),
+              duration: Duration(seconds: 5),
+            ),
+          );
+          break;
+        default:
+          break;
+      }
     });
-
-    // Center map on user's location once we have it
+    
+    // Center map on user's location once initialized
     _centerOnUserLocation();
-  }
-
-  void _onStyleLoaded() {
-    setState(() {
-      _isStyleLoaded = true;
+    
+    // Listen for when the map style is loaded
+    controller.isInitialized.addListener(() {
+      if (controller.isInitialized.value) {
+        // The map is fully initialized
+        _updateMapWithLatestData();
+      }
     });
+  }
+  
+  /// Update the map with the latest data from providers
+  void _updateMapWithLatestData() {
+    if (_mapControllerWrapper == null || !_mapControllerWrapper!.isMapInitialized) return;
 
-    // Add route line and waypoints once style is loaded
-    _updateMapFeatures();
-
-    // Update user location on map if available
-    final userPosition =
-        ref.read(routeCreationProvider.notifier).currentPosition;
-    if (userPosition != null) {
-      _updateUserLocationOnMap(userPosition);
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    final committedPoints = userRouteProvider.committedPoints;
+    final currentPosition = userRouteProvider.currentPosition;
+    
+    // If we have a current position and we're tracking, center on it
+    if (currentPosition != null && _isTrackingUser) {
+      _mapControllerWrapper!.centerOnUserLocation(currentPosition);
+    }
+    
+    // Start navigation when we have a route
+    if (committedPoints.isNotEmpty && _navigationController != null) {
+      _navigationController!.startNavigation(route: committedPoints);
     }
   }
 
   Future<void> _centerOnUserLocation() async {
-    try {
-      final latLng = await LocationService.getCurrentLocation();
-      if (latLng != null && _mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(latLng.latitude, latLng.longitude),
-              zoom: 15.0,
-              bearing: 0.0,
-              tilt: 0.0,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error centering on user location: $e');
-    }
-    // Re-enable tracking
-    setState(() {
-      _isTrackingUser = true;
-    });
-  }
-
-  void _updateMapFeatures() {
-    if (!_isMapInitialized || !_isStyleLoaded || _mapController == null) return;
-
-    final userRouteService = ref.read(routeCreationProvider.notifier);
-    final committedPoints = userRouteService.committedPoints;
-    final baseRoute = userRouteService.baseRoute;
-
-    // Clear existing route lines
-    _mapController!.clearLines();
-
-    // Add route line if we have points
-    if (committedPoints.isNotEmpty) {
-      _addRouteLine(committedPoints);
-    }
-
-    // Add waypoint markers
-    if (baseRoute?.pointsOfInterest != null) {
-      _addWaypointMarkers(baseRoute!.pointsOfInterest);
-    }
-
-    // Update user location on map
-    final userPosition = userRouteService.currentPosition;
-      
-    if (userPosition != null) {
-      _updateUserLocationOnMap(userPosition);
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    final currentPosition = userRouteProvider.currentPosition;
+    
+    if (currentPosition != null && _mapControllerWrapper != null) {
+      await _mapControllerWrapper!.centerOnUserLocation(currentPosition);
     } else {
-      // If userPosition is null, try to get it from LocationService
-      LocationService.getCurrentLocation().then((latLng) {
-        if (latLng != null && mounted) {
+      try {
+        final latLng = await LocationService.getCurrentLocation();
+        if (latLng != null && _mapControllerWrapper != null) {
           final position = Position(
             latitude: latLng.latitude,
             longitude: latLng.longitude,
@@ -221,117 +214,26 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
             altitudeAccuracy: 0,
             headingAccuracy: 0,
           );
-          _updateUserLocationOnMap(position);
+          await _mapControllerWrapper!.centerOnUserLocation(position);
         }
-      }).catchError((error) {
-        print('Error getting user location: $error');
-      });
-    }
-  }
-
-  void _updateUserLocationOnMap(Position position) async {
-    if (_mapController == null || !_isStyleLoaded) return;
-
-    final latLng = LatLng(position.latitude, position.longitude);
-
-    // Check for location permissions first
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permission required for tracking')),
-        );
-        return;
+      } catch (e) {
+        print('Error centering on user location: $e');
       }
     }
-
-    // Remove previous symbol if exists
-    if (_userLocationSymbol != null) {
-      await _mapController!.removeSymbol(_userLocationSymbol!);
-    }
-
-    // Add new user location symbol
-    try {
-      _userLocationSymbol = await _mapController!.addSymbol(
-        SymbolOptions(
-          geometry: latLng,
-          iconSize: 1.0,
-          iconImage: "marker-15", // Use a built-in Mapbox icon
-          iconColor: "#3E6C51", // Green color
-        ),
-      );
-
-      // If we're tracking the user, update camera
-      if (_isTrackingUser) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLng(latLng),
-        );
+    
+    // Re-enable tracking
+    setState(() {
+      _isTrackingUser = true;
+      
+      // If navigation controller exists, update tracking state
+      if (_navigationController != null) {
+        _navigationController!.toggleTracking(true);
       }
-    } catch (e) {
-      print('Error updating user location on map: $e');
-    }
-  }
-
-  void _addRouteLine(List<app_models.GeoPoint> points) {
-    if (points.length < 2 || _mapController == null) return;
-
-    final List<LatLng> linePoints = points
-        .map((point) => LatLng(point.latitude!, point.longitude!))
-        .toList();
-
-    _mapController!.addLine(
-      LineOptions(
-        geometry: linePoints,
-        lineColor: "#3E6C51", // Forest green from the adventure theme
-        lineWidth: 5.0,
-        lineOpacity: 0.8,
-        lineJoin: "round",
-      ),
-    );
-  }
-
-  Future<void> _addWaypointMarkers(
-      Iterable<app_models.PointOfInterest> waypoints) async {
-    if (_mapController == null) return;
-
-    for (final waypoint in waypoints) {
-      if (waypoint.location == null) continue;
-
-      final iconImage = _getWaypointIconImage(waypoint.waypointType!);
-
-      await _mapController!.addSymbol(
-        SymbolOptions(
-          geometry: LatLng(
-              waypoint.location!.latitude!, waypoint.location!.longitude!),
-          iconImage: iconImage,
-          iconSize: 1.2,
-          textField: waypoint.name,
-          textOffset: const Offset(0, 1.5),
-          textColor: "#000000",
-          textHaloColor: "#FFFFFF",
-          textHaloWidth: 1.0,
-        ),
-      );
-    }
-  }
-
-  String _getWaypointIconImage(WaypointType type) {
-    // Use built-in Mapbox icons instead of custom ones to avoid resource issues
-    switch (WaypointTypeExtension.getCategory(type)) {
-      case WaypointCategory.Natural:
-        return "mountain-15";
-      case WaypointCategory.Informative:
-        return "information-15";
-      case WaypointCategory.Warning:
-        return "danger-15";
-      default:
-        return "marker-15";
-    }
+    });
   }
 
   void _toggleMapLayers() {
-    // Show a modal bottom sheet with map style options using the new widget
+    // Show a modal bottom sheet with map style options
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -341,17 +243,10 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         onMapStyleSelected: (styleString) {
           setState(() {
             _currentStyle = styleString;
-            _isStyleLoaded = false;
           });
         },
       ),
     );
-  }
-
-  void _toggleBottomSheet() {
-    setState(() {
-      _isBottomSheetVisible = !_isBottomSheetVisible;
-    });
   }
 
   /// Start a new route
@@ -360,64 +255,74 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     final routeType = await showRouteTypeEnumDialog(context);
     if (routeType == null) return;
 
-    final userRouteService = ref.read(routeCreationProvider.notifier);
-    final userPosition = userRouteService.currentPosition;
-
-    // If we don't have current position from UserRouteService, try with LocationService
-    if (userPosition == null) {
-      try {
-        final latLng = await LocationService.getCurrentLocation();
-        if (latLng == null) {
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    Position? userPosition;
+    
+    try {
+      // Try to get current position
+      userPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+    } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not determine your location')),
+        SnackBar(content: Text('Error getting location: ${e.toString()}')),
           );
           return;
         }
 
-        // Start a new route with the current location
-        userRouteService.startNewRoute(
-          routeType,
-          app_models.GeoPoint(
-            latitude: latLng.latitude,
-            longitude: latLng.longitude,
-          ),
-        );
-      } catch (e) {
+    if (userPosition == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not determine your location')),
         );
         return;
       }
-    } else {
-      // Start a new route with the current position from UserRouteService
-      userRouteService.startNewRoute(
+
+    // Start a new route with the current position
+      userRouteProvider.startNewRoute(
         routeType,
-        app_models.GeoPoint(
+        route_model.GeoPoint(
           latitude: userPosition.latitude,
           longitude: userPosition.longitude,
         ),
       );
-    }
-
-    // Update map features to show the initial point
-    _updateMapFeatures();
 
     // Ensure we're tracking the user
     setState(() {
       _isTrackingUser = true;
     });
+    
+    // Force center on user location
+    await _centerOnUserLocation();
+    
+    // Show a success snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('New ${routeType.toString().split('.').last} route started'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color(0xFF3E6C51),
+      ),
+    );
+    
+    // Now that we have a route, start navigation automatically
+    _updateMapWithLatestData();
   }
 
   /// Stop the route
   Future<void> _onStopRoutePressed(BuildContext context) async {
     final shouldStop = await showStopDialog(context);
     if (shouldStop == true) {
+      // Stop navigation if it's running
+      if (_navigationController != null) {
+        await _navigationController!.stopNavigation();
+      }
+      
       // Stop the route in the service
-      final userRouteService = ref.read(routeCreationProvider.notifier);
-      await userRouteService.stopUserRoute();
+      final userRouteProvider = ref.read(routeCreationProvider.notifier);
+      await userRouteProvider.stopUserRoute();
 
       // Store references to route and userRoute before navigation
-      final baseRoute = userRouteService.baseRoute;
+      final baseRoute = userRouteProvider.baseRoute;
       final userRoute = ref.read(routeCreationProvider);
 
       // Navigate to save screen
@@ -431,7 +336,8 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   @override
   void dispose() {
     _pulseController.dispose();
-    _mapController?.dispose();
+    _navigationEventSubscription?.cancel();
+    _navigationController?.dispose();
     super.dispose();
   }
 }
