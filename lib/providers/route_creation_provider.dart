@@ -10,6 +10,7 @@ import '../models/enum.dart';
 import '../models/route.dart';
 import '../services/loctionService.dart';
 import '../services/route_creation_service.dart';
+import '../constants/app_constants.dart';
 
 /// Provider for route creation state management
 final routeCreationProvider =
@@ -31,7 +32,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   Position? _currentPosition;
 
   // Basic route configuration
-  double _distanceFactor = 5.0; // e.g., 5m for hiking
+  double _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
   double _pathLength = 0;
   Timer? _timer;
   Duration _routeDuration = const Duration();
@@ -54,24 +55,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _baseRoute = route;
 
     // Decide distance factor based on route type
-    if (route.routeType != null) {
-      switch (route.routeType!) {
-        case RouteType.hiking:
-          _distanceFactor = 5.0;
-          break;
-        case RouteType.biking:
-          _distanceFactor = 10.0;
-          break;
-        case RouteType.motorcycle:
-          _distanceFactor = 20.0;
-          break;
-        case RouteType.jeep:
-          _distanceFactor = 30.0;
-          break;
-      }
-    } else {
-      _distanceFactor = 10.0; // Default
-    }
+    _setDistanceFactorFromRouteType(route.routeType);
 
     // Build a fresh UserRoute
     final userRoute = UserRoute(
@@ -112,21 +96,8 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _pathLength = 0;
     _routeDuration = const Duration();
 
-    // Decide distance factor
-    switch (routeType) {
-      case RouteType.hiking:
-        _distanceFactor = 5.0;
-        break;
-      case RouteType.biking:
-        _distanceFactor = 10.0;
-        break;
-      case RouteType.motorcycle:
-        _distanceFactor = 20.0;
-        break;
-      case RouteType.jeep:
-        _distanceFactor = 30.0;
-        break;
-    }
+    // Decide distance factor based on route type
+    _setDistanceFactorFromRouteType(routeType);
 
     // 1. Create a new Route object
     final route = Route(
@@ -169,6 +140,29 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
     // Start a timer to force updates every minute
     _startTimer();
+  }
+
+  /// Helper method to set the distance factor based on route type
+  void _setDistanceFactorFromRouteType(RouteType? routeType) {
+    if (routeType == null) {
+      _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+      return;
+    }
+    
+    switch (routeType) {
+      case RouteType.hiking:
+        _distanceFactor = MapConfig.HIKING_THRESHOLD;
+        break;
+      case RouteType.biking:
+        _distanceFactor = MapConfig.BIKING_THRESHOLD;
+        break;
+      case RouteType.motorcycle:
+        _distanceFactor = MapConfig.MOTORCYCLE_THRESHOLD;
+        break;
+      case RouteType.jeep:
+        _distanceFactor = MapConfig.JEEP_THRESHOLD;
+        break;
+    }
   }
 
   void _onLocationUpdate(Position newLocation) {

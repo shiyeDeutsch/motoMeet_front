@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import '../models/route.dart' as route_model;
 import 'map_controller.dart';
+import '../constants/app_constants.dart';
 
 /// Enum for various navigation events
 enum NavigationEvent {
@@ -34,13 +35,13 @@ class NavigationController {
   // Speeds and zoom levels (in meters per second)
   // Map speed ranges to appropriate zoom levels
   final Map<double, double> _speedZoomLevels = {
-    0: 18.0,      // Stationary: very close zoom
-    2.8: 17.0,    // Walking: close zoom
-    8.3: 16.0,    // Running/slow biking: medium-close zoom
-    13.9: 15.0,   // Biking: medium zoom
-    19.4: 14.0,   // Slow driving: medium-far zoom
-    27.8: 13.0,   // Medium driving: far zoom
-    33.3: 12.0,   // Fast driving: very far zoom
+    SpeedThresholds.STATIONARY: 18.0,      // Stationary: very close zoom
+    SpeedThresholds.WALKING: 17.0,         // Walking: close zoom
+    SpeedThresholds.RUNNING: 16.0,         // Running/slow biking: medium-close zoom
+    SpeedThresholds.BIKING: 15.0,          // Biking: medium zoom
+    SpeedThresholds.SLOW_DRIVING: 14.0,    // Slow driving: medium-far zoom
+    SpeedThresholds.MEDIUM_DRIVING: 13.0,  // Medium driving: far zoom
+    SpeedThresholds.FAST_DRIVING: 12.0,    // Fast driving: very far zoom
   };
   
   // The route that is being followed, if any
@@ -147,7 +148,7 @@ class NavigationController {
   /// Calculate the appropriate zoom level based on speed
   double _calculateZoomLevel(double speedMps) {
     // Find the closest speed bracket
-    double zoom = _speedZoomLevels[0]!; // Default zoom level (stationary)
+    double zoom = _speedZoomLevels[SpeedThresholds.STATIONARY]!; // Default zoom level (stationary)
     
     // Find the appropriate zoom level for this speed
     for (final entry in _speedZoomLevels.entries) {

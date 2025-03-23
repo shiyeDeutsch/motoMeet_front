@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
- import 'package:latlong2/latlong.dart' as latlong2;
+import 'package:latlong2/latlong.dart' as latlong2;
 import 'package:get_it/get_it.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:shimmer/shimmer.dart';
@@ -13,7 +13,7 @@ import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/distanceFormatter.dart';
 import '../services/loctionService.dart';
- import '../utilities/duration_formatter.dart';
+import '../utilities/duration_formatter.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
 import '../widgets/wayPointBottomSheet.dart';
@@ -25,11 +25,7 @@ import '../widgets/active_route_details.dart';
 import '../widgets/map_layers_bottom_sheet.dart';
 import '../controllers/map_controller.dart';
 import '../controllers/navigation_controller.dart';
-
-// You'll need to get a Mapbox access token from https://account.mapbox.com/
-const String MAPBOX_ACCESS_TOKEN =
-    'pk.eyJ1Ijoiam9zaGRldXRzY2giLCJhIjoiY204Ymt4bDFhMWh1aTJzY1zNDNlcTRpbSJ9.dzh1waA8zdT90jwmyOzpiQ';
-const String MAPBOX_STYLE = 'mapbox://styles/mapbox/outdoors-v12';
+import '../constants/app_constants.dart';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
   const MapMarkerScreen({Key? key}) : super(key: key);
@@ -42,7 +38,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     with TickerProviderStateMixin {
   MapboxMapControllerWrapper? _mapControllerWrapper;
   NavigationController? _navigationController;
-  String _currentStyle = MAPBOX_STYLE;
+  String _currentStyle = MapboxConfig.STYLE_OUTDOORS;
 
   // Animation controllers
   late AnimationController _pulseController;

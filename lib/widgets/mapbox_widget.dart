@@ -3,9 +3,7 @@ import 'package:mapbox_gl/mapbox_gl.dart';
 import '../models/route.dart' as app_models;
 import 'package:geolocator/geolocator.dart';
 import '../controllers/map_controller.dart';
-
-// You'll need to get a Mapbox access token from https://account.mapbox.com/
-const String MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoiam9zaGRldXRzY2giLCJhIjoiY204Ymt4bDFhMWh1aTJsczVzNDNlcTRpbSJ9.dzh1waA8zdT90jwmyOzpiQ';
+import '../constants/app_constants.dart';
 
 class MapboxWidget extends StatefulWidget {
   final List<app_models.GeoPoint> committedPoints;
@@ -36,13 +34,13 @@ class _MapboxWidgetState extends State<MapboxWidget> {
   @override
   Widget build(BuildContext context) {
     return MapboxMap(
-      accessToken: MAPBOX_ACCESS_TOKEN,
+      accessToken: MapboxConfig.ACCESS_TOKEN,
       styleString: widget.styleString,
       initialCameraPosition: CameraPosition(
         target: widget.userPos != null 
             ? LatLng(widget.userPos!.latitude, widget.userPos!.longitude) 
             : const LatLng(0, 0), // Will be updated once we get user location
-        zoom: 13.0,
+        zoom: MapConfig.DEFAULT_ZOOM,
       ),
       onMapCreated: _onMapCreated,
       onStyleLoadedCallback: _onStyleLoaded,

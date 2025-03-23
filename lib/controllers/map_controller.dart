@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import '../models/route.dart' as route_model;
 import '../models/enum.dart';
+import '../constants/app_constants.dart';
 
 /// A controller class to manage the Mapbox map operations
 /// Handles all map-related functionality including rendering routes,
@@ -21,7 +22,6 @@ class MapboxMapControllerWrapper {
   final ValueNotifier<bool> isInitialized = ValueNotifier<bool>(false);
   
   MapboxMapControllerWrapper(this._mapController) {
-    // We'll set the callback in the widget directly, not here
     isInitialized.value = true;
   }
   
@@ -33,24 +33,24 @@ class MapboxMapControllerWrapper {
   }
   
   /// Center the map on the user's current location
-  Future<void> centerOnUserLocation(Position position, {double zoom = 15.0, double? bearing}) async {
+  Future<void> centerOnUserLocation(Position position, {double? zoom, double? bearing}) async {
     if (!_isStyleLoaded) return;
     
     final CameraUpdate cameraUpdate = bearing != null 
       ? CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(position.latitude, position.longitude),
-            zoom: zoom,
+            zoom: zoom ?? MapConfig.DEFAULT_ZOOM,
             bearing: bearing,
-            tilt: 45.0, // Add some tilt for a better navigation view
+            tilt: MapConfig.NAVIGATION_TILT, // Add tilt for navigation view
           ),
         )
       : CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(position.latitude, position.longitude),
-            zoom: zoom,
+            zoom: zoom ?? MapConfig.DEFAULT_ZOOM,
             bearing: 0.0,
-            tilt: 0.0,
+            tilt: MapConfig.DEFAULT_TILT,
           ),
         );
     
@@ -75,7 +75,7 @@ class MapboxMapControllerWrapper {
           geometry: latLng,
           iconSize: 1.0,
           iconImage: "marker-15", // Use a built-in Mapbox icon
-          iconColor: "#3E6C51", // Green color
+          iconColor: MapConfig.ROUTE_COLOR,
         ),
       );
     } catch (e) {
@@ -105,9 +105,9 @@ class MapboxMapControllerWrapper {
         final line = await _mapController.addLine(
           LineOptions(
             geometry: linePoints,
-            lineColor: "#3E6C51", // Forest green
-            lineWidth: 5.0,
-            lineOpacity: 0.8,
+            lineColor: MapConfig.ROUTE_COLOR,
+            lineWidth: MapConfig.ROUTE_WIDTH,
+            lineOpacity: MapConfig.ROUTE_OPACITY,
             lineJoin: "round",
           ),
         );
@@ -139,9 +139,9 @@ class MapboxMapControllerWrapper {
         _traveledPathLine = await _mapController.addLine(
           LineOptions(
             geometry: linePoints,
-            lineColor: "#FF4500", // Orange-red color for the traveled path
-            lineWidth: 4.0,
-            lineOpacity: 1.0,
+            lineColor: MapConfig.TRAVELED_PATH_COLOR,
+            lineWidth: MapConfig.TRAVELED_PATH_WIDTH,
+            lineOpacity: MapConfig.TRAVELED_PATH_OPACITY,
             lineJoin: "round",
           ),
         );
