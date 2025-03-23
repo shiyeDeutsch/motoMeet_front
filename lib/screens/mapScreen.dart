@@ -41,9 +41,6 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   final LocationService _locationService = GetIt.I<LocationService>();
   String _currentStyle = MapboxConfig.STYLE_OUTDOORS;
 
-  // Animation controllers
-  late AnimationController _pulseController;
-  
   // Navigation state
   bool _isTrackingUser = true;
   StreamSubscription? _navigationEventSubscription;
@@ -52,12 +49,6 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   void initState() {
     super.initState();
 
-    // Setup pulse animation for user location
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-    
     // Ensure location service is initialized
     _ensureLocationServiceRunning();
   }
@@ -289,13 +280,13 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     await _centerOnUserLocation();
     
     // Show a success snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('New ${routeType.toString().split('.').last} route started'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: const Color(0xFF3E6C51),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text('New ${routeType.toString().split('.').last} route started'),
+    //     duration: const Duration(seconds: 2),
+    //     backgroundColor: const Color(0xFF3E6C51),
+    //   ),
+    // );
     
     // Now that we have a route, start navigation automatically
     _updateMapWithLatestData();
@@ -328,7 +319,6 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _navigationEventSubscription?.cancel();
     _navigationController?.dispose();
     super.dispose();
