@@ -11,7 +11,7 @@ import '../routing/routes.dart';
 import '../services/authService.dart';
 import '../services/isar/isar_user_info.dart';
 import '../services/isar/repository_provider.dart';
-import '../services/loctionService.dart';
+import '../services/locationService.dart';
 // import '../widgets/CustomTextFormField.dart';
 import '../widgets/customTextFromField.dart';
 import '../widgets/dropdown.dart';
@@ -152,8 +152,9 @@ class _LoginScreenState extends State<LoginScreen> {
         await isarService.add(user);
         
         // Update location data
-        final location  = await LocationService.getCurrentLocation; 
-        await userService.sendGeoLocation( );
+        final locationService = GetIt.I<LocationService>();
+        final location = await locationService.getCurrentLatLng();
+        await userService.sendGeoLocation();
        
 
         // Navigate to home page

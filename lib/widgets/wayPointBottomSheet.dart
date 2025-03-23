@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 
 import '../models/enum.dart';
 import '../models/route.dart';
-import '../services/loctionService.dart';
+import '../services/locationService.dart';
 import '../services/routesService.dart';
 
 class WayPointBottomSheet extends StatefulWidget {
@@ -325,12 +326,11 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
  Future<void> _handleWaypointSelection(
     BuildContext context,
     WaypointType type,
-    
     WidgetRef ref,
   ) async {
-    final location = await LocationService.getCurrentLocation();
-    if (location == null) return;
-
+    final locationService = GetIt.I<LocationService>();
+    final location = await locationService.getCurrentLatLng();
+    
     final details = await _showLandmarkDetailsDialog();
     if (details == null) return;
 
@@ -358,20 +358,20 @@ void _showLandmarkDetailsBottomSheet(BuildContext parentContext , WidgetRef ref)
           onCancel: () => Navigator.pop(context),
         
           onSave: (title, description, mediaFiles) async {
-          final location = await LocationService.getCurrentLocation();
-          if (location == null) return;
+            final locationService = GetIt.I<LocationService>();
+            final location = await locationService.getCurrentLatLng();
+            
+            final waypoint = PointOfInterest(
+              location: GeoPoint.fromLatLng(location, null),
+              name: title,
+              description: description,
+              waypointType: _selectedType!,
+            );
 
-          final waypoint = PointOfInterest(
-            location: GeoPoint.fromLatLng(location, null),
-            name: title,
-            description: description,
-            waypointType: _selectedType!,
-          );
+            // final routeService = ref.read(routeServiceProvider.notifier);
+            // routeService.addWaypoint(waypoint);
 
-          // final routeService = ref.read(routeServiceProvider.notifier);
-          // routeService.addWaypoint(waypoint);
-
-          Navigator.pop(context);
+            Navigator.pop(context);
           },
         );
       },

@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:motomeetfront/models/geoLocationInfo.dart';
 import 'package:motomeetfront/models/route.dart';
 import 'package:motomeetfront/services/httpClient.dart';
-import 'package:motomeetfront/services/loctionService.dart';
+import 'package:motomeetfront/services/locationService.dart';
 import 'package:motomeetfront/services/isar/isar_geo_location.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
 
@@ -41,10 +41,12 @@ class UserService {
 
   Future<GeoLocationInfo?> sendGeoLocation() async {
     try {
-      var location = await LocationService.getCurrentLocation();
+      final locationService = GetIt.I<LocationService>();
+      final location = await locationService.getCurrentLatLng();
+      
       final payload = {
-        'latitude': location?.latitude,
-        'longitude': location?.longitude,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
       };
 
       final response = await HttpClient.post(

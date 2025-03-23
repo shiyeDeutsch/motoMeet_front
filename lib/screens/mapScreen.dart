@@ -12,7 +12,7 @@ import '../providers/route_creation_provider.dart';
 import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/distanceFormatter.dart';
-import '../services/loctionService.dart';
+import '../services/locationService.dart';
 import '../utilities/duration_formatter.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
@@ -38,6 +38,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     with TickerProviderStateMixin {
   MapboxMapControllerWrapper? _mapControllerWrapper;
   NavigationController? _navigationController;
+  final LocationService _locationService = GetIt.I<LocationService>();
   String _currentStyle = MapboxConfig.STYLE_OUTDOORS;
 
   // Animation controllers
@@ -56,6 +57,15 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    
+    // Ensure location service is initialized
+    _ensureLocationServiceRunning();
+  }
+  
+  Future<void> _ensureLocationServiceRunning() async {
+    if (!_locationService.isListening) {
+      await _locationService.startListening();
+    }
   }
 
   @override
@@ -196,24 +206,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       await _mapControllerWrapper!.centerOnUserLocation(currentPosition);
     } else {
       try {
-        final latLng = await LocationService.getCurrentLocation();
-        if (latLng != null && _mapControllerWrapper != null) {
-          final position = Position(
-            latitude: latLng.latitude,
-            longitude: latLng.longitude,
-            timestamp: DateTime.now(),
-            accuracy: 0,
-            altitude: 0,
-            heading: 0,
-            speed: 0,
-            speedAccuracy: 0,
-            altitudeAccuracy: 0,
-            headingAccuracy: 0,
-          );
+        // Get latest position from location service
+        final position = await _locationService.getCurrentPosition();
+        
+        if (_mapControllerWrapper != null) {
           await _mapControllerWrapper!.centerOnUserLocation(position);
         }
       } catch (e) {
-        print('Error centering on user location: $e');
+        debugPrint('Error centering on user location: $e');
       }
     }
     
@@ -255,33 +255,30 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     Position? userPosition;
     
     try {
-      // Try to get current position
-      userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
-      );
+      // Try to get current position from location service
+      userPosition = await _locationService.getCurrentPosition();
     } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error getting location: ${e.toString()}')),
-          );
-          return;
-        }
+      );
+      return;
+    }
 
     if (userPosition == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not determine your location')),
-        );
-        return;
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not determine your location')),
+      );
+      return;
+    }
 
     // Start a new route with the current position
-      userRouteProvider.startNewRoute(
-        routeType,
-        route_model.GeoPoint(
-          latitude: userPosition.latitude,
-          longitude: userPosition.longitude,
-        ),
-      );
+    userRouteProvider.startNewRoute(
+      routeType,
+      route_model.GeoPoint(
+        latitude: userPosition.latitude,
+        longitude: userPosition.longitude,
+      ),
+    );
 
     // Ensure we're tracking the user
     setState(() {

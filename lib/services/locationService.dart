@@ -4,14 +4,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/app_constants.dart';
 
-/// A singleton service that provides location updates throughout the app
+/// A service that provides location updates throughout the app
 /// Acts as the single source of truth for location data
 class LocationService {
-  // Private constructor for singleton
-  LocationService._();
-  static final LocationService _instance = LocationService._();
-  static LocationService get instance => _instance;
-  
   // Cache the most recent position
   Position? _lastKnownPosition;
   DateTime? _lastUpdateTime;

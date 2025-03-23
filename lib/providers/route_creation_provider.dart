@@ -8,7 +8,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/enum.dart';
 import '../models/route.dart';
-import '../services/loctionService.dart';
+import '../services/locationService.dart';
 import '../services/route_creation_service.dart';
 import '../constants/app_constants.dart';
 
@@ -23,6 +23,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   RouteCreationNotifier() : super(null);
 
   final RouteCreationService _routeCreationService = GetIt.I<RouteCreationService>();
+  final LocationService _locationService = GetIt.I<LocationService>();
   StreamSubscription<Position>? _locationUpdatesSubscription;
 
   // List of threshold-validated points for the current trip
@@ -74,10 +75,20 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       _committedPoints.add(route.startPoint!);
     }
 
-    // Start location updates
-    LocationService.startListening();
+    // Start location updates if not already started
+    if (!_locationService.isListening) {
+      await _locationService.startListening();
+    }
+    
+    // Configure location service for route tracking
+    _locationService.configure(
+      accuracy: LocationAccuracy.high,
+      updateIntervalMs: 5000, // 5 second updates for route tracking
+    );
+    
+    // Subscribe to location updates
     _locationUpdatesSubscription =
-        LocationService.locationUpdates.listen(_onLocationUpdate);
+        _locationService.locationUpdates.listen(_onLocationUpdate);
 
     // Start a timer to force updates every minute
     _startTimer();
@@ -133,10 +144,20 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     // Add the starting point
     _committedPoints.add(startPoint);
 
-    // Start location updates
-    LocationService.startListening();
+    // Start location updates if not already started
+    if (!_locationService.isListening) {
+      await _locationService.startListening();
+    }
+    
+    // Configure location service for route tracking
+    _locationService.configure(
+      accuracy: LocationAccuracy.high,
+      updateIntervalMs: 5000, // 5 second updates for route tracking
+    );
+    
+    // Subscribe to location updates
     _locationUpdatesSubscription =
-        LocationService.locationUpdates.listen(_onLocationUpdate);
+        _locationService.locationUpdates.listen(_onLocationUpdate);
 
     // Start a timer to force updates every minute
     _startTimer();
@@ -169,6 +190,18 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _currentPosition = newLocation;
 
     // Threshold check
+    if (_committedPoints.isEmpty) {
+      // First point - just add it
+      _committedPoints.add(
+        GeoPoint(
+          latitude: newLocation.latitude,
+          longitude: newLocation.longitude,
+          altitude: newLocation.altitude,
+        ),
+      );
+      return;
+    }
+    
     final lastPoint = _committedPoints.last;
     final distance = _routeCreationService.calculateDistanceInMeters(
       lastPoint.toLatLng(),
@@ -225,7 +258,9 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _locationUpdatesSubscription = null;
     _timer?.cancel();
     _timer = null;
-    LocationService.dispose();
+    
+    // We don't call LocationService.dispose() here because other parts
+    // of the app may still need location updates
 
     if (state == null) return;
     

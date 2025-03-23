@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:get_it/get_it.dart';
 import '../models/route.dart' as route_model;
 import 'map_controller.dart';
 import '../constants/app_constants.dart';
+import '../services/locationService.dart';
 
 /// Enum for various navigation events
 enum NavigationEvent {
@@ -21,6 +23,9 @@ enum NavigationEvent {
 class NavigationController {
   // Reference to the map controller
   final MapboxMapControllerWrapper _mapController;
+  
+  // Location service from GetIt
+  final LocationService _locationService = GetIt.I<LocationService>();
   
   // Navigation state
   bool _isNavigating = false;
@@ -51,7 +56,16 @@ class NavigationController {
   final _navigationEventController = StreamController<NavigationEvent>.broadcast();
   Stream<NavigationEvent> get navigationEvents => _navigationEventController.stream;
   
-  NavigationController(this._mapController);
+  // Subscription to location updates
+  StreamSubscription<Position>? _locationSubscription;
+  
+  NavigationController(this._mapController) {
+    // Configure location service for navigation (more frequent updates)
+    _locationService.configure(
+      accuracy: LocationAccuracy.high,
+      updateIntervalMs: 1000, // 1 second updates during navigation
+    );
+  }
   
   /// Start navigation with optional route to follow
   Future<void> startNavigation({List<route_model.GeoPoint>? route}) async {
@@ -62,6 +76,14 @@ class NavigationController {
     _currentRoute = route;
     _traveledPath.clear();
     
+    // Ensure location service is active
+    if (!_locationService.isListening) {
+      await _locationService.startListening();
+    }
+    
+    // Start listening to location updates
+    _locationSubscription = _locationService.locationUpdates.listen(_onLocationUpdate);
+    
     // Start periodic camera updates
     _startCameraUpdates();
     
@@ -69,11 +91,40 @@ class NavigationController {
     _navigationEventController.add(NavigationEvent.navigationStarted);
   }
   
+  /// Process incoming location updates
+  void _onLocationUpdate(Position position) {
+    // Only process updates if we're navigating
+    if (!_isNavigating) return;
+    
+    // Add to traveled path - only if we've moved a significant distance
+    if (_traveledPath.isEmpty || _calculateDistance(_traveledPath.last, position) > 2.0) {
+      _traveledPath.add(route_model.GeoPoint(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        altitude: position.altitude,
+      ));
+      
+      // Update the traveled path line on the map
+      _mapController.setTraveledPath(_traveledPath);
+      
+      // Notify about position update
+      _navigationEventController.add(NavigationEvent.positionUpdated);
+    }
+  }
+  
   /// Stop the current navigation session
   Future<void> stopNavigation() async {
     if (!_isNavigating) return;
     
     _isNavigating = false;
+    
+    // Stop location updates
+    _locationSubscription?.cancel();
+    _locationSubscription = null;
+    
+    // Return location service to normal update frequency
+    _locationService.configure(updateIntervalMs: 5000); // 5 seconds in normal mode
+    
     _stopCameraUpdates();
     
     // Notify listeners
@@ -106,25 +157,12 @@ class NavigationController {
     }
 
     try {
-      // Get current position
-      final Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 2),
-      ).timeout(const Duration(seconds: 2), onTimeout: () {
-        throw TimeoutException('Getting current position timed out');
-      });
-      
-      // Add to traveled path - only if we've moved a significant distance
-      if (_traveledPath.isEmpty || _calculateDistance(_traveledPath.last, position) > 2.0) {
-        _traveledPath.add(route_model.GeoPoint(
-          latitude: position.latitude,
-          longitude: position.longitude,
-          altitude: position.altitude,
-        ));
-        
-        // Update the traveled path line on the map
-        _mapController.setTraveledPath(_traveledPath);
-      }
+      // Get current position from location service instead of direct Geolocator call
+      final position = await _locationService.getCurrentPosition(
+        useCacheIfAvailable: true,
+        maxCacheAgeSeconds: 2,
+        timeout: const Duration(seconds: 2),
+      );
       
       // Calculate appropriate zoom level based on speed
       final double speed = position.speed; // in meters per second
@@ -136,9 +174,6 @@ class NavigationController {
         zoom: zoomLevel,
         bearing: position.heading,
       );
-      
-      // Notify about position update
-      _navigationEventController.add(NavigationEvent.positionUpdated);
       
     } catch (e) {
       debugPrint('Error updating camera position: $e');
@@ -178,6 +213,7 @@ class NavigationController {
   /// Dispose resources
   void dispose() {
     _stopCameraUpdates();
+    _locationSubscription?.cancel();
     _navigationEventController.close();
   }
 } 
