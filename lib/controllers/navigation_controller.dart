@@ -2,7 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:get_it/get_it.dart';
 import '../models/route.dart' as route_model;
+import '../models/locationShare.dart';
+import '../services/location_sharing_service.dart';
 import 'map_controller.dart';
 import '../constants/app_constants.dart';
 
@@ -14,6 +17,9 @@ enum NavigationEvent {
   offRoute,
   approachingWaypoint,
   arrivedAtDestination,
+  locationSharingStarted,
+  locationSharingStopped,
+  newSharedLocationsReceived,
 }
 
 /// A controller to handle real-time navigation features
@@ -48,7 +54,27 @@ class NavigationController {
   final _navigationEventController = StreamController<NavigationEvent>.broadcast();
   Stream<NavigationEvent> get navigationEvents => _navigationEventController.stream;
   
-  NavigationController(this._mapController);
+  // Location sharing
+  LocationSharingService? _locationSharingService;
+  String? _activeSharingSessionId;
+  bool _isLocationSharingEnabled = false;
+  StreamSubscription? _sharedLocationsSubscription;
+  List<SharedLocation> _sharedLocations = [];
+  
+  NavigationController(this._mapController) {
+    // Try to get location sharing service from GetIt if available
+    try {
+      _locationSharingService = GetIt.I<LocationSharingService>();
+      
+      // Listen for shared locations
+      _sharedLocationsSubscription = _locationSharingService?.sharedLocations.listen((locations) {
+        _sharedLocations = locations;
+        _navigationEventController.add(NavigationEvent.newSharedLocationsReceived);
+      });
+    } catch (e) {
+      debugPrint('Location sharing service not available: $e');
+    }
+  }
   
   /// Start navigation with optional route to follow
   void startNavigation({List<route_model.GeoPoint>? route}) {
@@ -95,6 +121,9 @@ class NavigationController {
     
     _isNavigating = false;
     
+    // Stop location sharing if it's enabled
+    stopLocationSharing();
+    
     // Notify listeners
     _navigationEventController.add(NavigationEvent.navigationStopped);
   }
@@ -102,6 +131,92 @@ class NavigationController {
   /// Toggle user tracking
   void toggleTracking(bool isTracking) {
     _isTrackingUser = isTracking;
+  }
+  
+  /// Start sharing location with others
+  Future<bool> startLocationSharing({String? name, String? routeId}) async {
+    if (_locationSharingService == null) {
+      debugPrint('Location sharing service not available');
+      return false;
+    }
+    
+    try {
+      final sessionId = await _locationSharingService!.startSharing(
+        name: name,
+        routeId: routeId,
+        isPublic: true,
+      );
+      
+      if (sessionId != null) {
+        _activeSharingSessionId = sessionId;
+        _isLocationSharingEnabled = true;
+        
+        // Notify listeners
+        _navigationEventController.add(NavigationEvent.locationSharingStarted);
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      debugPrint('Error starting location sharing: $e');
+      return false;
+    }
+  }
+  
+  /// Stop sharing location
+  Future<bool> stopLocationSharing() async {
+    if (_locationSharingService == null || !_isLocationSharingEnabled) {
+      return true;
+    }
+    
+    try {
+      final result = await _locationSharingService!.stopSharing();
+      
+      if (result) {
+        _isLocationSharingEnabled = false;
+        _activeSharingSessionId = null;
+        _sharedLocations = [];
+        
+        // Notify listeners
+        _navigationEventController.add(NavigationEvent.locationSharingStopped);
+      }
+      
+      return result;
+    } catch (e) {
+      debugPrint('Error stopping location sharing: $e');
+      return false;
+    }
+  }
+  
+  /// Join an existing location sharing session
+  Future<bool> joinLocationSharingSession(String sessionId) async {
+    if (_locationSharingService == null) {
+      debugPrint('Location sharing service not available');
+      return false;
+    }
+    
+    try {
+      final result = await _locationSharingService!.joinSession(sessionId);
+      
+      if (result) {
+        _activeSharingSessionId = sessionId;
+        _isLocationSharingEnabled = true;
+        
+        // Notify listeners
+        _navigationEventController.add(NavigationEvent.locationSharingStarted);
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      debugPrint('Error joining location sharing session: $e');
+      return false;
+    }
+  }
+  
+  /// Get all currently shared locations
+  List<SharedLocation> getSharedLocations() {
+    return List.unmodifiable(_sharedLocations);
   }
   
   /// Update the camera position based on current location and speed
@@ -157,8 +272,16 @@ class NavigationController {
   /// Get the traveled path so far
   List<route_model.GeoPoint> get traveledPath => List.unmodifiable(_traveledPath);
   
+  /// Check if location sharing is enabled
+  bool get isLocationSharingEnabled => _isLocationSharingEnabled;
+  
+  /// Get active sharing session ID, if any
+  String? get activeSharingSessionId => _activeSharingSessionId;
+  
   /// Dispose resources
   void dispose() {
     _navigationEventController.close();
+    _sharedLocationsSubscription?.cancel();
+    stopLocationSharing();
   }
 } 

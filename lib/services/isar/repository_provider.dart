@@ -5,6 +5,7 @@ import 'package:motomeetfront/services/isar/isar_user_info.dart';
 import 'package:motomeetfront/services/isar/isar_theme_preferences.dart';
 import 'package:motomeetfront/services/isar/isar_event.dart';
 import 'package:motomeetfront/services/isar/isar_route_repository.dart';
+import 'package:motomeetfront/services/isar/isar_location_sharing.dart';
 
 /// Provider for all Isar repositories
 class RepositoryProvider {
@@ -22,6 +23,10 @@ class RepositoryProvider {
   late final IsarRoutePointRepository _routePointRepository;
   late final IsarUserRoutePointRepository _userRoutePointRepository;
   late final IsarPointOfInterestRepository _pointOfInterestRepository;
+  
+  // Location sharing repositories
+  late final IsarSharedLocationRepository _sharedLocationRepository;
+  late final IsarLocationSharingSessionRepository _locationSharingSessionRepository;
 
   RepositoryProvider(this._isar) {
     _userInfoRepository = IsarUserInfoRepository(_isar);
@@ -36,6 +41,10 @@ class RepositoryProvider {
     _routePointRepository = IsarRoutePointRepository(_isar);
     _userRoutePointRepository = IsarUserRoutePointRepository(_isar);
     _pointOfInterestRepository = IsarPointOfInterestRepository(_isar);
+    
+    // Initialize location sharing repositories
+    _sharedLocationRepository = IsarSharedLocationRepository(_isar);
+    _locationSharingSessionRepository = IsarLocationSharingSessionRepository(_isar);
   }
 
   IsarUserInfoRepository get userInfoRepository => _userInfoRepository;
@@ -52,4 +61,8 @@ class RepositoryProvider {
   IsarRoutePointRepository get routePointRepository => _routePointRepository;
   IsarUserRoutePointRepository get userRoutePointRepository => _userRoutePointRepository;
   IsarPointOfInterestRepository get pointOfInterestRepository => _pointOfInterestRepository;
+  
+  // Getters for location sharing repositories
+  IsarSharedLocationRepository get sharedLocationRepository => _sharedLocationRepository;
+  IsarLocationSharingSessionRepository get locationSharingSessionRepository => _locationSharingSessionRepository;
 }

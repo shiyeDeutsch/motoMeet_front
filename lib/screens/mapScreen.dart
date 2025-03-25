@@ -8,11 +8,13 @@ import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/route.dart' as route_model;
 import '../models/enum.dart';
+import '../models/locationShare.dart';
 import '../providers/route_creation_provider.dart';
 import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/distanceFormatter.dart';
 import '../services/locationService.dart';
+import '../services/location_sharing_service.dart';
 import '../utilities/duration_formatter.dart';
 import '../widgets/dialogs/chooseRouteTypeDialog.dart';
 import '../widgets/dialogs/stopRoutedialog.dart';
@@ -23,6 +25,7 @@ import '../widgets/map_controls_widget.dart';
 import '../widgets/start_route_button.dart';
 import '../widgets/active_route_details.dart';
 import '../widgets/map_layers_bottom_sheet.dart';
+import '../widgets/shared_locations_layer.dart';
 import '../controllers/map_controller.dart';
 import '../controllers/navigation_controller.dart';
 import '../constants/app_constants.dart';
@@ -46,6 +49,10 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   StreamSubscription? _navigationEventSubscription;
   // For position updates from RouteCreationProvider
   Function(Position)? _positionUpdateCallback;
+  
+  // Location sharing state
+  bool _isLocationSharingEnabled = false;
+  List<SharedLocation> _sharedLocations = [];
 
   @override
   void initState() {
@@ -141,6 +148,60 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
                 baseRoute: baseRoute,
                 currentPosition: currentPosition,
                 onStopPressed: () => _onStopRoutePressed(context),
+                onSharePressed: _toggleLocationSharing,
+                isSharingEnabled: _isLocationSharingEnabled,
+              ),
+            ),
+            
+          // Location sharing floating action button (when not in active route)
+          if (currentUserRoute == null)
+            Positioned(
+              right: 16,
+              bottom: 116, // Position above the start route button
+              child: FloatingActionButton(
+                heroTag: 'joinSharingBtn',
+                backgroundColor: Theme.of(context).primaryColor,
+                child: const Icon(Icons.people),
+                onPressed: () => _showJoinSharingDialog(context),
+                mini: true,
+              ),
+            ),
+            
+          // Shared locations count badge
+          if (_sharedLocations.isNotEmpty)
+            Positioned(
+              right: 16,
+              top: 100, // Position below the center location button
+              child: GestureDetector(
+                onTap: _showSharedLocationsBottomSheet,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.people, color: Colors.white, size: 18),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_sharedLocations.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
         ],
@@ -173,6 +234,38 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
               duration: Duration(seconds: 5),
             ),
           );
+          break;
+        case NavigationEvent.locationSharingStarted:
+          // Update UI to reflect location sharing is active
+          setState(() {
+            _isLocationSharingEnabled = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location sharing started'),
+              backgroundColor: Color(0xFF3E6C51),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          break;
+        case NavigationEvent.locationSharingStopped:
+          // Update UI to reflect location sharing is stopped
+          setState(() {
+            _isLocationSharingEnabled = false;
+            _sharedLocations = [];
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location sharing stopped'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          break;
+        case NavigationEvent.newSharedLocationsReceived:
+          // Update shared locations list
+          setState(() {
+            _sharedLocations = _navigationController!.getSharedLocations();
+          });
           break;
         default:
           break;
@@ -327,6 +420,183 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         arguments: {'Route': baseRoute, 'UserRoute': userRoute},
       );
     }
+  }
+  
+  /// Toggle location sharing on/off
+  Future<void> _toggleLocationSharing() async {
+    if (_navigationController == null) return;
+    
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    final routeName = userRouteProvider.baseRoute?.name;
+    final routeId = userRouteProvider.baseRoute?.id?.toString();
+    
+    if (_navigationController!.isLocationSharingEnabled) {
+      // Stop sharing
+      await _navigationController!.stopLocationSharing();
+    } else {
+      // Start sharing
+      await _navigationController!.startLocationSharing(
+        name: routeName != null ? 'Sharing: $routeName' : 'Live Route',
+        routeId: routeId,
+      );
+    }
+  }
+  
+  /// Show dialog to join existing sharing session
+  Future<void> _showJoinSharingDialog(BuildContext context) async {
+    final textController = TextEditingController();
+    
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Join Location Sharing'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter the share code to join a route:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: textController,
+              decoration: const InputDecoration(
+                labelText: 'Share Code',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.characters,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (textController.text.isNotEmpty) {
+                Navigator.of(context).pop(textController.text);
+              }
+            },
+            child: const Text('Join'),
+          ),
+        ],
+      ),
+    );
+    
+    if (result != null && result.isNotEmpty && _navigationController != null) {
+      // Try to join the session
+      final success = await _navigationController!.joinLocationSharingSession(result);
+      
+      if (!success) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not join sharing session. Invalid code or network error.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+  
+  /// Show a bottom sheet with all shared locations
+  void _showSharedLocationsBottomSheet() {
+    if (_sharedLocations.isEmpty) return;
+    
+    // Sort by distance
+    final sortedLocations = List<SharedLocation>.from(_sharedLocations);
+    sortedLocations.sort((a, b) {
+      if (a.distanceFromUser == null && b.distanceFromUser == null) return 0;
+      if (a.distanceFromUser == null) return 1;
+      if (b.distanceFromUser == null) return -1;
+      return a.distanceFromUser!.compareTo(b.distanceFromUser!);
+    });
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.8,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Shared Locations (${sortedLocations.length})',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 8),
+              
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: sortedLocations.length,
+                  itemBuilder: (context, index) {
+                    final location = sortedLocations[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          child: const Icon(Icons.person, color: Colors.white),
+                        ),
+                        title: Text(location.userName ?? 'Unknown user'),
+                        subtitle: location.distanceFromUser != null
+                            ? Text('${DistanceFormatter.format(location.distanceFromUser!)} away')
+                            : const Text('Distance unknown'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => _showLocationDetails(location),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  /// Show details for a specific shared location
+  void _showLocationDetails(SharedLocation location) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SharedLocationBottomSheet(
+        location: location,
+        onClose: () => Navigator.of(context).pop(),
+        onNavigateTo: () {
+          Navigator.of(context).pop();
+          if (_mapControllerWrapper != null && location.latitude != null && location.longitude != null) {
+            _mapControllerWrapper!.centerOnLatLng(
+              LatLng(location.latitude!, location.longitude!),
+              zoom: 16,
+            );
+          }
+        },
+      ),
+    );
   }
 
   @override

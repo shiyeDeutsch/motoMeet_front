@@ -355,4 +355,71 @@ class ApiEndpoints {
     path: 'api/users/geolocation',
     port: port,
   );
+
+  // Location sharing endpoints
+  static Uri locationSharing = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/location-sharing',
+    port: port,
+  );
+
+  static Uri createSharingSession = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/location-sharing/create-session',
+    port: port,
+  );
+
+  static Uri updateSharedLocation = Uri(
+    scheme: scheme,
+    host: host,
+    path: 'api/location-sharing/update',
+    port: port,
+  );
+
+  static Uri joinSharingSession(String sessionId) {
+    return Uri(
+      scheme: scheme,
+      host: host,
+      path: 'api/location-sharing/join/$sessionId',
+      port: port,
+    );
+  }
+
+  static Uri leaveSharingSession(String sessionId) {
+    return Uri(
+      scheme: scheme,
+      host: host,
+      path: 'api/location-sharing/leave/$sessionId',
+      port: port,
+    );
+  }
+
+  static Uri getSharedLocations(String sessionId) {
+    return Uri(
+      scheme: scheme,
+      host: host,
+      path: 'api/location-sharing/locations/$sessionId',
+      port: port,
+    );
+  }
+
+  static Uri getSharingSessions() {
+    return Uri(
+      scheme: scheme,
+      host: host,
+      path: 'api/location-sharing/sessions',
+      port: port,
+    );
+  }
+  
+  static Uri getSharingSessionsByRoute(String routeId) {
+    return Uri(
+      scheme: scheme,
+      host: host,
+      path: 'api/location-sharing/sessions/route/$routeId',
+      port: port,
+    );
+  }
 }

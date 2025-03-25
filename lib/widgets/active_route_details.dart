@@ -5,16 +5,19 @@ import '../models/route.dart' as app_models;
 import '../providers/route_creation_provider.dart';
 import '../services/distanceFormatter.dart';
 import '../utilities/duration_formatter.dart';
- import '../services/bottomSheetServices.dart';
+import '../services/bottomSheetServices.dart';
 import '../widgets/wayPointBottomSheet.dart';
 import 'ExpandablePanel.dart';
 import 'expandableFAB.dart';
+import 'package:get_it/get_it.dart';
 
 class ActiveRouteDetails extends ConsumerWidget {
   final app_models.UserRoute currentUserRoute;
   final app_models.Route? baseRoute;
   final Position? currentPosition;
   final VoidCallback onStopPressed;
+  final VoidCallback? onSharePressed;
+  final bool isSharingEnabled;
   final BuildContext context;
   const ActiveRouteDetails({
     Key? key,
@@ -22,6 +25,8 @@ class ActiveRouteDetails extends ConsumerWidget {
     this.baseRoute,
     this.currentPosition,
     required this.onStopPressed,
+    this.onSharePressed,
+    this.isSharingEnabled = false,
     required this.context,
   }) : super(key: key);
 
@@ -41,7 +46,7 @@ class ActiveRouteDetails extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: _buildRouteActionButtons(context, onStopPressed),
+          child: _buildRouteActionButtons(context, onStopPressed, onSharePressed),
         ),
         Center(
           child: Padding(
@@ -140,7 +145,7 @@ class ActiveRouteDetails extends ConsumerWidget {
     );
   }
 
-  Widget _buildRouteActionButtons(BuildContext context, VoidCallback onStopPressed) {
+  Widget _buildRouteActionButtons(BuildContext context, VoidCallback onStopPressed, VoidCallback? onSharePressed) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
@@ -161,9 +166,7 @@ class ActiveRouteDetails extends ConsumerWidget {
           ),
           IconButton(
             icon: Icon(Icons.share, color: colorScheme.primary),
-            onPressed: () {
-              // Implement share route
-            },
+            onPressed: onSharePressed,
           ),
           IconButton(
             icon: Icon(Icons.pause, color: colorScheme.error),

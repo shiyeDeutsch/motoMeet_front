@@ -22,4 +22,9 @@ class DistanceFormatter {
       return "${kilometers.toStringAsFixed(1)} km";
     }
   }
+  
+  /// Alias for formatDistance to be used in location sharing UI
+  static String format(double meters) {
+    return formatDistance(meters);
+  }
 }

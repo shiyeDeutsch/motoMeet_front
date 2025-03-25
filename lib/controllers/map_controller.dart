@@ -57,6 +57,22 @@ class MapboxMapControllerWrapper {
     await _mapController.animateCamera(cameraUpdate);
   }
   
+  /// Center the map on a specific latitude and longitude
+  Future<void> centerOnLatLng(LatLng latLng, {double? zoom, double? bearing, double? tilt}) async {
+    if (!_isStyleLoaded) return;
+    
+    final CameraUpdate cameraUpdate = CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: latLng,
+        zoom: zoom ?? MapConfig.DEFAULT_ZOOM,
+        bearing: bearing ?? 0.0,
+        tilt: tilt ?? MapConfig.DEFAULT_TILT,
+      ),
+    );
+    
+    await _mapController.animateCamera(cameraUpdate);
+  }
+  
   /// Update just the user location on the map without redrawing everything
   Future<void> updateUserLocation(Position position) async {
     if (!_isStyleLoaded) return;

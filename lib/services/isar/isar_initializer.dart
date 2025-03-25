@@ -10,6 +10,7 @@ import '../../models/group.dart';
 import '../../models/notification.dart';
 import '../../models/activity.dart';
 import '../../models/geoLocationInfo.dart';
+import '../../models/locationShare.dart';
 
 class IsarInitializer {
   late Isar isar;
@@ -53,6 +54,10 @@ class IsarInitializer {
 
         // GeoLocation related schemas
         GeoLocationInfoSchema,
+        
+        // Location sharing related schemas
+        SharedLocationSchema,
+        LocationSharingSessionSchema,
 
         // Theme preferences schema
         ThemePreferencesSchema,

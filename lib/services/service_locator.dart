@@ -7,6 +7,7 @@ import 'package:motomeetfront/services/userService.dart';
 import 'package:motomeetfront/services/isar/isar_initializer.dart';
 import 'package:motomeetfront/services/route_creation_service.dart';
 import 'package:motomeetfront/services/locationService.dart';
+import 'package:motomeetfront/services/location_sharing_service.dart';
 
 
 import 'isar/repository_provider.dart';
@@ -26,6 +27,9 @@ Future<void> setupLocator( )async  {
   
   // Register the LocationService as a lazy singleton
   GetIt.I.registerLazySingleton<LocationService>(() => LocationService());
+  
+  // Register the LocationSharingService as a lazy singleton
+  GetIt.I.registerLazySingleton<LocationSharingService>(() => LocationSharingService());
 
   // Register the IsarInitializer
   final IsarInitializer isarInitializer = IsarInitializer();
