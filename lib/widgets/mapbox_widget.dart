@@ -30,6 +30,12 @@ class MapboxWidget extends StatefulWidget {
 class _MapboxWidgetState extends State<MapboxWidget> {
   MapboxMapControllerWrapper? _controllerWrapper;
   bool _isStyleLoaded = false;
+  
+  // Keep track of the last user position to avoid unnecessary updates
+  Position? _lastProcessedPosition;
+  
+  // Keep track of committed points count to detect changes
+  int _lastCommittedPointsCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +85,7 @@ class _MapboxWidgetState extends State<MapboxWidget> {
     // Update route path if we have points
     if (widget.committedPoints.isNotEmpty) {
       _controllerWrapper!.setRoutePath(widget.committedPoints);
+      _lastCommittedPointsCount = widget.committedPoints.length;
     }
     
     // Add waypoint markers if we have them
@@ -91,6 +98,7 @@ class _MapboxWidgetState extends State<MapboxWidget> {
     // Update user location
     if (widget.userPos != null) {
       _controllerWrapper!.updateUserLocation(widget.userPos!);
+      _lastProcessedPosition = widget.userPos;
     }
   }
   
@@ -99,11 +107,33 @@ class _MapboxWidgetState extends State<MapboxWidget> {
     super.didUpdateWidget(oldWidget);
     
     // When widget data changes, update the map
-    if (_isStyleLoaded && 
-        (_didCommittedPointsChange(oldWidget.committedPoints) || 
-         widget.userPos != oldWidget.userPos ||
-         widget.baseRoute != oldWidget.baseRoute)) {
-      _updateMapFeatures();
+    // Only process updates when we have actual changes
+    if (!_isStyleLoaded) return;
+      
+    // Check and update route points if necessary
+    if (widget.committedPoints.length != _lastCommittedPointsCount) {
+      if (widget.committedPoints.isNotEmpty) {
+        _controllerWrapper?.setRoutePath(widget.committedPoints);
+        _lastCommittedPointsCount = widget.committedPoints.length;
+      }
+    }
+    
+    // Only update user location if it has changed significantly
+    if (widget.userPos != null && 
+        (_lastProcessedPosition == null || 
+         _hasPositionChangedSignificantly(widget.userPos!, _lastProcessedPosition!))) {
+      _controllerWrapper?.updateUserLocation(widget.userPos!);
+      _lastProcessedPosition = widget.userPos;
+    }
+    
+    // Check if base route or points of interest have changed
+    if (widget.baseRoute != oldWidget.baseRoute || 
+        (widget.baseRoute?.pointsOfInterest.length != 
+         oldWidget.baseRoute?.pointsOfInterest.length)) {
+      if (widget.baseRoute?.pointsOfInterest != null) {
+        final waypoints = widget.baseRoute!.pointsOfInterest.toList();
+        _controllerWrapper?.setWaypoints(waypoints);
+      }
     }
     
     // Handle style changes
@@ -116,20 +146,18 @@ class _MapboxWidgetState extends State<MapboxWidget> {
     }
   }
   
-  bool _didCommittedPointsChange(List<app_models.GeoPoint> oldPoints) {
-    if (widget.committedPoints.length != oldPoints.length) {
-      return true;
-    }
+  // Helper method to avoid unnecessary position updates
+  // Only update if position has changed by at least 1 meter
+  bool _hasPositionChangedSignificantly(Position newPos, Position oldPos) {
+    const minDistanceThreshold = 1.0; // 1 meter
     
-    // Only check the last point for performance reasons
-    // This is safe because points are only ever appended to the list
-    if (widget.committedPoints.isNotEmpty && oldPoints.isNotEmpty) {
-      final newLast = widget.committedPoints.last;
-      final oldLast = oldPoints.last;
-      return newLast.latitude != oldLast.latitude || 
-             newLast.longitude != oldLast.longitude;
-    }
+    final distance = Geolocator.distanceBetween(
+      newPos.latitude, 
+      newPos.longitude, 
+      oldPos.latitude, 
+      oldPos.longitude
+    );
     
-    return false;
+    return distance >= minDistanceThreshold;
   }
 }

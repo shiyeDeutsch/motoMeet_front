@@ -43,6 +43,13 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
   // Used to force an update (e.g., if we want a time-based commit)
   bool _forceStateUpdate = false;
+  
+  // Stream controller for position updates - will be used by other components
+  final _positionStreamController = StreamController<Position>.broadcast();
+  Stream<Position> get positionStream => _positionStreamController.stream;
+  
+  // Set to track position update listeners
+  final Set<Function(Position)> _positionUpdateListeners = {};
 
   /// Start a new trip on an existing route
   Future<void> startExistingRoute(Route route) async {
@@ -83,7 +90,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     // Configure location service for route tracking
     _locationService.configure(
       accuracy: LocationAccuracy.high,
-      updateIntervalMs: 5000, // 5 second updates for route tracking
+      updateIntervalMs: 1000, // More frequent updates for navigation (1 second)
     );
     
     // Subscribe to location updates
@@ -149,10 +156,10 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       await _locationService.startListening();
     }
     
-    // Configure location service for route tracking
+    // Configure location service for route tracking with higher frequency
     _locationService.configure(
       accuracy: LocationAccuracy.high,
-      updateIntervalMs: 5000, // 5 second updates for route tracking
+      updateIntervalMs: 1000, // 1 second updates for navigation
     );
     
     // Subscribe to location updates
@@ -187,9 +194,18 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   }
 
   void _onLocationUpdate(Position newLocation) {
+    // Update current position regardless of threshold
     _currentPosition = newLocation;
+    
+    // Broadcast the position update to listeners
+    _positionStreamController.add(newLocation);
+    
+    // Notify any registered listeners
+    for (final listener in _positionUpdateListeners) {
+      listener(newLocation);
+    }
 
-    // Threshold check
+    // Threshold check for adding points to the route
     if (_committedPoints.isEmpty) {
       // First point - just add it
       _committedPoints.add(
@@ -229,6 +245,16 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     }
   }
 
+  /// Register a listener for position updates
+  void addPositionListener(Function(Position) listener) {
+    _positionUpdateListeners.add(listener);
+  }
+
+  /// Remove a listener for position updates
+  void removePositionListener(Function(Position) listener) {
+    _positionUpdateListeners.remove(listener);
+  }
+
   /// If you want a time-based forced update, e.g., every 1 minute
   void _startTimer() {
     _timer?.cancel();
@@ -258,6 +284,11 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _locationUpdatesSubscription = null;
     _timer?.cancel();
     _timer = null;
+    
+    // Return location service to normal update frequency
+    _locationService.configure(
+      updateIntervalMs: 5000, // 5 seconds in normal mode
+    );
     
     // We don't call LocationService.dispose() here because other parts
     // of the app may still need location updates
@@ -343,6 +374,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   void dispose() {
     _locationUpdatesSubscription?.cancel();
     _timer?.cancel();
+    _positionStreamController.close();
     super.dispose();
   }
 

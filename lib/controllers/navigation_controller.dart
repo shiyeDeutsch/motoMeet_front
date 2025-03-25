@@ -2,11 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:get_it/get_it.dart';
 import '../models/route.dart' as route_model;
 import 'map_controller.dart';
 import '../constants/app_constants.dart';
-import '../services/locationService.dart';
 
 /// Enum for various navigation events
 enum NavigationEvent {
@@ -24,15 +22,9 @@ class NavigationController {
   // Reference to the map controller
   final MapboxMapControllerWrapper _mapController;
   
-  // Location service from GetIt
-  final LocationService _locationService = GetIt.I<LocationService>();
-  
   // Navigation state
   bool _isNavigating = false;
   bool _isTrackingUser = true;
-  
-  // Timer for updating the camera based on user movement
-  Timer? _cameraUpdateTimer;
   
   // List to store the traveled path during navigation
   final List<route_model.GeoPoint> _traveledPath = [];
@@ -56,19 +48,10 @@ class NavigationController {
   final _navigationEventController = StreamController<NavigationEvent>.broadcast();
   Stream<NavigationEvent> get navigationEvents => _navigationEventController.stream;
   
-  // Subscription to location updates
-  StreamSubscription<Position>? _locationSubscription;
-  
-  NavigationController(this._mapController) {
-    // Configure location service for navigation (more frequent updates)
-    _locationService.configure(
-      accuracy: LocationAccuracy.high,
-      updateIntervalMs: 1000, // 1 second updates during navigation
-    );
-  }
+  NavigationController(this._mapController);
   
   /// Start navigation with optional route to follow
-  Future<void> startNavigation({List<route_model.GeoPoint>? route}) async {
+  void startNavigation({List<route_model.GeoPoint>? route}) {
     if (_isNavigating) return;
     
     _isNavigating = true;
@@ -76,23 +59,12 @@ class NavigationController {
     _currentRoute = route;
     _traveledPath.clear();
     
-    // Ensure location service is active
-    if (!_locationService.isListening) {
-      await _locationService.startListening();
-    }
-    
-    // Start listening to location updates
-    _locationSubscription = _locationService.locationUpdates.listen(_onLocationUpdate);
-    
-    // Start periodic camera updates
-    _startCameraUpdates();
-    
     // Notify listeners
     _navigationEventController.add(NavigationEvent.navigationStarted);
   }
   
-  /// Process incoming location updates
-  void _onLocationUpdate(Position position) {
+  /// Process position update from RouteCreationProvider
+  void updatePosition(Position position) {
     // Only process updates if we're navigating
     if (!_isNavigating) return;
     
@@ -109,23 +81,19 @@ class NavigationController {
       
       // Notify about position update
       _navigationEventController.add(NavigationEvent.positionUpdated);
+      
+      // Update camera if tracking is enabled
+      if (_isTrackingUser && _mapController.isMapInitialized) {
+        _updateCameraPosition(position);
+      }
     }
   }
   
   /// Stop the current navigation session
-  Future<void> stopNavigation() async {
+  void stopNavigation() {
     if (!_isNavigating) return;
     
     _isNavigating = false;
-    
-    // Stop location updates
-    _locationSubscription?.cancel();
-    _locationSubscription = null;
-    
-    // Return location service to normal update frequency
-    _locationService.configure(updateIntervalMs: 5000); // 5 seconds in normal mode
-    
-    _stopCameraUpdates();
     
     // Notify listeners
     _navigationEventController.add(NavigationEvent.navigationStopped);
@@ -136,34 +104,13 @@ class NavigationController {
     _isTrackingUser = isTracking;
   }
   
-  /// Start periodic camera updates based on user location
-  void _startCameraUpdates() {
-    _cameraUpdateTimer?.cancel();
-    _cameraUpdateTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
-      _updateCameraPosition();
-    });
-  }
-  
-  /// Stop camera updates
-  void _stopCameraUpdates() {
-    _cameraUpdateTimer?.cancel();
-    _cameraUpdateTimer = null;
-  }
-  
   /// Update the camera position based on current location and speed
-  Future<void> _updateCameraPosition() async {
+  Future<void> _updateCameraPosition(Position position) async {
     if (!_isNavigating || !_isTrackingUser || !_mapController.isMapInitialized) {
       return;
     }
 
     try {
-      // Get current position from location service instead of direct Geolocator call
-      final position = await _locationService.getCurrentPosition(
-        useCacheIfAvailable: true,
-        maxCacheAgeSeconds: 2,
-        timeout: const Duration(seconds: 2),
-      );
-      
       // Calculate appropriate zoom level based on speed
       final double speed = position.speed; // in meters per second
       final double zoomLevel = _calculateZoomLevel(speed);
@@ -212,8 +159,6 @@ class NavigationController {
   
   /// Dispose resources
   void dispose() {
-    _stopCameraUpdates();
-    _locationSubscription?.cancel();
     _navigationEventController.close();
   }
 } 

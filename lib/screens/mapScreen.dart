@@ -44,6 +44,8 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   // Navigation state
   bool _isTrackingUser = true;
   StreamSubscription? _navigationEventSubscription;
+  // For position updates from RouteCreationProvider
+  Function(Position)? _positionUpdateCallback;
 
   @override
   void initState() {
@@ -56,6 +58,25 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   Future<void> _ensureLocationServiceRunning() async {
     if (!_locationService.isListening) {
       await _locationService.startListening();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Get RouteCreationProvider and register for position updates
+    // We do this in didChangeDependencies to ensure ref is available
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    
+    if (_positionUpdateCallback == null) {
+      _positionUpdateCallback = (Position position) {
+        // If we have a NavigationController, forward position updates to it
+        _navigationController?.updatePosition(position);
+      };
+      
+      // Add the callback to listen for position updates
+      userRouteProvider.addPositionListener(_positionUpdateCallback!);
     }
   }
 
@@ -184,7 +205,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     }
     
     // Start navigation when we have a route
-    if (committedPoints.isNotEmpty && _navigationController != null) {
+    if (committedPoints.isNotEmpty && _navigationController != null && ref.read(routeCreationProvider) != null) {
       _navigationController!.startNavigation(route: committedPoints);
     }
   }
@@ -279,15 +300,6 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     // Force center on user location
     await _centerOnUserLocation();
     
-    // Show a success snackbar
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text('New ${routeType.toString().split('.').last} route started'),
-    //     duration: const Duration(seconds: 2),
-    //     backgroundColor: const Color(0xFF3E6C51),
-    //   ),
-    // );
-    
     // Now that we have a route, start navigation automatically
     _updateMapWithLatestData();
   }
@@ -298,7 +310,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     if (shouldStop == true) {
       // Stop navigation if it's running
       if (_navigationController != null) {
-        await _navigationController!.stopNavigation();
+        _navigationController!.stopNavigation();
       }
       
       // Stop the route in the service
@@ -320,6 +332,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   @override
   void dispose() {
     _navigationEventSubscription?.cancel();
+    
+    // Remove position update callback when screen is disposed
+    if (_positionUpdateCallback != null) {
+      final userRouteProvider = ref.read(routeCreationProvider.notifier);
+      userRouteProvider.removePositionListener(_positionUpdateCallback!);
+      _positionUpdateCallback = null;
+    }
+    
     _navigationController?.dispose();
     super.dispose();
   }
