@@ -71,7 +71,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     final userRoute = UserRoute(
       dateTraveled: DateTime.now().toUtc(),
       routeType: route.routeType,
-      difficultyLevel: route.difficultyLevel,
+     // difficultyLevel: route.difficultyLevel,
       durationMinutes: 0,
       distance: 0,
       elevationGain: 0,
