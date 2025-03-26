@@ -28,7 +28,8 @@ import '../controllers/navigation_controller.dart';
 import '../constants/app_constants.dart';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
-  const MapMarkerScreen({Key? key}) : super(key: key);
+  final route_model.Route? baseRoute; // The route passed from RouteDetailsScreen that user might want to start
+  const MapMarkerScreen({Key? key, this.baseRoute}) : super(key: key);
 
   @override
   ConsumerState<MapMarkerScreen> createState() => _MapMarkerScreenState();
@@ -47,12 +48,19 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   // For position updates from RouteCreationProvider
   Function(Position)? _positionUpdateCallback;
 
+  // The route passed from RouteDetailsScreen that user might want to start
+  route_model.Route? _existingRouteToStart; 
+
   @override
   void initState() {
     super.initState();
-
+    // If we have a baseRoute, set it
+    if (widget.baseRoute != null) {
+      _existingRouteToStart = widget.baseRoute;
+    }
     // Ensure location service is initialized
     _ensureLocationServiceRunning();
+ 
   }
   
   Future<void> _ensureLocationServiceRunning() async {
@@ -102,7 +110,8 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
           MapboxWidget(
             committedPoints: committedPoints,
             userPos: currentPosition,
-            baseRoute: baseRoute,
+            // Display either the active baseRoute or the route to start
+            baseRoute: baseRoute ?? _existingRouteToStart,
             onMapInitialized: _onMapInitialized,
             onMapClick: (point, coordinates) {
               // Deselect tracking when user interacts with the map
@@ -125,9 +134,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
             onBackPressed: () => Navigator.of(context).pop(),
           ),
 
-          // Only show Start Route Button when no active route
+          // Show Start Route Button when no active route - either start a new route or the existing one
           if (currentUserRoute == null)
-            StartRouteButton(onPressed: _onPressStartRoute),
+            StartRouteButton(
+              onPressed: _existingRouteToStart != null
+                ? () => _startExistingRoute(_existingRouteToStart!)
+                : _onPressStartRoute,
+              label: _existingRouteToStart != null ? 'Start This Route' : 'Start New Route',
+            ),
 
           // Always show the ActiveRouteDetails when we have a route
           if (currentUserRoute != null)
@@ -327,6 +341,30 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         arguments: {'Route': baseRoute, 'UserRoute': userRoute},
       );
     }
+  }
+
+  /// Start an existing route that was passed from RouteDetailsScreen
+  Future<void> _startExistingRoute(route_model.Route route) async {
+    // Show the choose route type dialog
+    final routeType = await showRouteTypeEnumDialog(context);
+    if (routeType == null) return;
+
+    final userRouteProvider = ref.read(routeCreationProvider.notifier);
+    
+    // Start the existing route with selected route type
+    await userRouteProvider.startExistingRoute(route, routeType);
+    
+    // Ensure we're tracking the user
+    setState(() {
+      _isTrackingUser = true;
+      _existingRouteToStart = null; // Clear the route to start since we've started it
+    });
+    
+    // Force center on user location
+    await _centerOnUserLocation();
+    
+    // Now that we have a route, start navigation automatically
+    _updateMapWithLatestData();
   }
 
   @override

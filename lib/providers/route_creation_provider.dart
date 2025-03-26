@@ -44,26 +44,28 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   // Used to force an update (e.g., if we want a time-based commit)
   bool _forceStateUpdate = false;
   
-  // Stream controller for position updates - will be used by other components
-  final _positionStreamController = StreamController<Position>.broadcast();
-  Stream<Position> get positionStream => _positionStreamController.stream;
-  
+     // Stream controller for position updates - will be used by other components
+  final _positionStreamController = StreamController<Position>.broadcast(); 
   // Set to track position update listeners
   final Set<Function(Position)> _positionUpdateListeners = {};
 
-  /// Start a new trip on an existing route
-  Future<void> startExistingRoute(Route route) async {
-    // Cancel anything lingering
+  /// Resets all tracking-related state variables
+  void _resetTrackingState() {
     _locationUpdatesSubscription?.cancel();
     _timer?.cancel();
-
     _committedPoints.clear();
     _pathLength = 0;
     _routeDuration = const Duration();
+  }
+
+  /// Start a new trip on an existing route
+  Future<void> startExistingRoute(Route route,RouteType routeType) async {
+    // Reset all tracking state
+    _resetTrackingState();
     _baseRoute = route;
 
     // Decide distance threshold based on route type
-    _setDistanceThresholdFromRouteType(route.routeType);
+    _setDistanceThresholdFromRouteType( routeType);
 
     // Build a fresh UserRoute
     final userRoute = UserRoute(
@@ -106,13 +108,8 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
   /// Start a brand new route (creates both Route and UserRoute)
   Future<void> startNewRoute(RouteType routeType, GeoPoint startPoint) async {
-    // Cancel anything lingering
-    _locationUpdatesSubscription?.cancel();
-    _timer?.cancel();
-
-    _committedPoints.clear();
-    _pathLength = 0;
-    _routeDuration = const Duration();
+    // Reset all tracking state
+    _resetTrackingState();
 
     // Decide distance threshold based on route type
     _setDistanceThresholdFromRouteType(routeType);
@@ -388,4 +385,6 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   // Computed properties
   Duration get routeDuration => _routeDuration;
   double get distance => _pathLength;
+
+  Stream<Position> get positionStream => _positionStreamController.stream;
 }

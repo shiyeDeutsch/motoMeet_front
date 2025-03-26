@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class StartRouteButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final String label;
 
   const StartRouteButton({
     Key? key,
     required this.onPressed,
+    this.label = 'Start New Route',
   }) : super(key: key);
 
   @override
@@ -25,13 +27,13 @@ class StartRouteButton extends StatelessWidget {
             ),
             elevation: 4,
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.play_arrow),
               SizedBox(width: 8),
               Text(
-                'Start New Route',
+                label,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],

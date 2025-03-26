@@ -5,7 +5,7 @@ import '../models/route.dart' as app_models;
 import '../models/enum.dart';
 import '../providers/route_creation_provider.dart';
 import '../services/distanceFormatter.dart';
- import '../routing/routes.dart';
+import '../routing/routes.dart';
 
 // -------------- Route Screen --------------
 class RouteDetailsScreen extends ConsumerStatefulWidget {
@@ -110,11 +110,11 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
 
   // Start a trip on this route
   void _startTrip() {
-    final userRouteService = ref.read(routeCreationProvider.notifier);
-    userRouteService.startExistingRoute(widget.route);
-    
-    // Navigate to the map screen
-    Navigator.of(context).pushReplacementNamed(Routes.map);
+    // Navigate to the map screen with this route as argument
+    Navigator.of(context).pushReplacementNamed(
+      Routes.map,
+      arguments: {'baseRoute': widget.route},
+    );
   }
 
   @override
