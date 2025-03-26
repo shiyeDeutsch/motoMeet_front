@@ -33,7 +33,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   Position? _currentPosition;
 
   // Basic route configuration
-  double _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+  double _distanceThreshold = MapConfig.HIKING_THRESHOLD; // Default
   double _pathLength = 0;
   Timer? _timer;
   Duration _routeDuration = const Duration();
@@ -62,8 +62,8 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _routeDuration = const Duration();
     _baseRoute = route;
 
-    // Decide distance factor based on route type
-    _setDistanceFactorFromRouteType(route.routeType);
+    // Decide distance threshold based on route type
+    _setDistanceThresholdFromRouteType(route.routeType);
 
     // Build a fresh UserRoute
     final userRoute = UserRoute(
@@ -114,8 +114,8 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _pathLength = 0;
     _routeDuration = const Duration();
 
-    // Decide distance factor based on route type
-    _setDistanceFactorFromRouteType(routeType);
+    // Decide distance threshold based on route type
+    _setDistanceThresholdFromRouteType(routeType);
 
     // 1. Create a new Route object
     final route = Route(
@@ -170,25 +170,25 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _startTimer();
   }
 
-  /// Helper method to set the distance factor based on route type
-  void _setDistanceFactorFromRouteType(RouteType? routeType) {
+  /// Helper method to set the distance threshold based on route type
+  void _setDistanceThresholdFromRouteType(RouteType? routeType) {
     if (routeType == null) {
-      _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+      _distanceThreshold = MapConfig.HIKING_THRESHOLD; // Default
       return;
     }
     
     switch (routeType) {
       case RouteType.hiking:
-        _distanceFactor = MapConfig.HIKING_THRESHOLD;
+        _distanceThreshold = MapConfig.HIKING_THRESHOLD;
         break;
       case RouteType.biking:
-        _distanceFactor = MapConfig.BIKING_THRESHOLD;
+        _distanceThreshold = MapConfig.BIKING_THRESHOLD;
         break;
       case RouteType.motorcycle:
-        _distanceFactor = MapConfig.MOTORCYCLE_THRESHOLD;
+        _distanceThreshold = MapConfig.MOTORCYCLE_THRESHOLD;
         break;
       case RouteType.jeep:
-        _distanceFactor = MapConfig.JEEP_THRESHOLD;
+        _distanceThreshold = MapConfig.JEEP_THRESHOLD;
         break;
     }
   }
@@ -224,7 +224,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       LatLng(newLocation.latitude, newLocation.longitude),
     );
 
-    if (distance >= _distanceFactor || _forceStateUpdate) {
+    if (distance >= _distanceThreshold || _forceStateUpdate) {
       _pathLength += distance;
       _committedPoints.add(
         GeoPoint(
