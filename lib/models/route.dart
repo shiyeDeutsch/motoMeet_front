@@ -311,6 +311,7 @@ class UserRoute {
   Map<String, dynamic> toJson() => _$UserRouteToJson(this);
 
   UserRoute copyWith({
+    List<GeoPoint>? routePoints,
     Id? id,
     DifficultyLevel? difficultyLevel,
     RouteType? routeType,

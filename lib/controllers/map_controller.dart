@@ -86,32 +86,45 @@ class MapboxMapControllerWrapper {
   /// Set the route path based on GeoPoints
   /// Only redraws when the path has changed to avoid flickering
   Future<void> setRoutePath(List<route_model.GeoPoint> points) async {
-    if (!_isStyleLoaded || points.isEmpty) return;
-    
+    if (!_isStyleLoaded) return;
+  
     try {
       // Convert the points to LatLng list
       final List<LatLng> linePoints = points
           .map((point) => LatLng(point.latitude!, point.longitude!))
           .toList();
-      
-      // Clear existing route lines
-      for (final line in _routeLines) {
-        await _mapController.removeLine(line);
-      }
-      _routeLines.clear();
-      
-      // Add the new route line if we have at least 2 points
+  
+      // Check if we have enough points to draw a line
       if (linePoints.length >= 2) {
-        final line = await _mapController.addLine(
-          LineOptions(
-            geometry: linePoints,
-            lineColor: MapConfig.ROUTE_COLOR,
-            lineWidth: MapConfig.ROUTE_WIDTH,
-            lineOpacity: MapConfig.ROUTE_OPACITY,
-            lineJoin: "round",
-          ),
-        );
-        _routeLines.add(line);
+        // If a route line already exists, update it
+        if (_routeLines.isNotEmpty) {
+          // Assuming only one primary route line for now
+          final existingLine = _routeLines.first;
+          await _mapController.updateLine(
+            existingLine,
+            LineOptions(geometry: linePoints), // Only update geometry
+          );
+        } else {
+          // Otherwise, add a new line
+          final line = await _mapController.addLine(
+            LineOptions(
+              geometry: linePoints,
+              lineColor: MapConfig.ROUTE_COLOR,
+              lineWidth: MapConfig.ROUTE_WIDTH,
+              lineOpacity: MapConfig.ROUTE_OPACITY,
+              lineJoin: "round",
+            ),
+          );
+          _routeLines.add(line);
+        }
+      } else {
+        // If not enough points, clear existing route lines
+        if (_routeLines.isNotEmpty) {
+          for (final line in _routeLines) {
+            await _mapController.removeLine(line);
+          }
+          _routeLines.clear();
+        }
       }
     } catch (e) {
       debugPrint('Error setting route path: $e');
@@ -121,30 +134,39 @@ class MapboxMapControllerWrapper {
   /// Set the traveled path (the path user has actually taken)
   Future<void> setTraveledPath(List<route_model.GeoPoint> points) async {
     if (!_isStyleLoaded || points.isEmpty) return;
-    
+  
     try {
       // Convert the points to LatLng list
       final List<LatLng> linePoints = points
           .map((point) => LatLng(point.latitude!, point.longitude!))
           .toList();
-      
-      // Remove existing traveled path line if it exists
-      if (_traveledPathLine != null) {
-        await _mapController.removeLine(_traveledPathLine!);
-        _traveledPathLine = null;
-      }
-      
-      // Add the new traveled path line if we have at least 2 points
+  
+      // Check if we have enough points to draw a line
       if (linePoints.length >= 2) {
-        _traveledPathLine = await _mapController.addLine(
-          LineOptions(
-            geometry: linePoints,
-            lineColor: MapConfig.TRAVELED_PATH_COLOR,
-            lineWidth: MapConfig.TRAVELED_PATH_WIDTH,
-            lineOpacity: MapConfig.TRAVELED_PATH_OPACITY,
-            lineJoin: "round",
-          ),
-        );
+        // If a traveled path line already exists, update it
+        if (_traveledPathLine != null) {
+          await _mapController.updateLine(
+            _traveledPathLine!,
+            LineOptions(geometry: linePoints), // Only update geometry
+          );
+        } else {
+          // Otherwise, add a new traveled path line
+          _traveledPathLine = await _mapController.addLine(
+            LineOptions(
+              geometry: linePoints,
+              lineColor: MapConfig.TRAVELED_PATH_COLOR,
+              lineWidth: MapConfig.TRAVELED_PATH_WIDTH,
+              lineOpacity: MapConfig.TRAVELED_PATH_OPACITY,
+              lineJoin: "round",
+            ),
+          );
+        }
+      } else {
+        // If not enough points, clear the existing traveled path line
+        if (_traveledPathLine != null) {
+          await _mapController.removeLine(_traveledPathLine!);
+          _traveledPathLine = null;
+        }
       }
     } catch (e) {
       debugPrint('Error setting traveled path: $e');

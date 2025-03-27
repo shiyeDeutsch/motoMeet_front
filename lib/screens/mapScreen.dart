@@ -28,7 +28,8 @@ import '../controllers/navigation_controller.dart';
 import '../constants/app_constants.dart';
 
 class MapMarkerScreen extends ConsumerStatefulWidget {
-  final route_model.Route? baseRoute; // The route passed from RouteDetailsScreen that user might want to start
+  final route_model.Route?
+      baseRoute; // The route passed from RouteDetailsScreen that user might want to start
   const MapMarkerScreen({Key? key, this.baseRoute}) : super(key: key);
 
   @override
@@ -49,7 +50,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   Function(Position)? _positionUpdateCallback;
 
   // The route passed from RouteDetailsScreen that user might want to start
-  route_model.Route? _existingRouteToStart; 
+  route_model.Route? _existingRouteToStart;
 
   @override
   void initState() {
@@ -60,9 +61,8 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     }
     // Ensure location service is initialized
     _ensureLocationServiceRunning();
- 
   }
-  
+
   Future<void> _ensureLocationServiceRunning() async {
     if (!_locationService.isListening) {
       await _locationService.startListening();
@@ -72,17 +72,17 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Get RouteCreationProvider and register for position updates
     // We do this in didChangeDependencies to ensure ref is available
     final userRouteProvider = ref.read(routeCreationProvider.notifier);
-    
+
     if (_positionUpdateCallback == null) {
       _positionUpdateCallback = (Position position) {
         // If we have a NavigationController, forward position updates to it
         _navigationController?.updatePosition(position);
       };
-      
+
       // Add the callback to listen for position updates
       userRouteProvider.addPositionListener(_positionUpdateCallback!);
     }
@@ -106,18 +106,18 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       bottomNavigationBar: null,
       body: Stack(
         children: [
-          // Use the improved MapboxWidget
           MapboxWidget(
             committedPoints: committedPoints,
             userPos: currentPosition,
             // Display either the active baseRoute or the route to start
-            baseRoute: baseRoute ?? _existingRouteToStart,
+            baseRoute:
+                currentUserRoute == null ? _existingRouteToStart : baseRoute,
             onMapInitialized: _onMapInitialized,
             onMapClick: (point, coordinates) {
               // Deselect tracking when user interacts with the map
               setState(() {
                 _isTrackingUser = false;
-                
+
                 // If navigation controller exists, update tracking state
                 if (_navigationController != null) {
                   _navigationController!.toggleTracking(false);
@@ -138,9 +138,11 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
           if (currentUserRoute == null)
             StartRouteButton(
               onPressed: _existingRouteToStart != null
-                ? () => _startExistingRoute(_existingRouteToStart!)
-                : _onPressStartRoute,
-              label: _existingRouteToStart != null ? 'Start This Route' : 'Start New Route',
+                  ? () => _startExistingRoute(_existingRouteToStart!)
+                  : _onPressStartRoute,
+              label: _existingRouteToStart != null
+                  ? 'Start This Route'
+                  : 'Start New Route',
             ),
 
           // Always show the ActiveRouteDetails when we have a route
@@ -165,12 +167,13 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   /// Called when the map is initialized
   void _onMapInitialized(MapboxMapControllerWrapper controller) {
     _mapControllerWrapper = controller;
-    
+
     // Initialize navigation controller with the map controller
     _navigationController = NavigationController(_mapControllerWrapper!);
-    
+
     // Listen for navigation events to handle special cases
-    _navigationEventSubscription = _navigationController!.navigationEvents.listen((event) {
+    _navigationEventSubscription =
+        _navigationController!.navigationEvents.listen((event) {
       switch (event) {
         case NavigationEvent.offRoute:
           // Alert if user is off route
@@ -192,10 +195,10 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
           break;
       }
     });
-    
+
     // Center map on user's location once initialized
     _centerOnUserLocation();
-    
+
     // Listen for when the map style is loaded
     controller.isInitialized.addListener(() {
       if (controller.isInitialized.value) {
@@ -204,37 +207,40 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       }
     });
   }
-  
+
   /// Update the map with the latest data from providers
   void _updateMapWithLatestData() {
-    if (_mapControllerWrapper == null || !_mapControllerWrapper!.isMapInitialized) return;
+    if (_mapControllerWrapper == null ||
+        !_mapControllerWrapper!.isMapInitialized) return;
 
     final userRouteProvider = ref.read(routeCreationProvider.notifier);
     final committedPoints = userRouteProvider.committedPoints;
     final currentPosition = userRouteProvider.currentPosition;
-    
+
     // If we have a current position and we're tracking, center on it
     if (currentPosition != null && _isTrackingUser) {
       _mapControllerWrapper!.centerOnUserLocation(currentPosition);
     }
-    
+
     // Start navigation when we have a route
-    if (committedPoints.isNotEmpty && _navigationController != null && ref.read(routeCreationProvider) != null) {
-      _navigationController!.startNavigation(route: committedPoints);
+    if (committedPoints.isNotEmpty &&
+        _navigationController != null &&
+        ref.read(routeCreationProvider) != null) {
+      _navigationController!.startNavigation( );
     }
   }
 
   Future<void> _centerOnUserLocation() async {
     final userRouteProvider = ref.read(routeCreationProvider.notifier);
     final currentPosition = userRouteProvider.currentPosition;
-    
+
     if (currentPosition != null && _mapControllerWrapper != null) {
       await _mapControllerWrapper!.centerOnUserLocation(currentPosition);
     } else {
       try {
         // Get latest position from location service
         final position = await _locationService.getCurrentPosition();
-        
+
         if (_mapControllerWrapper != null) {
           await _mapControllerWrapper!.centerOnUserLocation(position);
         }
@@ -242,11 +248,11 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
         debugPrint('Error centering on user location: $e');
       }
     }
-    
+
     // Re-enable tracking
     setState(() {
       _isTrackingUser = true;
-      
+
       // If navigation controller exists, update tracking state
       if (_navigationController != null) {
         _navigationController!.toggleTracking(true);
@@ -279,7 +285,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
 
     final userRouteProvider = ref.read(routeCreationProvider.notifier);
     Position? userPosition;
-    
+
     try {
       // Try to get current position from location service
       userPosition = await _locationService.getCurrentPosition();
@@ -310,10 +316,10 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     setState(() {
       _isTrackingUser = true;
     });
-    
+
     // Force center on user location
     await _centerOnUserLocation();
-    
+
     // Now that we have a route, start navigation automatically
     _updateMapWithLatestData();
   }
@@ -326,7 +332,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       if (_navigationController != null) {
         _navigationController!.stopNavigation();
       }
-      
+
       // Stop the route in the service
       final userRouteProvider = ref.read(routeCreationProvider.notifier);
       await userRouteProvider.stopUserRoute();
@@ -350,19 +356,20 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
     if (routeType == null) return;
 
     final userRouteProvider = ref.read(routeCreationProvider.notifier);
-    
+
     // Start the existing route with selected route type
     await userRouteProvider.startExistingRoute(route, routeType);
-    
+
     // Ensure we're tracking the user
     setState(() {
       _isTrackingUser = true;
-      _existingRouteToStart = null; // Clear the route to start since we've started it
+      _existingRouteToStart =
+          null; // Clear the route to start since we've started it
     });
-    
+
     // Force center on user location
     await _centerOnUserLocation();
-    
+
     // Now that we have a route, start navigation automatically
     _updateMapWithLatestData();
   }
@@ -370,14 +377,14 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
   @override
   void dispose() {
     _navigationEventSubscription?.cancel();
-    
+
     // Remove position update callback when screen is disposed
     if (_positionUpdateCallback != null) {
       final userRouteProvider = ref.read(routeCreationProvider.notifier);
       userRouteProvider.removePositionListener(_positionUpdateCallback!);
       _positionUpdateCallback = null;
     }
-    
+
     _navigationController?.dispose();
     super.dispose();
   }

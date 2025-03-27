@@ -39,7 +39,7 @@ class RouteGenerator {
       case Routes.map:
         // Special case for map - return directly without the bottom nav scaffold wrapper
         return MaterialPageRoute(
-          builder: (_) =>   MapMarkerScreen(baseRoute: args!['baseRoute']),
+          builder: (_) =>   MapMarkerScreen(baseRoute: args?['baseRoute']),
           settings: settings,
         );
       case Routes.saveRoute:
