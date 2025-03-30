@@ -107,7 +107,7 @@ class _MapMarkerScreenState extends ConsumerState<MapMarkerScreen>
       body: Stack(
         children: [
           MapboxWidget(
-            committedPoints: committedPoints,
+            userRoutePoints: committedPoints,
             userPos: currentPosition,
             // Display either the active baseRoute or the route to start
             baseRoute:

@@ -78,7 +78,7 @@ class NavigationController {
       ));
 
       // Update the traveled path line on the map
-      _mapController.setTraveledPath(_traveledPath);
+      _mapController.setUserRoutePath(_traveledPath);
 
       // Notify about position update
       _navigationEventController.add(NavigationEvent.positionUpdated);

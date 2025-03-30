@@ -15,8 +15,8 @@ class MapboxMapControllerWrapper {
   // Cache symbols and lines to avoid redrawing everything
   Symbol? _userLocationSymbol;
   List<Symbol> _waypointSymbols = [];
-  List<Line> _routeLines = [];
-  Line? _traveledPathLine; // For showing user's traveled path
+  List<Line> _baseRouteLines = [];
+  Line? _userRoutePathLine;
   
   // Track when initialization is complete
   final ValueNotifier<bool> isInitialized = ValueNotifier<bool>(false);
@@ -64,31 +64,51 @@ class MapboxMapControllerWrapper {
     final latLng = LatLng(position.latitude, position.longitude);
     
     try {
-      // Remove previous symbol if exists
+      // If the symbol already exists, update its position
       if (_userLocationSymbol != null) {
-        await _mapController.removeSymbol(_userLocationSymbol!);
+        await _mapController.updateSymbol(
+          _userLocationSymbol!,
+          SymbolOptions(
+            geometry: latLng,
+            // Keep other properties the same or update if needed
+            // iconSize: 1.0,
+            // iconImage: "marker-15",
+            // iconColor: MapConfig.ROUTE_COLOR,
+          ),
+        );
+      } else {
+        // Otherwise, add a new user location symbol
+        _userLocationSymbol = await _mapController.addSymbol(
+          SymbolOptions(
+            geometry: latLng,
+            iconSize: 1.0,
+            iconImage: "marker-15", // Use a built-in Mapbox icon
+            iconColor: MapConfig.ROUTE_COLOR,
+          ),
+        );
       }
-      
-      // Add a new user location symbol
-      _userLocationSymbol = await _mapController.addSymbol(
-        SymbolOptions(
-          geometry: latLng,
-          iconSize: 1.0,
-          iconImage: "marker-15", // Use a built-in Mapbox icon
-          iconColor: MapConfig.ROUTE_COLOR,
-        ),
-      );
     } catch (e) {
       debugPrint('Error updating user location on map: $e');
     }
   }
   
-  /// Set the route path based on GeoPoints
-  /// Only redraws when the path has changed to avoid flickering
-  Future<void> setRoutePath(List<route_model.GeoPoint> points) async {
+  /// Set the base route path (e.g., the pre-defined route)
+  /// Should ideally be called only once when the route is loaded.
+  Future<void> setBaseRoutePath(List<route_model.GeoPoint>? points) async {
     if (!_isStyleLoaded) return;
   
     try {
+      // Clear existing base route lines first
+      if (_baseRouteLines.isNotEmpty) {
+        for (final line in _baseRouteLines) {
+          await _mapController.removeLine(line);
+        }
+        _baseRouteLines.clear();
+      }
+  
+      // If points are null or empty, we're done (cleared the path)
+      if (points == null || points.isEmpty) return;
+  
       // Convert the points to LatLng list
       final List<LatLng> linePoints = points
           .map((point) => LatLng(point.latitude!, point.longitude!))
@@ -96,43 +116,26 @@ class MapboxMapControllerWrapper {
   
       // Check if we have enough points to draw a line
       if (linePoints.length >= 2) {
-        // If a route line already exists, update it
-        if (_routeLines.isNotEmpty) {
-          // Assuming only one primary route line for now
-          final existingLine = _routeLines.first;
-          await _mapController.updateLine(
-            existingLine,
-            LineOptions(geometry: linePoints), // Only update geometry
-          );
-        } else {
-          // Otherwise, add a new line
-          final line = await _mapController.addLine(
-            LineOptions(
-              geometry: linePoints,
-              lineColor: MapConfig.ROUTE_COLOR,
-              lineWidth: MapConfig.ROUTE_WIDTH,
-              lineOpacity: MapConfig.ROUTE_OPACITY,
-              lineJoin: "round",
-            ),
-          );
-          _routeLines.add(line);
-        }
-      } else {
-        // If not enough points, clear existing route lines
-        if (_routeLines.isNotEmpty) {
-          for (final line in _routeLines) {
-            await _mapController.removeLine(line);
-          }
-          _routeLines.clear();
-        }
+        // Add the new base route line(s)
+        // Note: Currently adds only one line. If multiple segments are needed, adjust logic.
+        final line = await _mapController.addLine(
+          LineOptions(
+            geometry: linePoints,
+            lineColor: MapConfig.ROUTE_COLOR, // Use the base route color
+            lineWidth: MapConfig.ROUTE_WIDTH,
+            lineOpacity: MapConfig.ROUTE_OPACITY,
+            lineJoin: "round",
+          ),
+        );
+        _baseRouteLines.add(line);
       }
     } catch (e) {
-      debugPrint('Error setting route path: $e');
+      debugPrint('Error setting base route path: $e');
     }
   }
   
-  /// Set the traveled path (the path user has actually taken)
-  Future<void> setTraveledPath(List<route_model.GeoPoint> points) async {
+  /// Set the user's traveled path (updates dynamically as user moves)
+  Future<void> setUserRoutePath(List<route_model.GeoPoint> points) async {
     if (!_isStyleLoaded || points.isEmpty) return;
   
     try {
@@ -143,18 +146,18 @@ class MapboxMapControllerWrapper {
   
       // Check if we have enough points to draw a line
       if (linePoints.length >= 2) {
-        // If a traveled path line already exists, update it
-        if (_traveledPathLine != null) {
+        // If a user route path line already exists, update it
+        if (_userRoutePathLine != null) {
           await _mapController.updateLine(
-            _traveledPathLine!,
+            _userRoutePathLine!,
             LineOptions(geometry: linePoints), // Only update geometry
           );
         } else {
-          // Otherwise, add a new traveled path line
-          _traveledPathLine = await _mapController.addLine(
+          // Otherwise, add a new user route path line
+          _userRoutePathLine = await _mapController.addLine(
             LineOptions(
               geometry: linePoints,
-              lineColor: MapConfig.TRAVELED_PATH_COLOR,
+              lineColor: MapConfig.TRAVELED_PATH_COLOR, // Use traveled path color
               lineWidth: MapConfig.TRAVELED_PATH_WIDTH,
               lineOpacity: MapConfig.TRAVELED_PATH_OPACITY,
               lineJoin: "round",
@@ -162,14 +165,14 @@ class MapboxMapControllerWrapper {
           );
         }
       } else {
-        // If not enough points, clear the existing traveled path line
-        if (_traveledPathLine != null) {
-          await _mapController.removeLine(_traveledPathLine!);
-          _traveledPathLine = null;
+        // If not enough points, clear the existing user route path line
+        if (_userRoutePathLine != null) {
+          await _mapController.removeLine(_userRoutePathLine!);
+          _userRoutePathLine = null;
         }
       }
     } catch (e) {
-      debugPrint('Error setting traveled path: $e');
+      debugPrint('Error setting user route path: $e');
     }
   }
   
@@ -243,16 +246,16 @@ class MapboxMapControllerWrapper {
       }
       _waypointSymbols.clear();
       
-      // Clear route lines
-      for (final line in _routeLines) {
+      // Clear base route lines
+      for (final line in _baseRouteLines) {
         await _mapController.removeLine(line);
       }
-      _routeLines.clear();
+      _baseRouteLines.clear();
       
-      // Clear traveled path line
-      if (_traveledPathLine != null) {
-        await _mapController.removeLine(_traveledPathLine!);
-        _traveledPathLine = null;
+      // Clear user traveled path line
+      if (_userRoutePathLine != null) {
+        await _mapController.removeLine(_userRoutePathLine!);
+        _userRoutePathLine = null;
       }
     } catch (e) {
       debugPrint('Error clearing map: $e');

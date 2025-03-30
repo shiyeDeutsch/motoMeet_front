@@ -6,16 +6,17 @@ import '../controllers/map_controller.dart';
 import '../constants/app_constants.dart';
 
 class MapboxWidget extends StatefulWidget {
-  final List<app_models.GeoPoint> committedPoints;
+  // Renamed for clarity: userRoutePoints represents the path the user has actually traveled.
+  final List<app_models.GeoPoint> userRoutePoints;
   final Position? userPos;
-  final app_models.Route? baseRoute;
+  final app_models.Route? baseRoute; // The predefined base route to display
   final Function(MapboxMapControllerWrapper) onMapInitialized;
   final Function(dynamic, LatLng) onMapClick;
   final String styleString;
 
   const MapboxWidget({
     Key? key,
-    required this.committedPoints,
+    required this.userRoutePoints, // Updated parameter name
     this.userPos,
     this.baseRoute,
     required this.onMapInitialized,
@@ -34,8 +35,10 @@ class _MapboxWidgetState extends State<MapboxWidget> {
   // Keep track of the last user position to avoid unnecessary updates
   Position? _lastProcessedPosition;
   
-  // Keep track of committed points count to detect changes
-  int _lastCommittedPointsCount = 0;
+  // Keep track of user route points count to detect changes
+  int _lastUserRoutePointsCount = 0;
+  // Keep track of base route to detect changes
+  app_models.Route? _lastProcessedBaseRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -74,28 +77,38 @@ class _MapboxWidgetState extends State<MapboxWidget> {
     if (_controllerWrapper != null) {
       _controllerWrapper!.onStyleLoaded();
       
-      // Update map features if we have data
-      _updateMapFeatures();
+      // Draw initial map features
+      _drawInitialMapFeatures();
     }
   }
   
-  void _updateMapFeatures() {
+  // Called only when the style is loaded initially
+  void _drawInitialMapFeatures() {
     if (_controllerWrapper == null || !_isStyleLoaded) return;
     
-    // Update route path if we have points
-    if (widget.committedPoints.isNotEmpty) {
-      _controllerWrapper!.setRoutePath(widget.committedPoints);
-      _lastCommittedPointsCount = widget.committedPoints.length;
+    // Draw the base route path (if provided)
+    if (widget.baseRoute?.routePoints != null) {
+      // Convert List<RoutePoint> to List<GeoPoint>
+      final basePointsGeo = widget.baseRoute!.routePoints
+          .map((rp) => app_models.GeoPoint(latitude: rp.point!.latitude, longitude: rp.point!.longitude)) // Assuming RoutePoint structure
+          .toList();
+      _controllerWrapper!.setBaseRoutePath(basePointsGeo);
+      _lastProcessedBaseRoute = widget.baseRoute; // Track that we processed this base route
     }
     
-    // Add waypoint markers if we have them
+    // Draw the initial user traveled path (if any points exist already)
+    if (widget.userRoutePoints.isNotEmpty) {
+      _controllerWrapper!.setUserRoutePath(widget.userRoutePoints);
+      _lastUserRoutePointsCount = widget.userRoutePoints.length;
+    }
+    
+    // Add waypoint markers (if provided)
     if (widget.baseRoute?.pointsOfInterest != null) {
-      // Convert IsarLinks to a List before passing
       final waypoints = widget.baseRoute!.pointsOfInterest.toList();
       _controllerWrapper!.setWaypoints(waypoints);
     }
     
-    // Update user location
+    // Update user location marker
     if (widget.userPos != null) {
       _controllerWrapper!.updateUserLocation(widget.userPos!);
       _lastProcessedPosition = widget.userPos;
@@ -106,43 +119,51 @@ class _MapboxWidgetState extends State<MapboxWidget> {
   void didUpdateWidget(MapboxWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // When widget data changes, update the map
-    // Only process updates when we have actual changes
-    if (!_isStyleLoaded) return;
+    // Only process updates if the style is loaded and controller exists
+    if (_controllerWrapper == null || !_isStyleLoaded) return;
       
-    // Check and update route points if necessary
-    if (widget.committedPoints.length != _lastCommittedPointsCount) {
-      if (widget.committedPoints.isNotEmpty) {
-        _controllerWrapper?.setRoutePath(widget.committedPoints);
-        _lastCommittedPointsCount = widget.committedPoints.length;
-      }
+    // Check and update USER'S TRAVELED PATH (dynamic)
+    if (widget.userRoutePoints.length != _lastUserRoutePointsCount) {
+      _controllerWrapper!.setUserRoutePath(widget.userRoutePoints); // Use setUserRoutePath
+      _lastUserRoutePointsCount = widget.userRoutePoints.length;
     }
     
-    // Only update user location if it has changed significantly
+    // Check and update the BASE ROUTE PATH (static, only if baseRoute changed)
+    if (widget.baseRoute != _lastProcessedBaseRoute) {
+      // Pass route points or null if baseRoute is null or has no points
+      // Convert List<RoutePoint> to List<GeoPoint>?
+      final basePointsGeo = widget.baseRoute?.routePoints
+          .map((rp) => app_models.GeoPoint(latitude: rp.point!.latitude, longitude: rp.point!.longitude)) // Assuming RoutePoint structure
+          .toList(); 
+      _controllerWrapper!.setBaseRoutePath(basePointsGeo); 
+      _lastProcessedBaseRoute = widget.baseRoute;
+
+      // Update waypoints if base route changed
+      if (widget.baseRoute?.pointsOfInterest != null) {
+        final waypoints = widget.baseRoute!.pointsOfInterest.toList();
+        _controllerWrapper!.setWaypoints(waypoints);
+      } else {
+        // Clear waypoints if the new base route has none
+        _controllerWrapper!.setWaypoints([]);
+      }
+    }
+
+    // Only update user location marker if it has changed significantly
     if (widget.userPos != null && 
         (_lastProcessedPosition == null || 
          _hasPositionChangedSignificantly(widget.userPos!, _lastProcessedPosition!))) {
-      _controllerWrapper?.updateUserLocation(widget.userPos!);
+      _controllerWrapper!.updateUserLocation(widget.userPos!);
       _lastProcessedPosition = widget.userPos;
-    }
-    
-    // Check if base route or points of interest have changed
-    if (widget.baseRoute != oldWidget.baseRoute || 
-        (widget.baseRoute?.pointsOfInterest.length != 
-         oldWidget.baseRoute?.pointsOfInterest.length)) {
-      if (widget.baseRoute?.pointsOfInterest != null) {
-        final waypoints = widget.baseRoute!.pointsOfInterest.toList();
-        _controllerWrapper?.setWaypoints(waypoints);
-      }
     }
     
     // Handle style changes
     if (widget.styleString != oldWidget.styleString) {
       setState(() {
         _isStyleLoaded = false;
+        _lastProcessedBaseRoute = null; // Reset processed base route on style change
       });
       // Style will be updated by the MapboxMap widget itself
-      // The onStyleLoadedCallback will be called again
+      // The onStyleLoadedCallback will be called again, triggering _drawInitialMapFeatures
     }
   }
   
