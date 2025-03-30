@@ -1,0 +1,431 @@
+Launching lib\main.dart on SM A055F in debug mode...
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+D/FlutterGeolocator(24887): Attaching Geolocator to activity
+D/FlutterGeolocator(24887): Creating service.
+D/FlutterGeolocator(24887): Binding to location service.
+D/FlutterGeolocator(24887): Geolocator foreground service connected
+D/FlutterGeolocator(24887): Initializing Geolocator services
+D/FlutterGeolocator(24887): Flutter engine connected. Connected engine count 1
+Connecting to VM Service at ws://127.0.0.1:50487/jWom5xknZVY=/ws
+Connected to the VM Service.
+I/flutter (24887): ╔══════════════════════════════════════════════════════╗
+I/flutter (24887): ║                 ISAR CONNECT STARTED                 ║
+I/flutter (24887): ╟──────────────────────────────────────────────────────╢
+I/flutter (24887): ║         Open the link to connect to the Isar         ║
+I/flutter (24887): ║        Inspector while this build is running.        ║
+I/flutter (24887): ╟──────────────────────────────────────────────────────╢
+I/flutter (24887): ║ https://inspect.isar.dev/3.1.0+1/#/50487/jWom5xknZVY ║
+I/flutter (24887): ╚══════════════════════════════════════════════════════╝
+D/hw-ProcessState(24887): Binder ioctl to enable oneway spam detection failed: Invalid argument
+D/BLASTBufferQueue(24887): [SurfaceView[com.example.testflutter/com.example.testflutter.MainActivity]@0#1](f:0,a:0) onFrameAvailable the first frame is available
+D/BLASTBufferQueue(24887): [SurfaceView[com.example.testflutter/com.example.testflutter.MainActivity]@0#1](f:0,a:1) acquireNextBufferLocked size=720x1572 mFrameNumber=1 applyTransaction=true mTimestamp=62047785549312(auto) mPendingTransactions.size=0 graphicBufferId=106888851095552 transform=0
+D/SurfaceView@68bfe79(24887): 109837945 setAlpha: alpha=1.0
+I/SurfaceView(24887): 109837945 Changes: creating=false format=false size=false visible=false alpha=true hint=false visible=false left=false top=false z=false attached=true lifecycleStrategy=false
+I/SurfaceView@68bfe79(24887): 109837945 Cur surface: Surface(name=null)/@0x28404a6
+I/SurfaceView@68bfe79(24887): updateSurface: mVisible = true mSurface.isValid() = true
+I/SurfaceView@68bfe79(24887): updateSurface: mSurfaceCreated = true surfaceChanged = false visibleChanged = false
+I/SurfaceView(24887): 109837945 surfaceRedrawNeeded
+I/SurfaceView(24887): 109837945 finishedDrawing
+V/SurfaceView@68bfe79(24887): Layout: x=0 y=0 w=720 h=1572, frame=Rect(0, 0 - 720, 1572)
+I/ViewRootImpl@12d6f0f[MainActivity](24887): Setup new sync=wmsSync-ViewRootImpl@12d6f0f[MainActivity]#2
+I/ViewRootImpl@12d6f0f[MainActivity](24887): Creating new active sync group ViewRootImpl@12d6f0f[MainActivity]#3
+I/ViewRootImpl@12d6f0f[MainActivity](24887): registerCallbacksForSync syncBuffer=false
+D/SurfaceView(24887): 109837945 updateSurfacePosition RenderWorker, frameNr = 1, position = [0, 0, 720, 1572] surfaceSize = 720x1572
+I/SurfaceView@68bfe79(24887): uSP: rtp = Rect(0, 0 - 720, 1572) rtsw = 720 rtsh = 1572
+I/SurfaceView@68bfe79(24887): onSSPAndSRT: pl = 0 pt = 0 sx = 1.0 sy = 1.0
+I/SurfaceView@68bfe79(24887): aOrMT: ViewRootImpl@12d6f0f[MainActivity] t = android.view.SurfaceControl$Transaction@6d46283 fN = 1 android.view.SurfaceView.-$$Nest$mapplyOrMergeTransaction:0 android.view.SurfaceView$SurfaceViewPositionUpdateListener.positionChanged:1666 android.graphics.RenderNode$CompositePositionUpdateListener.positionChanged:369
+I/ViewRootImpl@12d6f0f[MainActivity](24887): mWNT: t=0xb4000075e0deb900 mBlastBufferQueue=0xb40000763bf33700 fn= 1 mRenderHdrSdrRatio=1.0 caller= android.view.SurfaceView.applyOrMergeTransaction:1598 android.view.SurfaceView.-$$Nest$mapplyOrMergeTransaction:0 android.view.SurfaceView$SurfaceViewPositionUpdateListener.positionChanged:1666
+I/ViewRootImpl@12d6f0f[MainActivity](24887): Received frameDrawingCallback syncResult=0 frameNum=1.
+I/ViewRootImpl@12d6f0f[MainActivity](24887): mWNT: t=0xb4000075e0dec800 mBlastBufferQueue=0xb40000763bf33700 fn= 1 mRenderHdrSdrRatio=1.0 caller= android.view.ViewRootImpl$8.onFrameDraw:13841 android.view.ThreadedRenderer$1.onFrameDraw:792 <bottom of call stack>
+I/ViewRootImpl@12d6f0f[MainActivity](24887): Setting up sync and frameCommitCallback
+D/BLASTBufferQueue(24887): [ViewRootImpl@12d6f0f[MainActivity]#0](f:0,a:0) onFrameAvailable the first frame is available
+D/BLASTBufferQueue(24887): [ViewRootImpl@12d6f0f[MainActivity]#0](f:0,a:1) acquireNextBufferLocked size=720x1600 mFrameNumber=1 applyTransaction=true mTimestamp=62047878222312(auto) mPendingTransactions.size=0 graphicBufferId=106888851095553 transform=0
+I/ViewRootImpl@12d6f0f[MainActivity](24887): Received frameCommittedCallback lastAttemptedDrawFrameNum=1 didProduceBuffer=true
+D/OpenGLRenderer(24887): CFMS:: SetUp Pid : 24887    Tid : 24985
+I/ViewRootImpl@12d6f0f[MainActivity](24887): reportDrawFinished seqId=0
+D/ProfileInstaller(24887): Installing profile for com.example.testflutter
+I/ViewRootImpl@12d6f0f[MainActivity](24887): handleWindowFocusChanged: 1 0 call from android.view.ViewRootImpl.-$$Nest$mhandleWindowFocusChanged:0
+D/ViewRootImpl@12d6f0f[MainActivity](24887): mThreadedRenderer.initializeIfNeeded()#2 mSurface={isValid=true 0xb4000075e0d9e800}
+D/InputMethodManagerUtils(24887): startInputInner - Id : 0
+I/InputMethodManager(24887): startInputInner - IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus
+D/InputMethodManagerUtils(24887): startInputInner - Id : 0
+I/InsetsController(24887): onStateChanged: host=com.example.testflutter/com.example.testflutter.MainActivity, from=android.view.ViewRootImpl$ViewRootHandler.handleMessageImpl:7209, state=InsetsState: {mDisplayFrame=Rect(0, 0 - 720, 1600), mDisplayCutout=DisplayCutout{insets=Rect(0, 59 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(320, 0 - 400, 59), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=720 displayHeight=1600 physicalDisplayWidth=720 physicalDisplayHeight=1600 density={1.875} cutoutSpec={M 0,0 H -21.33333333333333 V 31.46666666666667 H 21.33333333333333 V 0 H 0 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=0, center=Point(0, 0)}, RoundedCorner{position=TopRight, radius=0, center=Point(0, 0)}, RoundedCorner{position=BottomRight, radius=0, center=Point(0, 0)}, RoundedCorner{position=BottomLeft, radius=0, center=Point(0, 0)}]}  mRoundedCornerFrame=Rect(0, 0 - 720, 1600), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(0, 0 - 83, 59) rotation=0}, mDisplayShape=DisplayShape{ spec=-311912193 displayWidth=720 displayHeight=1600 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}, mSources= { InsetsSource: {3 mType=ime mFrame=[0,0][0,0] mVisible=false mFlags=[]}, InsetsSource: {27 mType=displayCutout mFrame=[0,0][720,59] mVisible=true mFlags=[]}, InsetsSource: {1e450001 mType=navigationBars mFrame=[0,1572][720,1600] mVisible=true mFlags=[SUPPRESS_SCRIM]}, InsetsSource: {1e450004 mType=systemGestures mFrame=[0,0][56,1600] mVisible=true mFlags=[]}, InsetsSource: {1e450005 mType=mandatorySystemGestures mFrame=[0,1540][720,1600] mVisible=true mFlags=[]}, InsetsSource: {1e450006 mType=tappableElement mFrame=[0,0][0,0] mVisible=true mFlags=[]}, InsetsSource: {1e450024 mType=systemGestures mFrame=[664,0][720,1600] mVisible=true mFlags=[]}, InsetsSource: {43920000 mType=statusBars mFrame=[0,0][720,59] mVisible=true mFlags=[]}, InsetsSource: {43920005 mType=mandatorySystemGestures mFrame=[0,0][720,82] mVisible=true mFlags=[]}, InsetsSource: {43920006 mType=tappableElement mFrame=[0,0][720,59] mVisible=true mFlags=[]} }
+I/InsetsSourceConsumer(24887): applyRequestedVisibilityToControl: visible=false, type=ime, host=com.example.testflutter/com.example.testflutter.MainActivity
+I/flutter (24887):
+W/WindowOnBackDispatcher(24887): OnBackInvokedCallback is not enabled for the application.
+W/WindowOnBackDispatcher(24887): Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+I/flutter (24887):
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/ViewRootImpl@12d6f0f[MainActivity](24887): ViewPostIme pointer 0
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/ViewRootImpl@12d6f0f[MainActivity](24887): ViewPostIme pointer 1
+I/flutter (24887):
+W/CrashReporter(24887): Root directory doesn't exist
+D/CompatibilityChangeReporter(24887): Compat change id reported: 160794467; UID 10298; state: ENABLED
+E/Mbgl-Mapbox(24887): Error occurred while initializing telemetry
+E/Mbgl-Mapbox(24887): java.lang.SecurityException: com.example.testflutter: One of RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED should be specified when a receiver isn't being registered exclusively for system broadcasts
+E/Mbgl-Mapbox(24887): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3069)
+E/Mbgl-Mapbox(24887): 	at android.os.Parcel.createException(Parcel.java:3053)
+E/Mbgl-Mapbox(24887): 	at android.os.Parcel.readException(Parcel.java:3036)
+E/Mbgl-Mapbox(24887): 	at android.os.Parcel.readException(Parcel.java:2978)
+E/Mbgl-Mapbox(24887): 	at android.app.IActivityManager$Stub$Proxy.registerReceiverWithFeature(IActivityManager.java:6157)
+E/Mbgl-Mapbox(24887): 	at android.app.ContextImpl.registerReceiverInternal(ContextImpl.java:1913)
+E/Mbgl-Mapbox(24887): 	at android.app.ContextImpl.registerReceiver(ContextImpl.java:1853)
+E/Mbgl-Mapbox(24887): 	at android.app.ContextImpl.registerReceiver(ContextImpl.java:1841)
+E/Mbgl-Mapbox(24887): 	at android.content.ContextWrapper.registerReceiver(ContextWrapper.java:772)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.android.telemetry.AlarmSchedulerFlusher.register(AlarmSchedulerFlusher.java:37)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.android.telemetry.MapboxTelemetry.startAlarm(MapboxTelemetry.java:399)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.android.telemetry.MapboxTelemetry.startTelemetry(MapboxTelemetry.java:393)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.android.telemetry.MapboxTelemetry.enable(MapboxTelemetry.java:133)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxsdk.module.telemetry.TelemetryImpl.<init>(TelemetryImpl.java:33)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxsdk.ModuleProviderImpl.obtainTelemetry(ModuleProviderImpl.java:22)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxsdk.Mapbox.initializeTelemetry(Mapbox.java:167)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxsdk.Mapbox.getInstance(Mapbox.java:64)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxgl.MapBoxUtils.getMapbox(MapBoxUtils.java:15)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxgl.MapboxMapController.<init>(MapboxMapController.java:164)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxgl.MapboxMapBuilder.build(MapboxMapBuilder.java:32)
+E/Mbgl-Mapbox(24887): 	at com.mapbox.mapboxgl.MapboxMapFactory.create(MapboxMapFactory.java:38)
+E/Mbgl-Mapbox(24887): 	at io.flutter.plugin.platform.PlatformViewsController.createPlatformView(PlatformViewsController.java:523)
+E/Mbgl-Mapbox(24887): 	at io.flutter.plugin.platform.PlatformViewsController$1.createForTextureLayer(PlatformViewsController.java:197)
+E/Mbgl-Mapbox(24887): 	at io.flutter.embedding.engine.systemchannels.PlatformViewsChannel$1.create(PlatformViewsChannel.java:128)
+E/Mbgl-Mapbox(24887): 	at io.flutter.embedding.engine.systemchannels.PlatformViewsChannel$1.onMethodCall(PlatformViewsChannel.java:55)
+E/Mbgl-Mapbox(24887): 	at io.flutter.plugin.common.MethodChannel$IncomingMethodCallHandler.onMessage(MethodChannel.java:267)
+E/Mbgl-Mapbox(24887): 	at io.flutter.embedding.engine.dart.DartMessenger.invokeHandler(DartMessenger.java:292)
+E/Mbgl-Mapbox(24887): 	at io.flutter.embedding.engine.dart.DartMessenger.lambda$dispatchMessageToQueue$0$io-flutter-embedding-engine-dart-DartMessenger(DartMessenger.java:319)
+E/Mbgl-Mapbox(24887): 	at io.flutter.embedding.engine.dart.DartMessenger$$ExternalSyntheticLambda0.run(Unknown Source:12)
+E/Mbgl-Mapbox(24887): 	at android.os.Handler.handleCallback(Handler.java:958)
+E/Mbgl-Mapbox(24887): 	at android.os.Handler.dispatchMessage(Handler.java:99)
+E/Mbgl-Mapbox(24887): 	at android.os.Looper.loopOnce(Looper.java:230)
+E/Mbgl-Mapbox(24887): 	at android.os.Looper.loop(Looper.java:319)
+E/Mbgl-Mapbox(24887): 	at android.app.ActivityThread.main(ActivityThread.java:8919)
+E/Mbgl-Mapbox(24887): 	at java.lang.reflect.Method.invoke(Native Method)
+E/Mbgl-Mapbox(24887): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:578)
+E/Mbgl-Mapbox(24887): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1103)
+D/nativeloader(24887): Load /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so using ns clns-4 from class loader (caller=/data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/base.apk): ok
+I/flutter (24887): Error starting location updates: Exception: Location services are disabled.
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/PlatformViewsController(24887): Hosting view in a virtual display for platform view: 0
+I/PlatformViewsController(24887): PlatformView is using SurfaceProducer backend
+D/CompatibilityChangeReporter(24887): Compat change id reported: 236825255; UID 10298; state: ENABLED
+D/BufferQueueConsumer(24887): [](id:613700000002,api:0,p:-1,c:24887) connect: controlledByApp=true
+I/Dialog  (24887): mIsDeviceDefault = false, mIsSamsungBasicInteraction = false, isMetaDataInActivity = false
+I/DecorView(24887): setWindowBackground: isPopOver=false color=0 d=android.graphics.drawable.ColorDrawable@8d4160a
+I/WindowManager(24887): WindowManagerGlobal#addView, ty=2030, view=DecorView@80914f1[], caller=android.view.WindowManagerImpl.addView:150 android.app.Dialog.show:512 android.app.Presentation.show:312
+D/NativeCustomFrequencyManager(24887): [NativeCFMS] BpCustomFrequencyManager::BpCustomFrequencyManager()
+I/InsetsController(24887): onStateChanged: host=, from=android.view.ViewRootImpl.setView:1753, state=InsetsState: {mDisplayFrame=Rect(0, 0 - 720, 1572), mDisplayCutout=DisplayCutout{insets=Rect(0, 0 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=0 displayHeight=0 physicalDisplayWidth=0 physicalDisplayHeight=0 density={0.0} cutoutSpec={} rotation={0} scale={0.0} physicalPixelDisplaySizeRatio={0.0}}}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=0, center=Point(0, 0)}, RoundedCorner{position=TopRight, radius=0, center=Point(0, 0)}, RoundedCorner{position=BottomRight, radius=0, center=Point(0, 0)}, RoundedCorner{position=BottomLeft, radius=0, center=Point(0, 0)}]}  mRoundedCornerFrame=Rect(0, 0 - 0, 0), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=null rotation=0}, mDisplayShape=DisplayShape{ spec=-262740215 displayWidth=720 displayHeight=1572 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}, mSources= {  }
+I/ViewRootImpl@3a588d6[](24887): synced displayState. AttachInfo displayState=2
+I/ViewRootImpl@3a588d6[](24887): setView = com.android.internal.policy.DecorView@80914f1 TM=true
+V/Mbgl-ConnectivityReceiver(24887): connected - true
+D/OpenGLRenderer(24887): HWUI - treat SMPTE_170M as sRGB
+I/SurfaceView@4409168(24887): onWindowVisibilityChanged(0) true com.mapbox.mapboxsdk.maps.renderer.glsurfaceview.MapboxGLSurfaceView{4409168 V.E...... ......I. 0,0-0,0} of ViewRootImpl@3a588d6[]
+D/SurfaceView@4409168(24887): 71340392 updateSurface: has no frame
+D/BufferQueueConsumer(24887): [](id:613700000003,api:0,p:-1,c:24887) connect: controlledByApp=false
+I/BLASTBufferQueue_Java(24887): new BLASTBufferQueue, mName= ViewRootImpl@3a588d6[] mNativeObject= 0xb4000075e0d29180 sc.mNativeObject= 0xb4000075b0024e80 caller= android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:3028 android.view.ViewRootImpl.relayoutWindow:10131 android.view.ViewRootImpl.performTraversals:4110 android.view.ViewRootImpl.doTraversal:3288 android.view.ViewRootImpl$TraversalRunnable.run:11344 android.view.Choreographer$CallbackRecord.run:1689 android.view.Choreographer$CallbackRecord.run:1698 android.view.Choreographer.doCallbacks:1153 android.view.Choreographer.doFrame:1079 android.view.Choreographer$FrameDisplayEventReceiver.run:1646
+I/BLASTBufferQueue_Java(24887): update, w= 720 h= 1572 mName = ViewRootImpl@3a588d6[] mNativeObject= 0xb4000075e0d29180 sc.mNativeObject= 0xb4000075b0024e80 format= -2 caller= android.graphics.BLASTBufferQueue.<init>:89 android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:3028 android.view.ViewRootImpl.relayoutWindow:10131 android.view.ViewRootImpl.performTraversals:4110 android.view.ViewRootImpl.doTraversal:3288 android.view.ViewRootImpl$TraversalRunnable.run:11344
+I/ViewRootImpl@3a588d6[](24887): Relayout returned: old=(0,0,720,1572) new=(0,0,720,1572) relayoutAsync=false req=(720,1572)0 dur=19 res=0x403 s={true 0xb4000075b04b6800} ch=true seqId=0
+D/ViewRootImpl@3a588d6[](24887): mThreadedRenderer.initialize() mSurface={isValid=true 0xb4000075b04b6800} hwInitialized=true
+D/SurfaceView@4409168(24887): 71340392 updateSurface: has no frame
+I/SurfaceView@4409168(24887): windowStopped(false) true com.mapbox.mapboxsdk.maps.renderer.glsurfaceview.MapboxGLSurfaceView{4409168 V.E...... ......ID 0,0-720,1572} of ViewRootImpl@3a588d6[]
+D/SurfaceView@4409168(24887): 71340392 updateSurface: has no frame
+D/ViewRootImpl@3a588d6[](24887): reportNextDraw android.view.ViewRootImpl.performTraversals:4718 android.view.ViewRootImpl.doTraversal:3288 android.view.ViewRootImpl$TraversalRunnable.run:11344 android.view.Choreographer$CallbackRecord.run:1689 android.view.Choreographer$CallbackRecord.run:1698
+I/SurfaceView(24887): 71340392 Changes: creating=true format=true size=true visible=true alpha=false hint=false visible=true left=true top=true z=false attached=true lifecycleStrategy=false
+D/BufferQueueConsumer(24887): [](id:613700000004,api:0,p:-1,c:24887) connect: controlledByApp=false
+I/BLASTBufferQueue_Java(24887): update, w= 720 h= 1572 mName = null mNativeObject= 0xb4000075e0d29500 sc.mNativeObject= 0xb4000075b004a700 format= 4 caller= android.view.SurfaceView.createBlastSurfaceControls:1517 android.view.SurfaceView.updateSurface:1193 android.view.SurfaceView.lambda$new$0:258 android.view.SurfaceView.$r8$lambda$cm3nmzErr-srXoT_KjIYQgdhFN0:0 android.view.SurfaceView$$ExternalSyntheticLambda2.onPreDraw:2 android.view.ViewTreeObserver.dispatchOnPreDraw:1204
+I/SurfaceView@4409168(24887): 71340392 Cur surface: Surface(name=null)/@0x264dcae
+I/SurfaceView@4409168(24887): pST: sr = Rect(0, 0 - 720, 1572) sw = 720 sh = 1572
+D/SurfaceView@4409168(24887): 71340392 performSurfaceTransaction RenderWorker position = [0, 0, 720, 1572] surfaceSize = 720x1572
+I/SurfaceView@4409168(24887): updateSurface: mVisible = true mSurface.isValid() = true
+I/SurfaceView@4409168(24887): updateSurface: mSurfaceCreated = false surfaceChanged = true visibleChanged = true
+I/SurfaceView(24887): 71340392 visibleChanged -- surfaceCreated
+I/SurfaceView@4409168(24887): surfaceCreated 1 #8 com.mapbox.mapboxsdk.maps.renderer.glsurfaceview.MapboxGLSurfaceView{4409168 V.E...... ......ID 0,0-720,1572}
+I/SurfaceView(24887): 71340392 surfaceChanged -- format=4 w=720 h=1572
+I/SurfaceView@4409168(24887): surfaceChanged (720,1572) 1 #8 com.mapbox.mapboxsdk.maps.renderer.glsurfaceview.MapboxGLSurfaceView{4409168 V.E...... ......ID 0,0-720,1572}
+I/SurfaceView(24887): 71340392 surfaceRedrawNeeded
+D/libMEOW (24887): meow new tls: 0xb4000075b254a600
+D/libMEOW (24887): applied 2 plugins for [com.example.testflutter]:
+D/libMEOW (24887):   plugin 1: [libMEOW_gift.so]:
+D/libMEOW (24887):   plugin 2: [libMEOW_semaphore]:
+I/Mbgl-EGLConfigChooser(24887): In emulator: false
+V/SurfaceView@4409168(24887): Layout: x=0 y=0 w=720 h=1572, frame=Rect(0, 0 - 720, 1572)
+I/ViewRootImpl@3a588d6[](24887): Setup new sync=wmsSync-ViewRootImpl@3a588d6[]#5
+I/ViewRootImpl@3a588d6[](24887): Creating new active sync group ViewRootImpl@3a588d6[]#6
+I/ViewRootImpl@3a588d6[](24887): registerCallbacksForSync syncBuffer=false
+W/Mbgl    (24887): {GLThread 149}[Android]: MapRenderer::onSurfaceCreated GlyphsRasterizationMode was specified without providing LocalIdeographFontFamily. Switching glyphsRasterizationMode to NoGlyphsRasterizedLocally mode.
+D/SurfaceView(24887): 71340392 updateSurfacePosition RenderWorker, frameNr = 1, position = [0, 0, 720, 1572] surfaceSize = 720x1572
+I/SurfaceView@4409168(24887): uSP: rtp = Rect(0, 0 - 720, 1572) rtsw = 720 rtsh = 1572
+I/SurfaceView@4409168(24887): onSSPAndSRT: pl = 0 pt = 0 sx = 1.0 sy = 1.0
+I/SurfaceView@4409168(24887): aOrMT: ViewRootImpl@3a588d6[] t = android.view.SurfaceControl$Transaction@8a615ba fN = 1 android.view.SurfaceView.-$$Nest$mapplyOrMergeTransaction:0 android.view.SurfaceView$SurfaceViewPositionUpdateListener.positionChanged:1666 android.graphics.RenderNode$CompositePositionUpdateListener.positionChanged:369
+I/ViewRootImpl@3a588d6[](24887): mWNT: t=0xb400007561134c00 mBlastBufferQueue=0xb4000075e0d29180 fn= 1 mRenderHdrSdrRatio=1.0 caller= android.view.SurfaceView.applyOrMergeTransaction:1598 android.view.SurfaceView.-$$Nest$mapplyOrMergeTransaction:0 android.view.SurfaceView$SurfaceViewPositionUpdateListener.positionChanged:1666
+I/ViewRootImpl@3a588d6[](24887): Received frameDrawingCallback syncResult=0 frameNum=1.
+I/ViewRootImpl@3a588d6[](24887): mWNT: t=0xb400007561135800 mBlastBufferQueue=0xb4000075e0d29180 fn= 1 mRenderHdrSdrRatio=1.0 caller= android.view.ViewRootImpl$8.onFrameDraw:13841 android.view.ThreadedRenderer$1.onFrameDraw:792 <bottom of call stack>
+I/ViewRootImpl@3a588d6[](24887): Setting up sync and frameCommitCallback
+D/BLASTBufferQueue(24887): [ViewRootImpl@3a588d6[]#2](f:0,a:0) onFrameAvailable the first frame is available
+D/BLASTBufferQueue(24887): [ViewRootImpl@3a588d6[]#2](f:0,a:1) acquireNextBufferLocked size=720x1572 mFrameNumber=1 applyTransaction=true mTimestamp=62054147003235(auto) mPendingTransactions.size=0 graphicBufferId=106888851095557 transform=0
+I/ViewRootImpl@3a588d6[](24887): Received frameCommittedCallback lastAttemptedDrawFrameNum=1 didProduceBuffer=true
+D/OpenGLRenderer(24887): CFMS:: SetUp Pid : 24887    Tid : 24985
+D/BLASTBufferQueue(24887): [SurfaceView[]@0#3](f:0,a:0) onFrameAvailable the first frame is available
+D/BLASTBufferQueue(24887): [SurfaceView[]@0#3](f:0,a:1) acquireNextBufferLocked size=720x1572 mFrameNumber=1 applyTransaction=true mTimestamp=62054152510620(auto) mPendingTransactions.size=0 graphicBufferId=106888851095558 transform=0
+I/Mbgl    (24887): {GLThread 149}[General]: GPU Identifier: Mali-G52 MC2
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/ViewRootImpl@3a588d6[](24887): reportDrawFinished seqId=0
+I/flutter (24887): Error getting location: Exception: Location services are disabled.
+I/SurfaceView(24887): 71340392 finishedDrawing
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+I/gralloc4(24887): @set_metadata: update dataspace from GM (0x00000000 -> 0x08010000)
+W/Resources(24887): Drawable com.example.testflutter:drawable/mapbox_user_icon_shadow has unresolved theme attributes! Consider using Resources.getDrawable(int, Theme) or Context.getDrawable(int).
+W/Resources(24887): java.lang.RuntimeException
+W/Resources(24887): 	at android.content.res.Resources.getDrawable(Resources.java:966)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.utils.BitmapUtils.getDrawableFromRes(BitmapUtils.java:167)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.utils.BitmapUtils.getDrawableFromRes(BitmapUtils.java:153)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LayerBitmapProvider.generateShadowBitmap(LayerBitmapProvider.java:29)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.styleBitmaps(LocationLayerController.java:166)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.applyStyle(LocationLayerController.java:102)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.initializeComponents(LocationLayerController.java:83)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.<init>(LocationLayerController.java:76)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.initialize(LocationComponent.java:1498)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.activateLocationComponent(LocationComponent.java:387)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.enableLocationComponent(MapboxMapController.java:272)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.updateMyLocationEnabled(MapboxMapController.java:1563)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.access$100(MapboxMapController.java:91)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController$1.onStyleLoaded(MapboxMapController.java:141)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.notifyStyleLoaded(MapboxMap.java:963)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.onFinishLoadingStyle(MapboxMap.java:225)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapView$MapCallback.onDidFinishLoadingStyle(MapView.java:1383)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapChangeReceiver.onDidFinishLoadingStyle(MapChangeReceiver.java:198)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.NativeMapView.onDidFinishLoadingStyle(NativeMapView.java:1166)
+W/Resources(24887): 	at android.os.MessageQueue.nativePollOnce(Native Method)
+W/Resources(24887): 	at android.os.MessageQueue.next(MessageQueue.java:335)
+W/Resources(24887): 	at android.os.Looper.loopOnce(Looper.java:187)
+W/Resources(24887): 	at android.os.Looper.loop(Looper.java:319)
+W/Resources(24887): 	at android.app.ActivityThread.main(ActivityThread.java:8919)
+W/Resources(24887): 	at java.lang.reflect.Method.invoke(Native Method)
+W/Resources(24887): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:578)
+W/Resources(24887): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1103)
+D/Mbgl-LocationComponentCompassEngine(24887): Rotation vector sensor not supported on device, falling back to accelerometer and magnetic field.
+W/Resources(24887): Drawable com.example.testflutter:drawable/mapbox_user_icon_shadow has unresolved theme attributes! Consider using Resources.getDrawable(int, Theme) or Context.getDrawable(int).
+W/Resources(24887): java.lang.RuntimeException
+W/Resources(24887): 	at android.content.res.Resources.getDrawable(Resources.java:966)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.utils.BitmapUtils.getDrawableFromRes(BitmapUtils.java:167)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.utils.BitmapUtils.getDrawableFromRes(BitmapUtils.java:153)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LayerBitmapProvider.generateShadowBitmap(LayerBitmapProvider.java:29)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.styleBitmaps(LocationLayerController.java:166)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.setRenderMode(LocationLayerController.java:123)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.setRenderMode(LocationComponent.java:716)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.initialize(LocationComponent.java:1521)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.activateLocationComponent(LocationComponent.java:387)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.enableLocationComponent(MapboxMapController.java:272)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.updateMyLocationEnabled(MapboxMapController.java:1563)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.access$100(MapboxMapController.java:91)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController$1.onStyleLoaded(MapboxMapController.java:141)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.notifyStyleLoaded(MapboxMap.java:963)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.onFinishLoadingStyle(MapboxMap.java:225)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapView$MapCallback.onDidFinishLoadingStyle(MapView.java:1383)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapChangeReceiver.onDidFinishLoadingStyle(MapChangeReceiver.java:198)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.NativeMapView.onDidFinishLoadingStyle(NativeMapView.java:1166)
+W/Resources(24887): 	at android.os.MessageQueue.nativePollOnce(Native Method)
+W/Resources(24887): 	at android.os.MessageQueue.next(MessageQueue.java:335)
+W/Resources(24887): 	at android.os.Looper.loopOnce(Looper.java:187)
+W/Resources(24887): 	at android.os.Looper.loop(Looper.java:319)
+W/Resources(24887): 	at android.app.ActivityThread.main(ActivityThread.java:8919)
+W/Resources(24887): 	at java.lang.reflect.Method.invoke(Native Method)
+W/Resources(24887): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:578)
+W/Resources(24887): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1103)
+D/AnimatorSet(24887): mReversing is false. Don't call initChildren.
+D/AnimatorSet(24887): mReversing is false. Don't call initChildren.
+W/Resources(24887): Drawable com.example.testflutter:drawable/mapbox_user_icon_shadow has unresolved theme attributes! Consider using Resources.getDrawable(int, Theme) or Context.getDrawable(int).
+W/Resources(24887): java.lang.RuntimeException
+W/Resources(24887): 	at android.content.res.Resources.getDrawable(Resources.java:966)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.utils.BitmapUtils.getDrawableFromRes(BitmapUtils.java:167)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.utils.BitmapUtils.getDrawableFromRes(BitmapUtils.java:153)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LayerBitmapProvider.generateShadowBitmap(LayerBitmapProvider.java:29)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.styleBitmaps(LocationLayerController.java:166)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationLayerController.applyStyle(LocationLayerController.java:102)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.applyStyle(LocationComponent.java:762)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.activateLocationComponent(LocationComponent.java:389)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.enableLocationComponent(MapboxMapController.java:272)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.updateMyLocationEnabled(MapboxMapController.java:1563)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController.access$100(MapboxMapController.java:91)
+W/Resources(24887): 	at com.mapbox.mapboxgl.MapboxMapController$1.onStyleLoaded(MapboxMapController.java:141)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.notifyStyleLoaded(MapboxMap.java:963)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.onFinishLoadingStyle(MapboxMap.java:225)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapView$MapCallback.onDidFinishLoadingStyle(MapView.java:1383)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.MapChangeReceiver.onDidFinishLoadingStyle(MapChangeReceiver.java:198)
+W/Resources(24887): 	at com.mapbox.mapboxsdk.maps.NativeMapView.onDidFinishLoadingStyle(NativeMapView.java:1166)
+W/Resources(24887): 	at android.os.MessageQueue.nativePollOnce(Native Method)
+W/Resources(24887): 	at android.os.MessageQueue.next(MessageQueue.java:335)
+W/Resources(24887): 	at android.os.Looper.loopOnce(Looper.java:187)
+W/Resources(24887): 	at android.os.Looper.loop(Looper.java:319)
+W/Resources(24887): 	at android.app.ActivityThread.main(ActivityThread.java:8919)
+W/Resources(24887): 	at java.lang.reflect.Method.invoke(Native Method)
+W/Resources(24887): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:578)
+W/Resources(24887): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1103)
+E/Mbgl-MapChangeReceiver(24887): Exception in onDidFinishLoadingStyle
+E/Mbgl-MapChangeReceiver(24887): java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.location.FusedLocationProviderClient, but class was expected (declaration of 'com.google.android.gms.location.FusedLocationProviderClient' appears in /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/base.apk)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.android.core.location.GoogleLocationEngineImpl.requestLocationUpdates(GoogleLocationEngineImpl.java:58)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.android.core.location.GoogleLocationEngineImpl.requestLocationUpdates(GoogleLocationEngineImpl.java:26)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.android.core.location.LocationEngineProxy.requestLocationUpdates(LocationEngineProxy.java:34)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.onLocationLayerStart(LocationComponent.java:1439)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.enableLocationComponent(LocationComponent.java:1568)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.setLocationComponentEnabled(LocationComponent.java:551)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxgl.MapboxMapController.enableLocationComponent(MapboxMapController.java:274)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxgl.MapboxMapController.updateMyLocationEnabled(MapboxMapController.java:1563)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxgl.MapboxMapController.access$100(MapboxMapController.java:91)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxgl.MapboxMapController$1.onStyleLoaded(MapboxMapController.java:141)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.notifyStyleLoaded(MapboxMap.java:963)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.onFinishLoadingStyle(MapboxMap.java:225)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.maps.MapView$MapCallback.onDidFinishLoadingStyle(MapView.java:1383)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.maps.MapChangeReceiver.onDidFinishLoadingStyle(MapChangeReceiver.java:198)
+E/Mbgl-MapChangeReceiver(24887): 	at com.mapbox.mapboxsdk.maps.NativeMapView.onDidFinishLoadingStyle(NativeMapView.java:1166)
+E/Mbgl-MapChangeReceiver(24887): 	at android.os.MessageQueue.nativePollOnce(Native Method)
+E/Mbgl-MapChangeReceiver(24887): 	at android.os.MessageQueue.next(MessageQueue.java:335)
+E/Mbgl-MapChangeReceiver(24887): 	at android.os.Looper.loopOnce(Looper.java:187)
+E/Mbgl-MapChangeReceiver(24887): 	at android.os.Looper.loop(Looper.java:319)
+E/Mbgl-MapChangeReceiver(24887): 	at android.app.ActivityThread.main(ActivityThread.java:8919)
+E/Mbgl-MapChangeReceiver(24887): 	at java.lang.reflect.Method.invoke(Native Method)
+E/Mbgl-MapChangeReceiver(24887): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:578)
+E/Mbgl-MapChangeReceiver(24887): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1103)
+W/System.err(24887): java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.location.FusedLocationProviderClient, but class was expected (declaration of 'com.google.android.gms.location.FusedLocationProviderClient' appears in /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/base.apk)
+W/System.err(24887): 	at com.mapbox.android.core.location.GoogleLocationEngineImpl.requestLocationUpdates(GoogleLocationEngineImpl.java:58)
+W/System.err(24887): 	at com.mapbox.android.core.location.GoogleLocationEngineImpl.requestLocationUpdates(GoogleLocationEngineImpl.java:26)
+W/System.err(24887): 	at com.mapbox.android.core.location.LocationEngineProxy.requestLocationUpdates(LocationEngineProxy.java:34)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.onLocationLayerStart(LocationComponent.java:1439)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.enableLocationComponent(LocationComponent.java:1568)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.location.LocationComponent.setLocationComponentEnabled(LocationComponent.java:551)
+W/System.err(24887): 	at com.mapbox.mapboxgl.MapboxMapController.enableLocationComponent(MapboxMapController.java:274)
+W/System.err(24887): 	at com.mapbox.mapboxgl.MapboxMapController.updateMyLocationEnabled(MapboxMapController.java:1563)
+W/System.err(24887): 	at com.mapbox.mapboxgl.MapboxMapController.access$100(MapboxMapController.java:91)
+W/System.err(24887): 	at com.mapbox.mapboxgl.MapboxMapController$1.onStyleLoaded(MapboxMapController.java:141)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.notifyStyleLoaded(MapboxMap.java:963)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.maps.MapboxMap.onFinishLoadingStyle(MapboxMap.java:225)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.maps.MapView$MapCallback.onDidFinishLoadingStyle(MapView.java:1383)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.maps.MapChangeReceiver.onDidFinishLoadingStyle(MapChangeReceiver.java:198)
+W/System.err(24887): 	at com.mapbox.mapboxsdk.maps.NativeMapView.onDidFinishLoadingStyle(NativeMapView.java:1166)
+W/System.err(24887): 	at android.os.MessageQueue.nativePollOnce(Native Method)
+W/System.err(24887): 	at android.os.MessageQueue.next(MessageQueue.java:335)
+W/System.err(24887): 	at android.os.Looper.loopOnce(Looper.java:187)
+W/System.err(24887): 	at android.os.Looper.loop(Looper.java:319)
+W/System.err(24887): 	at android.app.ActivityThread.main(ActivityThread.java:8919)
+W/System.err(24887): 	at java.lang.reflect.Method.invoke(Native Method)
+W/System.err(24887): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:578)
+W/System.err(24887): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1103)
+E/libc++abi(24887): terminating with uncaught exception of type jni::PendingJavaException
+F/libc    (24887): Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 24887 (ple.testflutter), pid 24887 (ple.testflutter)
+*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+Build fingerprint: 'samsung/a05mxx/a05m:14/UP1A.231005.007/A055FXXS8CXL2:user/release-keys'
+Revision: '0'
+ABI: 'arm64'
+Processor: '5'
+Timestamp: 2025-03-30 17:39:40.037473612+0300
+Process uptime: 16s
+Cmdline: com.example.testflutter
+pid: 24887, tid: 24887, name: ple.testflutter  >>> com.example.testflutter <<<
+uid: 10298
+signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+Abort message: 'terminating with uncaught exception of type jni::PendingJavaException'
+    x0  0000000000000000  x1  0000000000006137  x2  0000000000000006  x3  0000007fd6e77eb0
+    x4  736f646277641f73  x5  736f646277641f73  x6  736f646277641f73  x7  7f7f7f7f7f7f7f7f
+    x8  00000000000000f0  x9  00000076fd888e68  x10 0000000000000001  x11 00000076fd904a30
+    x12 0000000001a7d4f0  x13 000000edadbac0eb  x14 00322eea62895d02  x15 000000004cec4ec5
+    x16 00000076fd9739e0  x17 00000076fd94d3d0  x18 000000770f4e0000  x19 0000000000006137
+    x20 0000000000006137  x21 00000000ffffffff  x22 ffffff80ffffffc8  x23 0000007fd6e78100
+    x24 0000007fd6e77fe0  x25 0000007fd6e78020  x26 000000755dbd5968  x27 000000755dbd5960
+    x28 000000755dbd5980  x29 0000007fd6e77f30
+    lr  00000076fd8f5078  sp  0000007fd6e77e90  pc  00000076fd8f50a4  pst 0000000000001000
+22 total frames
+backtrace:
+      #00 pc 00000000000940a4  /apex/com.android.runtime/lib64/bionic/libc.so (abort+164) (BuildId: a6a4bb5d4c7b3e99262fee774c3907c6)
+      #01 pc 0000000000373aa4  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #02 pc 0000000000373c14  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #03 pc 00000000003711d4  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #04 pc 0000000000370800  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #05 pc 000000000037075c  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (__cxa_throw+112) (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #06 pc 0000000000094680  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #07 pc 00000000000aee88  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #08 pc 0000000000115b8c  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #09 pc 00000000001c3898  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #10 pc 00000000001c3314  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #11 pc 00000000001c5b70  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #12 pc 000000000022177c  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #13 pc 00000000000fb3e0  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #14 pc 000000000021b0c4  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #15 pc 000000000021a930  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #16 pc 000000000021a9fc  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #17 pc 0000000000219c24  /data/app/~~al_KGMH1UfW6VpsT-ptjUg==/com.example.testflutter-sk_LsduZKg9YcjsqfkmPvg==/lib/arm64/libmapbox-gl.so (BuildId: 5340fab4c92fd87f8304775de4bc95627e863fd7)
+      #18 pc 0000000000018e8c  /system/lib64/libutils.so (android::Looper::pollInner(int)+1276) (BuildId: cb91686656dc7d3bb5a8e813db3c244f)
+      #19 pc 000000000001892c  /system/lib64/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+124) (BuildId: cb91686656dc7d3bb5a8e813db3c244f)
+      #20 pc 0000000000188d3c  /system/lib64/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long, int)+44) (BuildId: 7fceba0ef8d2f35fbd6ce655a304c8c2)
+      #21 pc 00000000023b859c  /memfd:jit-cache (deleted) (offset 0x2000000)
+Lost connection to device.
+
+Exited.
