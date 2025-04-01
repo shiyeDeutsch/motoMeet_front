@@ -152,8 +152,8 @@ class _LoginScreenState extends State<LoginScreen> {
         await isarService.add(user);
         
         // Update location data
-        final locationService = GetIt.I<LocationService>();
-        final location = await locationService.getCurrentLatLng();
+  
+        final location = await LocationService.getCurrentLocation();
         await userService.sendGeoLocation();
        
 

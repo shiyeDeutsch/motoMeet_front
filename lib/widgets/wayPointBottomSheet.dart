@@ -328,14 +328,14 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
     WaypointType type,
     WidgetRef ref,
   ) async {
-    final locationService = GetIt.I<LocationService>();
-    final location = await locationService.getCurrentLatLng();
+    
+    final location = await LocationService.getCurrentLocation ();
     
     final details = await _showLandmarkDetailsDialog();
     if (details == null) return;
 
     final waypoint = PointOfInterest(
-      location: GeoPoint.fromLatLng(location, null),
+      location: GeoPoint.fromLatLng(location!, null),
       name: details['name'] ?? '',
       description: details['description']??'',
       waypointType: type,
@@ -358,11 +358,11 @@ void _showLandmarkDetailsBottomSheet(BuildContext parentContext , WidgetRef ref)
           onCancel: () => Navigator.pop(context),
         
           onSave: (title, description, mediaFiles) async {
-            final locationService = GetIt.I<LocationService>();
-            final location = await locationService.getCurrentLatLng();
+         
+            final location = await LocationService.getCurrentLocation();
             
             final waypoint = PointOfInterest(
-              location: GeoPoint.fromLatLng(location, null),
+              location: GeoPoint.fromLatLng(location!, null),
               name: title,
               description: description,
               waypointType: _selectedType!,

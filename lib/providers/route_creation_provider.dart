@@ -22,52 +22,82 @@ final routeCreationProvider =
 class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   RouteCreationNotifier() : super(null);
 
-  // Services
   final RouteCreationService _routeCreationService = GetIt.I<RouteCreationService>();
-  final LocationService _locationService = GetIt.I<LocationService>();
-  
-  // Route tracking data
-  final List<GeoPoint> _committedPoints = []; // List of threshold-validated points for the current trip
-  Position? _currentPosition; // Keep track of the user's current location for real-time marker
-  Route? _baseRoute; // Reference to the base route
-  
-  // Route metrics
-  double _pathLength = 0;
-  Duration _routeDuration = const Duration();
-  
-  // Configuration
-  double _distanceThreshold = MapConfig.HIKING_THRESHOLD; // Default threshold
-  bool _forceStateUpdate = false; // Used to force an update (e.g., if we want a time-based commit)
-  
-  // Subscription and timing
   StreamSubscription<Position>? _locationUpdatesSubscription;
+
+  // List of threshold-validated points for the current trip
+  final List<GeoPoint> _committedPoints = [];
+
+  // Keep track of the user's current location for real-time marker
+  Position? _currentPosition;
+
+  // Basic route configuration
+  double _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+  double _pathLength = 0;
   Timer? _timer;
-  
-  // Position streaming
-  final _positionStreamController = StreamController<Position>.broadcast();
-  final Set<Function(Position)> _positionUpdateListeners = {};
+  Duration _routeDuration = const Duration();
 
-  // -----------------------
-  //  GETTERS (for the UI)
-  // -----------------------
-  Position? get currentPosition => _currentPosition;
-  List<GeoPoint> get committedPoints => _committedPoints;
-  Route? get baseRoute => _baseRoute;
-  Duration get routeDuration => _routeDuration;
-  double get distance => _pathLength;
-  Stream<Position> get positionStream => _positionStreamController.stream;
+  // Reference to the base route
+  Route? _baseRoute;
 
-  // -----------------------
-  // ROUTE LIFECYCLE METHODS
-  // -----------------------
-  
+  // Used to force an update (e.g., if we want a time-based commit)
+  bool _forceStateUpdate = false;
+
+  /// Start a new trip on an existing route
+  Future<void> startExistingRoute(Route route) async {
+    // Cancel anything lingering
+    _locationUpdatesSubscription?.cancel();
+    _timer?.cancel();
+
+    _committedPoints.clear();
+    _pathLength = 0;
+    _routeDuration = const Duration();
+    _baseRoute = route;
+
+    // Decide distance factor based on route type
+    _setDistanceFactorFromRouteType(route.routeType);
+
+    // Build a fresh UserRoute
+    final userRoute = UserRoute(
+      dateTraveled: DateTime.now().toUtc(),
+      routeType: route.routeType,
+      difficultyLevel: route.difficultyLevel,
+      durationMinutes: 0,
+      distance: 0,
+      elevationGain: 0,
+    );
+    
+    state = userRoute;
+
+    // If we have a starting point from the route, add it
+    if (route.startPoint != null) {
+      _committedPoints.add(route.startPoint!);
+    }
+
+    // Start location updates
+    LocationService.startListening();
+    _locationUpdatesSubscription =
+        LocationService.locationUpdates.listen(_onLocationUpdate);
+
+    // Start a timer to force updates every minute
+    _startTimer();
+    
+    // Save the initial UserRoute to local database
+    await _routeCreationService.saveUserRouteToLocalDb(state!);
+  }
+
   /// Start a brand new route (creates both Route and UserRoute)
   Future<void> startNewRoute(RouteType routeType, GeoPoint startPoint) async {
-    // Reset all tracking state
-    _resetTrackingState();
+    // Cancel anything lingering
+    _locationUpdatesSubscription?.cancel();
+    _timer?.cancel();
 
-    // Decide distance threshold based on route type
-    _setDistanceThresholdFromRouteType(routeType);
+    _committedPoints.clear();
+    _pathLength = 0;
+    _routeDuration = const Duration();
+
+    // Decide distance factor based on route type
+    _setDistanceFactorFromRouteType(routeType);
 
     // 1. Create a new Route object
     final route = Route(
@@ -103,40 +133,90 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     // Add the starting point
     _committedPoints.add(startPoint);
 
-    // Start location tracking
-    _startLocationTracking();
+    // Start location updates
+    LocationService.startListening();
+    _locationUpdatesSubscription =
+        LocationService.locationUpdates.listen(_onLocationUpdate);
+
+    // Start a timer to force updates every minute
+    _startTimer();
   }
 
-  /// Start a new trip on an existing route
-  Future<void> startExistingRoute(Route route, RouteType routeType) async {
-    // Reset all tracking state
-    _resetTrackingState();
-    _baseRoute = route;
-
-    // Decide distance threshold based on route type
-    _setDistanceThresholdFromRouteType(routeType);
-
-    // Build a fresh UserRoute
-    final userRoute = UserRoute(
-      dateTraveled: DateTime.now().toUtc(),
-      routeType: route.routeType,
-      durationMinutes: 0,
-      distance: 0,
-      elevationGain: 0,
-    );
-    
-    state = userRoute;
-
-    // If we have a starting point from the route, add it
-    if (route.startPoint != null) {
-      _committedPoints.add(route.startPoint!);
+  /// Helper method to set the distance factor based on route type
+  void _setDistanceFactorFromRouteType(RouteType? routeType) {
+    if (routeType == null) {
+      _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+      return;
     }
-
-    // Start location tracking
-    _startLocationTracking();
     
-    // Save the initial UserRoute to local database
-    await _routeCreationService.saveUserRouteToLocalDb(state!);
+    switch (routeType) {
+      case RouteType.hiking:
+        _distanceFactor = MapConfig.HIKING_THRESHOLD;
+        break;
+      case RouteType.biking:
+        _distanceFactor = MapConfig.BIKING_THRESHOLD;
+        break;
+      case RouteType.motorcycle:
+        _distanceFactor = MapConfig.MOTORCYCLE_THRESHOLD;
+        break;
+      case RouteType.jeep:
+        _distanceFactor = MapConfig.JEEP_THRESHOLD;
+        break;
+    }
+  }
+
+  void _onLocationUpdate(Position newLocation) {
+    _currentPosition = newLocation;
+
+    // Threshold check
+    final lastPoint = _committedPoints.last;
+    final distance = _routeCreationService.calculateDistanceInMeters(
+      lastPoint.toLatLng(),
+      LatLng(newLocation.latitude, newLocation.longitude),
+    );
+
+    if (distance >= _distanceFactor || _forceStateUpdate) {
+      _pathLength += distance;
+      _committedPoints.add(
+        GeoPoint(
+          latitude: newLocation.latitude,
+          longitude: newLocation.longitude,
+          altitude: newLocation.altitude,
+        ),
+      );
+      _updateUserRouteState();
+      _forceStateUpdate = false;
+      
+      // Save the point to the database
+      _routeCreationService.saveUserRoutePointToLocalDb(
+        _committedPoints.last, 
+        _committedPoints.length - 1,
+        state!.id
+      );
+    }
+  }
+
+  /// If you want a time-based forced update, e.g., every 1 minute
+  void _startTimer() {
+    _timer?.cancel();
+    _routeDuration = const Duration();
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _forceStateUpdate = true;
+      _routeDuration += const Duration(minutes: 1);
+    });
+  }
+
+  void _updateUserRouteState() {
+    if (state == null) return;
+
+    final updated = state!.copyWith(
+      distance: _pathLength,
+      durationMinutes: _routeDuration.inMinutes,
+    );
+    state = updated;
+    
+    // Save the updated UserRoute to local database
+    _routeCreationService.saveUserRouteToLocalDb(state!);
   }
 
   /// Stop the route. No more listening to location updates.
@@ -145,14 +225,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _locationUpdatesSubscription = null;
     _timer?.cancel();
     _timer = null;
-    
-    // Return location service to normal update frequency
-    _locationService.configure(
-      updateIntervalMs: 5000, // 5 seconds in normal mode
-    );
-    
-    // We don't call LocationService.dispose() here because other parts
-    // of the app may still need location updates
+    LocationService.dispose();
 
     if (state == null) return;
     
@@ -231,164 +304,21 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     );
   }
 
-  // -----------------------
-  // TRACKING HELPER METHODS
-  // -----------------------
-
-  /// Start location tracking for route recording
-  void _startLocationTracking() async {
-    // Start location updates if not already started
-    if (!_locationService.isListening) {
-      await _locationService.startListening();
-    }
-    
-    // Configure location service for route tracking
-    _locationService.configure(
-      accuracy: LocationAccuracy.high,
-      updateIntervalMs: 1000, // More frequent updates for navigation (1 second)
-    );
-    
-    // Subscribe to location updates
-    _locationUpdatesSubscription =
-        _locationService.locationUpdates.listen(_onLocationUpdate);
-
-    // Start a timer to force updates every minute
-    _startTimer();
-  }
-
-  /// Resets all tracking-related state variables
-  void _resetTrackingState() {
-    _locationUpdatesSubscription?.cancel();
-    _timer?.cancel();
-    _committedPoints.clear();
-    _pathLength = 0;
-    _routeDuration = const Duration();
-  }
-
-  /// Helper method to set the distance threshold based on route type
-  void _setDistanceThresholdFromRouteType(RouteType? routeType) {
-    if (routeType == null) {
-      _distanceThreshold = MapConfig.HIKING_THRESHOLD; // Default
-      return;
-    }
-    
-    switch (routeType) {
-      case RouteType.hiking:
-        _distanceThreshold = MapConfig.HIKING_THRESHOLD;
-        break;
-      case RouteType.biking:
-        _distanceThreshold = MapConfig.BIKING_THRESHOLD;
-        break;
-      case RouteType.motorcycle:
-        _distanceThreshold = MapConfig.MOTORCYCLE_THRESHOLD;
-        break;
-      case RouteType.jeep:
-        _distanceThreshold = MapConfig.JEEP_THRESHOLD;
-        break;
-    }
-  }
-
-  void _onLocationUpdate(Position newLocation) {
-    // Update current position regardless of threshold
-    _currentPosition = newLocation;
-    
-    // Broadcast the position update to listeners
-    _positionStreamController.add(newLocation);
-    
-    // Notify any registered listeners
-    for (final listener in _positionUpdateListeners) {
-      listener(newLocation);
-    }
-
-    // Threshold check for adding points to the route
-    if (_committedPoints.isEmpty) {
-      // First point - just add it
-      _committedPoints.add(
-        GeoPoint(
-          latitude: newLocation.latitude,
-          longitude: newLocation.longitude,
-          altitude: newLocation.altitude,
-        ),
-      );
-      return;
-    }
-    
-    final lastPoint = _committedPoints.last;
-    final distance = _routeCreationService.calculateDistanceInMeters(
-      lastPoint.toLatLng(),
-      LatLng(newLocation.latitude, newLocation.longitude),
-    );
-
-    // Only add new points if distance threshold is met AND not a forced update
-    if (distance >= _distanceThreshold ) {
-      _pathLength += distance;
-      _committedPoints.add(
-        GeoPoint(
-          latitude: newLocation.latitude,
-          longitude: newLocation.longitude,
-          altitude: newLocation.altitude,
-        ),
-      );
-      
-      // Save the point to the database
-      _routeCreationService.saveUserRoutePointToLocalDb(
-        _committedPoints.last, 
-        _committedPoints.length - 1,
-        state!.id
-      );
-    }
-    
-    // Update UI state whether it's a distance update or forced time update
-    if (distance >= _distanceThreshold || _forceStateUpdate) {
-      _updateUserRouteState();
-      _forceStateUpdate = false;
-    }
-  }
-
-  /// If you want a time-based forced update, e.g., every 1 minute
-  void _startTimer() {
-    _timer?.cancel();
-    _routeDuration = const Duration();
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      _forceStateUpdate = true;
-      _routeDuration += const Duration(minutes: 1);
-    });
-  }
-
-  void _updateUserRouteState() {
-    if (state == null) return;
-
-    final updated = state!.copyWith(
-      
-      distance: _pathLength,
-      durationMinutes: _routeDuration.inMinutes,
-      routePoints: _committedPoints,                
-    );
-    state = updated;
-    
-    // Save the updated UserRoute to local database
-    _routeCreationService.saveUserRouteToLocalDb(state!);
-  }
-
-  // -----------------------
-  // POSITION LISTENER METHODS
-  // -----------------------
-  
-  /// Register a listener for position updates
-  void addPositionListener(Function(Position) listener) {
-    _positionUpdateListeners.add(listener);
-  }
-
-  /// Remove a listener for position updates
-  void removePositionListener(Function(Position) listener) {
-    _positionUpdateListeners.remove(listener);
-  }
-
   @override
   void dispose() {
     _locationUpdatesSubscription?.cancel();
     _timer?.cancel();
-    _positionStreamController.close();
     super.dispose();
   }
+
+  // -----------------------
+  //  GETTERS (for the UI)
+  // -----------------------
+  Position? get currentPosition => _currentPosition;
+  List<GeoPoint> get committedPoints => _committedPoints;
+  Route? get baseRoute => _baseRoute;
+  
+  // Computed properties
+  Duration get routeDuration => _routeDuration;
+  double get distance => _pathLength;
 }

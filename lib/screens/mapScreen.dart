@@ -1,15 +1,14 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:get_it/get_it.dart';
-import 'package:latlong2/latlong.dart' as latlng2;
-import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:geolocator/geolocator.dart' as geo;
+import 'package:latlong2/latlong.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import '../constants/app_constants.dart';
 import '../models/enum.dart';
 import '../models/route.dart' as app_models;
 import '../providers/route_creation_provider.dart';
+import '../routing/routes.dart';
 import '../services/bottomSheetServices.dart';
 import '../services/locationService.dart';
 import '../widgets/active_route_details.dart';
@@ -30,103 +29,61 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   // Mapbox controller
-  MapboxMapController? _mapController;
-  String _selectedMapStyle = MapboxConfig.STYLE_OUTDOORS;
+  MapboxMap? _mapboxMap;
+
+  // Map style
+  String _currentMapStyle = MapboxConfig.STYLE_OUTDOORS;
+
+  // State tracking
+  bool _isRecording = false;
+  bool _isLoading = true;
+  bool _isNavigationMode = false;
+  geo.Position? _currentPosition;
   
-  // Location service
-  late LocationService _locationService;
-  Position? _currentPosition;
-  
-  // Route tracking
-  bool _isInNavigationMode = false;
-  StreamSubscription<Position>? _positionSubscription;
-  
-  // Mapbox elements
-  Symbol? _userLocationSymbol;
-  Line? _routeLine;
-  
-  @override
-  void initState() {
-    super.initState();
-    _locationService = GetIt.I<LocationService>();
-    
-    // Start location updates
-    _initializeLocationService();
-  }
-  
-  Future<void> _initializeLocationService() async {
-    // Ensure location service is started
-    if (!_locationService.isListening) {
-      await _locationService.startListening();
-    }
-    
-    // Configure for regular updates
-    _locationService.configure(
-      accuracy: LocationAccuracy.high,
-      updateIntervalMs: 3000, // 3 seconds
-    );
-    
-    // Get initial position
-    try {
-      final position = await _locationService.getCurrentPosition();
-      setState(() {
-        _currentPosition = position;
-      });
-      
-      if (_mapController != null && position != null) {
-        _animateToPosition(position);
-      }
-    } catch (e) {
-      // Handle location error
-      print('Error getting location: $e');
-    }
-  }
-  
-  void _animateToPosition(Position position) {
-    _mapController?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(position.latitude, position.longitude),
-          zoom: _isInNavigationMode ? 17.0 : MapConfig.DEFAULT_ZOOM,
-          tilt: _isInNavigationMode ? MapConfig.NAVIGATION_TILT : MapConfig.DEFAULT_TILT,
-        ),
-      ),
-    );
-  }
-  
+  // Layer IDs for route drawing
+  static const String _baseRouteSourceId = 'base-route-source';
+  static const String _baseRouteLayerId = 'base-route-layer';
+  static const String _userRouteSourceId = 'user-route-source';
+  static const String _userRouteLayerId = 'user-route-layer';
+
   @override
   void dispose() {
-    _positionSubscription?.cancel();
-    _mapController?.dispose();
+    // Clean up resources
+    _mapboxMap?.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    // Watch the route creation state
+    // Get the current user route from the provider if recording
     final userRoute = ref.watch(routeCreationProvider);
+    final routeNotifier = ref.watch(routeCreationProvider.notifier);
     
+    // Get user position from route provider if available
+    _currentPosition = routeNotifier.currentPosition ?? _currentPosition;
+
     return Scaffold(
       body: Stack(
         children: [
-          // Mapbox map
+          // Mapbox map as the main content
           _buildMapView(),
           
-          // Map controls overlay
+          // Map controls (back button, center location, layers)
           MapControlsWidget(
+            onBackPressed: () => _handleBackPress(context),
             onCenterLocationPressed: _centerOnCurrentLocation,
-            onLayersPressed: _showMapLayersBottomSheet,
-            onBackPressed: () => Navigator.of(context).pop(),
+            onLayersPressed: () => _showMapLayersBottomSheet(context),
           ),
           
-          // Only show the Start Route button if no route is active
-          if (userRoute == null)
+          // Conditionally show relevant UI based on recording state
+          if (!_isRecording && !_isLoading)
             StartRouteButton(
-              onPressed: _handleStartRoutePressed,
+              onPressed: () => _startNewRouteFlow(context),
+              label: widget.baseRoute != null ? 'Start Following Route' : 'Start New Route',
             ),
           
-          // Show route details when a route is active
-          if (userRoute != null)
+          // Show active route details when recording
+          if (_isRecording && userRoute != null)
             Positioned(
               bottom: 0,
               left: 0,
@@ -135,278 +92,279 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 currentUserRoute: userRoute,
                 baseRoute: widget.baseRoute,
                 currentPosition: _currentPosition,
-                onStopPressed: _handleStopRoutePressed,
+                onStopPressed: _stopRouteTracking,
                 context: context,
               ),
+            ),
+            
+          // Loading indicator
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
             ),
         ],
       ),
     );
   }
-  
+
   Widget _buildMapView() {
-    return MapboxMap(
-      accessToken: MapboxConfig.ACCESS_TOKEN,
-      styleString: _selectedMapStyle,
-      initialCameraPosition: CameraPosition(
-        target: _currentPosition != null 
-          ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-          : const LatLng(0, 0), // Default position if location not available yet
-        zoom: MapConfig.DEFAULT_ZOOM,
-      ),
-      onMapCreated: _onMapCreated,
-      myLocationEnabled: true,
-      myLocationTrackingMode: MyLocationTrackingMode.Tracking,
-      compassEnabled: true,
-      zoomGesturesEnabled: true,
-      rotateGesturesEnabled: true,
-      onUserLocationUpdated: (userLocation) {
-        _onUserLocationUpdated(userLocation);
-      },
-    );
-  }
-  
-  void _onMapCreated(MapboxMapController controller) {
-    _mapController = controller;
-    
-    // If we already have position, center map on it
-    if (_currentPosition != null) {
-      _animateToPosition(_currentPosition!);
-    }
-    
-    // If we have a base route, display it on the map
-    if (widget.baseRoute != null) {
-      _displayBaseRoute(widget.baseRoute!);
-    }
-    
-    // Setup route updates listener if we're actively tracking
-    final activeRoute = ref.read(routeCreationProvider);
-    if (activeRoute != null) {
-      _setupRouteDisplayUpdates();
-    }
-  }
-  
-  void _onUserLocationUpdated(UserLocation userLocation) {
-    // Store the latest position
-    setState(() {
-      _currentPosition = Position(
-        latitude: userLocation.position.latitude,
-        longitude: userLocation.position.longitude,
-        timestamp: DateTime.now(),
-        accuracy: 0.0, // Default value since we can't get actual accuracy
-        altitude: 0.0,
-        heading: 0.0, // Default value since we can't get actual heading
-        speed: 0.0, // Default value since we can't get actual speed
-        speedAccuracy: 0.0,
-        altitudeAccuracy: 0.0,
-        headingAccuracy: 0.0,
-      );
-    });
-    
-    // Update user location marker if in navigation mode
-    if (_isInNavigationMode) {
-      _updateUserLocationMarker();
-    }
-  }
-  
-  Future<void> _updateUserLocationMarker() async {
-    if (_mapController == null || _currentPosition == null) return;
-    
-    // Add or update symbol showing user location
-    if (_userLocationSymbol == null) {
-      _userLocationSymbol = await _mapController!.addSymbol(
-        SymbolOptions(
-          geometry: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          iconImage: 'marker-15', // Use built-in Mapbox marker
-          iconSize: 1.5,
-          iconColor: '#3E6C51',
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      child: MapWidget(
+        key: const ValueKey("mapWidget"),
+        styleUri: _currentMapStyle,
+        onMapCreated: _onMapCreated,
+        cameraOptions: CameraOptions(
+          center: Point.fromJson({
+            "coordinates": [0.0, 0.0]
+          }),
+          zoom: MapConfig.DEFAULT_ZOOM,
+          bearing: 0.0,
+          pitch: MapConfig.DEFAULT_TILT,
         ),
-      );
-    } else {
-      await _mapController!.updateSymbol(
-        _userLocationSymbol!,
-        SymbolOptions(
-          geometry: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-        ),
-      );
-    }
-  }
-  
-  void _displayBaseRoute(app_models.Route route) {
-    // TODO: Extract route points from the route and display on the map
-    // This would require the route to have its routePoints loaded
-  }
-  
-  void _setupRouteDisplayUpdates() {
-    // Listen to position updates from the route creation provider
-    final routeCreationNotifier = ref.read(routeCreationProvider.notifier);
-    
-    _positionSubscription?.cancel();
-    _positionSubscription = routeCreationNotifier.positionStream.listen((_) {
-      // Update the route line on the map whenever there's a new point
-      _updateRouteLine();
-    });
-    
-    // Initial draw of route line
-    _updateRouteLine();
-  }
-  
-  Future<void> _updateRouteLine() async {
-    if (_mapController == null) return;
-    
-    // Get all the points from the route creation provider
-    final routeCreationNotifier = ref.read(routeCreationProvider.notifier);
-    final points = routeCreationNotifier.committedPoints;
-    
-    if (points.isEmpty) return;
-    
-    // Convert GeoPoints to LatLng for Mapbox
-    final coordinates = points.map((point) =>
-      LatLng(point.latitude!, point.longitude!)
-    ).toList();
-    
-    // Add or update the route line
-    if (_routeLine == null) {
-      _routeLine = await _mapController!.addLine(
-        LineOptions(
-          geometry: coordinates,
-          lineColor: MapConfig.TRAVELED_PATH_COLOR,
-          lineWidth: MapConfig.TRAVELED_PATH_WIDTH,
-          lineOpacity: MapConfig.TRAVELED_PATH_OPACITY,
-        ),
-      );
-    } else {
-      await _mapController!.updateLine(
-        _routeLine!,
-        LineOptions(
-          geometry: coordinates,
-        ),
-      );
-    }
-  }
-  
-  void _centerOnCurrentLocation() {
-    if (_mapController != null && _currentPosition != null) {
-      _animateToPosition(_currentPosition!);
-    }
-  }
-  
-  Future<void> _showMapLayersBottomSheet() async {
-    final selectedStyle = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) => MapLayersBottomSheet(
-        currentStyle: _selectedMapStyle,
       ),
     );
+  }
+
+  void _onMapCreated(MapboxMap mapboxMap) async {
+    _mapboxMap = mapboxMap;
     
-    if (selectedStyle != null && selectedStyle != _selectedMapStyle) {
-      // Store the new style preference
+    try {
+      // Get user's current location
+      final currentLocation = await LocationService.getCurrentLocation();
+      if (currentLocation != null) {
+        _centerOnLocation(currentLocation);
+      }
+      
+      // Draw base route if available
+      if (widget.baseRoute != null) {
+        _drawBaseRoute();
+      }
+      
       setState(() {
-        _selectedMapStyle = selectedStyle;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error initializing map: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _centerOnLocation(LatLng location) async {
+    if (_mapboxMap == null) return;
+    
+    await _mapboxMap!.flyTo(
+      CameraOptions(
+        center: Point.fromJson({
+          "coordinates": [location.longitude, location.latitude]
+        }),
+        zoom: MapConfig.DEFAULT_ZOOM,
+        pitch: _isNavigationMode ? MapConfig.NAVIGATION_TILT : MapConfig.DEFAULT_TILT,
+      ),
+      MapAnimationOptions(duration: 500),
+    );
+  }
+
+  Future<void> _centerOnCurrentLocation() async {
+    try {
+      final currentLocation = await LocationService.getCurrentLocation();
+      if (currentLocation != null) {
+        _centerOnLocation(currentLocation);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not get current location: $e')),
+      );
+    }
+  }
+
+  Future<void> _startNewRouteFlow(BuildContext context) async {
+    // Show route type selection dialog
+    final selectedRouteType = await showRouteTypeEnumDialog(context);
+    
+    if (selectedRouteType == null) return;
+    
+    try {
+      setState(() {
+        _isLoading = true;
       });
       
-      // For style changes, we need to recreate the map
-      // This is the most compatible way across different mapbox_gl versions
-      setState(() {});
-    }
-  }
-  
-  Future<void> _handleStartRoutePressed() async {
-    // Show dialog to choose route type
-    final routeType = await showRouteTypeEnumDialog(context);
-    
-    if (routeType != null) {
-      // Start tracking a new route
-      final routeCreationNotifier = ref.read(routeCreationProvider.notifier);
-      
-      if (_currentPosition != null) {
-        final startPoint = app_models.GeoPoint(
-          latitude: _currentPosition!.latitude,
-          longitude: _currentPosition!.longitude,
-          altitude: _currentPosition!.altitude,
-        );
-        
-        // Using the existing route if provided or creating a new one
-        if (widget.baseRoute != null) {
-          await routeCreationNotifier.startExistingRoute(widget.baseRoute!, routeType);
-        } else {
-          await routeCreationNotifier.startNewRoute(routeType, startPoint);
-        }
-        
-        // Setup route display updates
-        _setupRouteDisplayUpdates();
-        
-        // Enter navigation mode
-        setState(() {
-          _isInNavigationMode = true;
-        });
-        
-        // Center on current location with navigation mode camera settings
-        _centerOnCurrentLocation();
+      // Get current location for route start point
+      final currentLocation = await LocationService.getCurrentLocation();
+      if (currentLocation == null) {
+        throw Exception('Could not get current location');
       }
+
+      final startPoint = app_models.GeoPoint(
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+      );
+      
+      // Start a new route or use the base route
+      if (widget.baseRoute != null) {
+        // Start an existing route
+        await ref.read(routeCreationProvider.notifier).startExistingRoute(widget.baseRoute!);
+      } else {
+        // Start a brand new route
+        await ref.read(routeCreationProvider.notifier).startNewRoute(selectedRouteType, startPoint);
+      }
+      
+      // Set up navigation mode
+      setState(() {
+        _isRecording = true;
+        _isLoading = false;
+        _isNavigationMode = true;
+      });
+      
+      // Apply navigation camera settings
+      await _mapboxMap?.flyTo(
+        CameraOptions(
+          center: Point.fromJson({
+            "coordinates": [currentLocation.longitude, currentLocation.latitude]
+          }),
+          zoom: MapConfig.DEFAULT_ZOOM,
+          pitch: MapConfig.NAVIGATION_TILT,
+        ),
+        MapAnimationOptions(duration: 500),
+      );
+      
+      // Set up listener for location updates to update camera and route
+      LocationService.locationUpdates.listen(_onLocationUpdate);
+      
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error starting route: $e')),
+      );
     }
   }
-  
-  Future<void> _handleStopRoutePressed() async {
-    // Show confirmation dialog
+
+  void _onLocationUpdate(geo.Position position) {
+    if (!mounted || !_isRecording) return;
+    
+    setState(() {
+      _currentPosition = position;
+    });
+    
+    // Only follow user location if in navigation mode
+    if (_isNavigationMode) {
+      _followUserLocation(position);
+    }
+    
+    // Update user route line on map
+    _updateUserRoutePath();
+  }
+
+  Future<void> _followUserLocation(geo.Position position) async {
+    if (_mapboxMap == null) return;
+    
+    // Adjust zoom level based on speed
+    double zoomLevel = MapConfig.DEFAULT_ZOOM;
+    
+    // Adjust zoom level based on speed
+    if (position.speed > SpeedThresholds.FAST_DRIVING) {
+      zoomLevel = 13.0;
+    } else if (position.speed > SpeedThresholds.MEDIUM_DRIVING) {
+      zoomLevel = 14.0;
+    } else if (position.speed > SpeedThresholds.SLOW_DRIVING) {
+      zoomLevel = 15.0;
+    } else if (position.speed > SpeedThresholds.BIKING) {
+      zoomLevel = 16.0;
+    } else if (position.speed > SpeedThresholds.WALKING) {
+      zoomLevel = 17.0;
+    } else {
+      zoomLevel = 18.0;
+    }
+    
+    await _mapboxMap!.flyTo(
+      CameraOptions(
+        center: Point.fromJson({
+          "coordinates": [position.longitude, position.latitude]
+        }),
+        zoom: zoomLevel,
+        pitch: MapConfig.NAVIGATION_TILT,
+        bearing: position.heading, // Orient map in direction of travel
+      ),
+      MapAnimationOptions(duration: 300),
+    );
+  }
+
+  Future<void> _updateUserRoutePath() async {
+    if (_mapboxMap == null) return;
+    
+    // In a real implementation, this would draw the user's route on the map
+    // For now, we'll just update the UI by storing location in provider
+    // The route drawing API requires a detailed understanding of the mapbox API
+  }
+
+  Future<void> _drawBaseRoute() async {
+    if (_mapboxMap == null || widget.baseRoute == null) return;
+    
+    // Get route points from the base route
+    final route = widget.baseRoute!;
+    
+    // In a real implementation, this would draw the base route on the map
+    // For now, we'll just position the camera on the start point
+    if (route.startPoint != null) {
+      final startPoint = LatLng(
+        route.startPoint!.latitude!,
+        route.startPoint!.longitude!,
+      );
+      
+      _centerOnLocation(startPoint);
+    }
+  }
+
+  void _showMapLayersBottomSheet(BuildContext context) {
+    BottomSheetService.showSmallBottomSheet(
+      context: context,
+      content: MapLayersBottomSheet(
+        onMapStyleSelected: (style) {
+          setState(() {
+            _currentMapStyle = style;
+          });
+          _mapboxMap?.loadStyleURI(style);
+        },
+      ),
+    );
+  }
+
+  Future<void> _stopRouteTracking() async {
+    // Confirm with user
     final shouldStop = await showStopDialog(context);
     
-    if (shouldStop == true) {
-      // Stop the route
-      final routeCreationNotifier = ref.read(routeCreationProvider.notifier);
-      await routeCreationNotifier.stopUserRoute();
-      
-      // Exit navigation mode
-      setState(() {
-        _isInNavigationMode = false;
-      });
-      
-      // Cancel updates subscription
-      _positionSubscription?.cancel();
-      _positionSubscription = null;
-      
-      // Navigate to the save route screen
-      Navigator.of(context).pushNamed('/routes/save');
+    if (shouldStop != true) return;
+    
+    // Stop recording
+    await ref.read(routeCreationProvider.notifier).stopUserRoute();
+    
+    final userRoute = ref.read(routeCreationProvider);
+    final baseRoute = ref.read(routeCreationProvider.notifier).baseRoute;
+    
+    // Navigate to save route screen
+    if (userRoute != null) {
+      Navigator.of(context).pushReplacementNamed(
+        Routes.saveRoute,
+        arguments: {
+          'Route': baseRoute,
+          'UserRoute': userRoute,
+        },
+      );
+    } else {
+      Navigator.of(context).pop();
     }
   }
-}
 
-// Create stub for MapLayersBottomSheet if it doesn't exist
-class MapLayersBottomSheet extends StatelessWidget {
-  final String currentStyle;
-  
-  const MapLayersBottomSheet({
-    Key? key,
-    required this.currentStyle,
-  }) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Select Map Style', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          _buildStyleOption(context, 'Outdoors', MapboxConfig.STYLE_OUTDOORS),
-          _buildStyleOption(context, 'Satellite', MapboxConfig.STYLE_SATELLITE),
-          _buildStyleOption(context, 'Streets', MapboxConfig.STYLE_STANDARD),
-          _buildStyleOption(context, 'Navigation', MapboxConfig.STYLE_NAVIGATION),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStyleOption(BuildContext context, String name, String styleUrl) {
-    final isSelected = currentStyle == styleUrl;
-    
-    return ListTile(
-      title: Text(name),
-      trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
-      onTap: () {
-        Navigator.of(context).pop(styleUrl);
-      },
-    );
+  void _handleBackPress(BuildContext context) {
+    if (_isRecording) {
+      _stopRouteTracking();
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 }

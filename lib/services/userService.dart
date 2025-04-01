@@ -41,10 +41,14 @@ class UserService {
 
   Future<GeoLocationInfo?> sendGeoLocation() async {
     try {
-      final locationService = GetIt.I<LocationService>();
-      final location = await locationService.getCurrentLatLng();
-      
-      final payload = {
+    
+      final location = await LocationService.getCurrentLocation();
+      if (location == null) { 
+                
+        return null;
+      }
+ 
+       final payload = {
         'latitude': location.latitude,
         'longitude': location.longitude,
       };

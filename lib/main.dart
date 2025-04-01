@@ -5,11 +5,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import 'routing/InitialRoute.dart';
 import 'routing/routeGenerator.dart';
 import 'services/service_locator.dart';
 import 'theme/theme_provider.dart';
+import 'constants/app_constants.dart';
 
 final providerContainer = ProviderContainer();
 
@@ -24,6 +26,9 @@ void main() async {
     SecurityContext context = SecurityContext.defaultContext;
     context.setTrustedCertificatesBytes(data.buffer.asUint8List());
   }
+
+  // Set Mapbox access token globally
+  MapboxOptions.setAccessToken(MapboxConfig.ACCESS_TOKEN);
 
   // Initialize services
   await setupLocator();
