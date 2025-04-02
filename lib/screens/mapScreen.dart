@@ -3,9 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:latlong2/latlong.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'dart:convert';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import '../constants/app_constants.dart';
 import '../models/enum.dart';
@@ -38,65 +35,71 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   String _currentMapStyle = MapboxConfig.STYLE_OUTDOORS;
 
   // State tracking
-  bool _isRecording = false;
   bool _isLoading = true;
   bool _isNavigationMode = false;
-  geo.Position? _currentPosition;
   
-  // Layer IDs for route drawing
-  static const String _baseRouteSourceId = 'base-route-source';
-  static const String _baseRouteLayerId = 'base-route-layer';
-  static const String _userRouteSourceId = 'user-route-source';
-  static const String _userRouteLayerId = 'user-route-layer';
-  static const String _userLocationSourceId = 'user-location-source';
-  static const String _userLocationLayerId = 'user-location-layer';
-  
-  // Marker for user location
+  // Annotation managers
   CircleAnnotationManager? _circleAnnotationManager;
   CircleAnnotation? _userLocationMarker;
-  
-  // Polyline for route path
   PolylineAnnotationManager? _polylineManager;
   PolylineAnnotation? _routePolyline;
 
+  // Last processed position to avoid duplicate updates
+  geo.Position? _lastProcessedPosition;
+
   @override
   void dispose() {
-    // Clean up resources
     _mapboxMap?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the current user route from the provider if recording
+    // Get the current user route and route notifier
     final userRoute = ref.watch(routeCreationProvider);
     final routeNotifier = ref.watch(routeCreationProvider.notifier);
+    final currentPosition = routeNotifier.currentPosition;
     
-    // Get user position from route provider if available
-    _currentPosition = routeNotifier.currentPosition ?? _currentPosition;
+    // Only update map UI if position changed and we're recording
+    if (currentPosition != null && userRoute != null) {
+      final bool positionChanged = _lastProcessedPosition == null || 
+          _lastProcessedPosition!.latitude != currentPosition.latitude ||
+          _lastProcessedPosition!.longitude != currentPosition.longitude;
+          
+      if (positionChanged) {
+        _lastProcessedPosition = currentPosition;
+        
+        // Use post-frame callback to ensure the map is ready
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _updateUserLocationMarker(currentPosition.latitude, currentPosition.longitude);
+          
+          if (_isNavigationMode) {
+            _followUserLocation(currentPosition);
+          }
+          
+          _updateUserRoutePath();
+        });
+      }
+    }
 
     return Scaffold(
       body: Stack(
         children: [
-          // Mapbox map as the main content
           _buildMapView(),
           
-          // Map controls (back button, center location, layers)
           MapControlsWidget(
             onBackPressed: () => _handleBackPress(context),
             onCenterLocationPressed: _centerOnCurrentLocation,
             onLayersPressed: () => _showMapLayersBottomSheet(context),
           ),
           
-          // Conditionally show relevant UI based on recording state
-          if (!_isRecording && !_isLoading)
+          if (userRoute == null && !_isLoading)
             StartRouteButton(
               onPressed: () => _startNewRouteFlow(context),
               label: widget.baseRoute != null ? 'Start Following Route' : 'Start New Route',
             ),
           
-          // Show active route details when recording
-          if (_isRecording && userRoute != null)
+          if (userRoute != null)
             Positioned(
               bottom: 0,
               left: 0,
@@ -104,13 +107,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               child: ActiveRouteDetails(
                 currentUserRoute: userRoute,
                 baseRoute: widget.baseRoute,
-                currentPosition: _currentPosition,
+                currentPosition: currentPosition,
                 onStopPressed: _stopRouteTracking,
                 context: context,
               ),
             ),
             
-          // Loading indicator
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),
@@ -129,9 +131,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         styleUri: _currentMapStyle,
         onMapCreated: _onMapCreated,
         cameraOptions: CameraOptions(
-          center: Point.fromJson({
-            "coordinates": [0.0, 0.0]
-          }),
+          center: Point.fromJson({"coordinates": [0.0, 0.0]}),
           zoom: MapConfig.DEFAULT_ZOOM,
           bearing: 0.0,
           pitch: MapConfig.DEFAULT_TILT,
@@ -144,23 +144,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _mapboxMap = mapboxMap;
     
     try {
-      // Create annotation manager for adding markers and polylines
       _circleAnnotationManager = await _mapboxMap!.annotations.createCircleAnnotationManager();
       _polylineManager = await _mapboxMap!.annotations.createPolylineAnnotationManager();
       
-      // Get user's current location
       final currentLocation = await LocationService.getCurrentLocation();
       if (currentLocation != null) {
         _centerOnLocation(currentLocation);
-        
-        // Add user location marker
         await _updateUserLocationMarker(
           currentLocation.latitude, 
           currentLocation.longitude
         );
       }
       
-      // Draw base route if available
       if (widget.baseRoute != null) {
         _drawBaseRoute();
       }
@@ -180,20 +175,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (_mapboxMap == null || _circleAnnotationManager == null) return;
 
     try {
-      // Remove existing marker if any
       if (_userLocationMarker != null) {
         await _circleAnnotationManager!.delete(_userLocationMarker!);
       }
       
-      // Create a blue circle for user location
       final options = CircleAnnotationOptions(
-        geometry: Point.fromJson({
-          "coordinates": [longitude, latitude]
-        }),
-        circleRadius: 8.0,
-        circleColor: Colors.blue.value, // Use Color value instead of string
+        geometry: Point.fromJson({"coordinates": [longitude, latitude]}),
+        circleRadius: 5.0,
+        circleColor: Colors.blue.toARGB32(),
         circleStrokeWidth: 2.0,
-        circleStrokeColor: Colors.white.value, // Use Color value instead of string
+        circleStrokeColor: Colors.white.toARGB32(),
       );
       
       _userLocationMarker = await _circleAnnotationManager!.create(options);
@@ -207,9 +198,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     
     await _mapboxMap!.flyTo(
       CameraOptions(
-        center: Point.fromJson({
-          "coordinates": [location.longitude, location.latitude]
-        }),
+        center: Point.fromJson({"coordinates": [location.longitude, location.latitude]}),
         zoom: MapConfig.DEFAULT_ZOOM,
         pitch: _isNavigationMode ? MapConfig.NAVIGATION_TILT : MapConfig.DEFAULT_TILT,
       ),
@@ -219,9 +208,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Future<void> _centerOnCurrentLocation() async {
     try {
-      final currentLocation = await LocationService.getCurrentLocation();
-      if (currentLocation != null) {
-        _centerOnLocation(currentLocation);
+      final currentPosition = ref.read(routeCreationProvider.notifier).currentPosition;
+      if (currentPosition != null) {
+        // Use the position from the provider if available (when tracking a route)
+        final location = LatLng(currentPosition.latitude, currentPosition.longitude);
+        _centerOnLocation(location);
+      } else {
+        // Otherwise get the current location
+        final currentLocation = await LocationService.getCurrentLocation();
+        if (currentLocation != null) {
+          _centerOnLocation(currentLocation);
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -231,9 +228,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   Future<void> _startNewRouteFlow(BuildContext context) async {
-    // Show route type selection dialog
     final selectedRouteType = await showRouteTypeEnumDialog(context);
-    
     if (selectedRouteType == null) return;
     
     try {
@@ -241,7 +236,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _isLoading = true;
       });
       
-      // Get current location for route start point
       final currentLocation = await LocationService.getCurrentLocation();
       if (currentLocation == null) {
         throw Exception('Could not get current location');
@@ -252,36 +246,25 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         longitude: currentLocation.longitude,
       );
       
-      // Start a new route or use the base route
       if (widget.baseRoute != null) {
-        // Start an existing route
         await ref.read(routeCreationProvider.notifier).startExistingRoute(widget.baseRoute!);
       } else {
-        // Start a brand new route
         await ref.read(routeCreationProvider.notifier).startNewRoute(selectedRouteType, startPoint);
       }
       
-      // Set up navigation mode
       setState(() {
-        _isRecording = true;
         _isLoading = false;
         _isNavigationMode = true;
       });
       
-      // Apply navigation camera settings
       await _mapboxMap?.flyTo(
         CameraOptions(
-          center: Point.fromJson({
-            "coordinates": [currentLocation.longitude, currentLocation.latitude]
-          }),
+          center: Point.fromJson({"coordinates": [currentLocation.longitude, currentLocation.latitude]}),
           zoom: MapConfig.DEFAULT_ZOOM,
           pitch: MapConfig.NAVIGATION_TILT,
         ),
         MapAnimationOptions(duration: 500),
       );
-      
-      // Set up listener for location updates to update camera and route
-      LocationService.locationUpdates.listen(_onLocationUpdate);
       
     } catch (e) {
       setState(() {
@@ -293,32 +276,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  void _onLocationUpdate(geo.Position position) {
-    if (!mounted || !_isRecording) return;
-    
-    setState(() {
-      _currentPosition = position;
-    });
-    
-    // Update user location marker
-    _updateUserLocationMarker(position.latitude, position.longitude);
-    
-    // Only follow user location if in navigation mode
-    if (_isNavigationMode) {
-      _followUserLocation(position);
-    }
-    
-    // Update user route line on map
-    _updateUserRoutePath();
-  }
-
   Future<void> _followUserLocation(geo.Position position) async {
     if (_mapboxMap == null) return;
     
-    // Adjust zoom level based on speed
     double zoomLevel = MapConfig.DEFAULT_ZOOM;
     
-    // Adjust zoom level based on speed
     if (position.speed > SpeedThresholds.FAST_DRIVING) {
       zoomLevel = 13.0;
     } else if (position.speed > SpeedThresholds.MEDIUM_DRIVING) {
@@ -335,12 +297,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     
     await _mapboxMap!.flyTo(
       CameraOptions(
-        center: Point.fromJson({
-          "coordinates": [position.longitude, position.latitude]
-        }),
+        center: Point.fromJson({"coordinates": [position.longitude, position.latitude]}),
         zoom: zoomLevel,
         pitch: MapConfig.NAVIGATION_TILT,
-        bearing: position.heading, // Orient map in direction of travel
+        bearing: position.heading,
       ),
       MapAnimationOptions(duration: 300),
     );
@@ -350,33 +310,25 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (_mapboxMap == null || _polylineManager == null) return;
     
     try {
-      // Get committed points from the route provider using the public getter
       final committedPoints = ref.read(routeCreationProvider.notifier).committedPoints;
       
-      // Need at least 2 points to draw a line
       if (committedPoints.length < 2) return;
       
-      // Remove existing route line if any
       if (_routePolyline != null) {
         await _polylineManager!.delete(_routePolyline!);
       }
       
-      // Convert GeoPoints to map coordinates
       final List<List<double>> coordinates = committedPoints.map((point) => 
         [point.longitude!, point.latitude!]
       ).toList();
       
-      // Create a polyline for the route
       final options = PolylineAnnotationOptions(
-        geometry: LineString.fromJson({
-          "coordinates": coordinates
-        }),
+        geometry: LineString.fromJson({"coordinates": coordinates}),
         lineWidth: 4.0,
         lineColor: Colors.red.value,
       );
       
       _routePolyline = await _polylineManager!.create(options);
-      print('Updated route path with ${committedPoints.length} points');
     } catch (e) {
       print('Error updating route path: $e');
     }
@@ -387,7 +339,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     
     final route = widget.baseRoute!;
     
-    // Center on start point if available
     if (route.startPoint != null) {
       final startPoint = LatLng(
         route.startPoint!.latitude!,
@@ -397,7 +348,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _centerOnLocation(startPoint);
     }
     
-    // If we have start and end points, draw a simple line
     if (route.startPoint != null && route.endPoint != null) {
       try {
         final options = PolylineAnnotationOptions(
@@ -413,7 +363,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         );
         
         await _polylineManager!.create(options);
-        print('Drew base route from start to end point');
       } catch (e) {
         print('Error drawing base route: $e');
       }
@@ -435,18 +384,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   Future<void> _stopRouteTracking() async {
-    // Confirm with user
     final shouldStop = await showStopDialog(context);
-    
     if (shouldStop != true) return;
     
-    // Stop recording
     await ref.read(routeCreationProvider.notifier).stopUserRoute();
     
     final userRoute = ref.read(routeCreationProvider);
     final baseRoute = ref.read(routeCreationProvider.notifier).baseRoute;
     
-    // Navigate to save route screen
     if (userRoute != null) {
       Navigator.of(context).pushReplacementNamed(
         Routes.saveRoute,
@@ -461,7 +406,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   void _handleBackPress(BuildContext context) {
-    if (_isRecording) {
+    final userRoute = ref.read(routeCreationProvider);
+    if (userRoute != null) {
       _stopRouteTracking();
     } else {
       Navigator.of(context).pop();
