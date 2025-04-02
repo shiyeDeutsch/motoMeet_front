@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:latlong2/latlong.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import '../constants/app_constants.dart';
 import '../models/enum.dart';
@@ -45,6 +48,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   static const String _baseRouteLayerId = 'base-route-layer';
   static const String _userRouteSourceId = 'user-route-source';
   static const String _userRouteLayerId = 'user-route-layer';
+  static const String _userLocationSourceId = 'user-location-source';
+  static const String _userLocationLayerId = 'user-location-layer';
+  
+  // Marker for user location
+  CircleAnnotationManager? _circleAnnotationManager;
+  CircleAnnotation? _userLocationMarker;
+  
+  // Polyline for route path
+  PolylineAnnotationManager? _polylineManager;
+  PolylineAnnotation? _routePolyline;
 
   @override
   void dispose() {
@@ -131,10 +144,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _mapboxMap = mapboxMap;
     
     try {
+      // Create annotation manager for adding markers and polylines
+      _circleAnnotationManager = await _mapboxMap!.annotations.createCircleAnnotationManager();
+      _polylineManager = await _mapboxMap!.annotations.createPolylineAnnotationManager();
+      
       // Get user's current location
       final currentLocation = await LocationService.getCurrentLocation();
       if (currentLocation != null) {
         _centerOnLocation(currentLocation);
+        
+        // Add user location marker
+        await _updateUserLocationMarker(
+          currentLocation.latitude, 
+          currentLocation.longitude
+        );
       }
       
       // Draw base route if available
@@ -150,6 +173,32 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _updateUserLocationMarker(double latitude, double longitude) async {
+    if (_mapboxMap == null || _circleAnnotationManager == null) return;
+
+    try {
+      // Remove existing marker if any
+      if (_userLocationMarker != null) {
+        await _circleAnnotationManager!.delete(_userLocationMarker!);
+      }
+      
+      // Create a blue circle for user location
+      final options = CircleAnnotationOptions(
+        geometry: Point.fromJson({
+          "coordinates": [longitude, latitude]
+        }),
+        circleRadius: 8.0,
+        circleColor: Colors.blue.value, // Use Color value instead of string
+        circleStrokeWidth: 2.0,
+        circleStrokeColor: Colors.white.value, // Use Color value instead of string
+      );
+      
+      _userLocationMarker = await _circleAnnotationManager!.create(options);
+    } catch (e) {
+      print('Error updating user location marker: $e');
     }
   }
 
@@ -251,6 +300,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _currentPosition = position;
     });
     
+    // Update user location marker
+    _updateUserLocationMarker(position.latitude, position.longitude);
+    
     // Only follow user location if in navigation mode
     if (_isNavigationMode) {
       _followUserLocation(position);
@@ -295,21 +347,47 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   Future<void> _updateUserRoutePath() async {
-    if (_mapboxMap == null) return;
+    if (_mapboxMap == null || _polylineManager == null) return;
     
-    // In a real implementation, this would draw the user's route on the map
-    // For now, we'll just update the UI by storing location in provider
-    // The route drawing API requires a detailed understanding of the mapbox API
+    try {
+      // Get committed points from the route provider using the public getter
+      final committedPoints = ref.read(routeCreationProvider.notifier).committedPoints;
+      
+      // Need at least 2 points to draw a line
+      if (committedPoints.length < 2) return;
+      
+      // Remove existing route line if any
+      if (_routePolyline != null) {
+        await _polylineManager!.delete(_routePolyline!);
+      }
+      
+      // Convert GeoPoints to map coordinates
+      final List<List<double>> coordinates = committedPoints.map((point) => 
+        [point.longitude!, point.latitude!]
+      ).toList();
+      
+      // Create a polyline for the route
+      final options = PolylineAnnotationOptions(
+        geometry: LineString.fromJson({
+          "coordinates": coordinates
+        }),
+        lineWidth: 4.0,
+        lineColor: Colors.red.value,
+      );
+      
+      _routePolyline = await _polylineManager!.create(options);
+      print('Updated route path with ${committedPoints.length} points');
+    } catch (e) {
+      print('Error updating route path: $e');
+    }
   }
 
   Future<void> _drawBaseRoute() async {
-    if (_mapboxMap == null || widget.baseRoute == null) return;
+    if (_mapboxMap == null || widget.baseRoute == null || _polylineManager == null) return;
     
-    // Get route points from the base route
     final route = widget.baseRoute!;
     
-    // In a real implementation, this would draw the base route on the map
-    // For now, we'll just position the camera on the start point
+    // Center on start point if available
     if (route.startPoint != null) {
       final startPoint = LatLng(
         route.startPoint!.latitude!,
@@ -317,6 +395,28 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       );
       
       _centerOnLocation(startPoint);
+    }
+    
+    // If we have start and end points, draw a simple line
+    if (route.startPoint != null && route.endPoint != null) {
+      try {
+        final options = PolylineAnnotationOptions(
+          geometry: LineString.fromJson({
+            "coordinates": [
+              [route.startPoint!.longitude!, route.startPoint!.latitude!],
+              [route.endPoint!.longitude!, route.endPoint!.latitude!]
+            ]
+          }),
+          lineWidth: 4.0,
+          lineColor: Colors.blue.value,
+          lineOpacity: 0.7,
+        );
+        
+        await _polylineManager!.create(options);
+        print('Drew base route from start to end point');
+      } catch (e) {
+        print('Error drawing base route: $e');
+      }
     }
   }
 
