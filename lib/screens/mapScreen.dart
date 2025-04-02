@@ -37,6 +37,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   // State tracking
   bool _isLoading = true;
   bool _isNavigationMode = false;
+  bool _isAutoFollowing = true; // Track if map is auto-following user
+  double _userSetZoomLevel = MapConfig.DEFAULT_ZOOM; // Track user-set zoom level
+  bool _userHasManuallyZoomed = false; // Track if user has manually zoomed
   
   // Annotation managers
   CircleAnnotationManager? _circleAnnotationManager;
@@ -73,7 +76,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _updateUserLocationMarker(currentPosition.latitude, currentPosition.longitude);
           
-          if (_isNavigationMode) {
+          if (_isNavigationMode && _isAutoFollowing) {
             _followUserLocation(currentPosition);
           }
           
@@ -136,8 +139,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           bearing: 0.0,
           pitch: MapConfig.DEFAULT_TILT,
         ),
+        onScrollListener: (_) => _onUserMapInteraction(),
+        onZoomListener: (_) => _updateUserZoomLevel(),
       ),
     );
+  }
+
+  void _onUserMapInteraction() {
+    // Disable auto-following when user manually interacts with the map
+    if (_isNavigationMode && _isAutoFollowing) {
+      setState(() {
+        _isAutoFollowing = false;
+      });
+    }
   }
 
   void _onMapCreated(MapboxMap mapboxMap) async {
@@ -147,9 +161,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _circleAnnotationManager = await _mapboxMap!.annotations.createCircleAnnotationManager();
       _polylineManager = await _mapboxMap!.annotations.createPolylineAnnotationManager();
       
+      // Initialize default zoom level
+      _userSetZoomLevel = MapConfig.DEFAULT_ZOOM;
+      
       final currentLocation = await LocationService.getCurrentLocation();
       if (currentLocation != null) {
-        _centerOnLocation(currentLocation);
+        // Get position for speed
+        final position = await geo.Geolocator.getCurrentPosition();
+        _centerOnLocation(currentLocation, speed: position.speed);
         await _updateUserLocationMarker(
           currentLocation.latitude, 
           currentLocation.longitude
@@ -193,13 +212,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  Future<void> _centerOnLocation(LatLng location) async {
+  Future<void> _centerOnLocation(LatLng location, {double? speed}) async {
     if (_mapboxMap == null) return;
+    
+    // Use dynamic zoom based on speed if available and not manually zoomed
+    double zoomLevel;
+    if (speed != null && !_userHasManuallyZoomed && _isAutoFollowing) {
+      zoomLevel = _getZoomLevelBasedOnSpeed(speed);
+    } else {
+      zoomLevel = _userSetZoomLevel;
+    }
     
     await _mapboxMap!.flyTo(
       CameraOptions(
         center: Point.fromJson({"coordinates": [location.longitude, location.latitude]}),
-        zoom: MapConfig.DEFAULT_ZOOM,
+        zoom: zoomLevel,
         pitch: _isNavigationMode ? MapConfig.NAVIGATION_TILT : MapConfig.DEFAULT_TILT,
       ),
       MapAnimationOptions(duration: 500),
@@ -212,12 +239,28 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       if (currentPosition != null) {
         // Use the position from the provider if available (when tracking a route)
         final location = LatLng(currentPosition.latitude, currentPosition.longitude);
-        _centerOnLocation(location);
+        
+        // Reset to auto-follow mode and determine zoom based on speed
+        setState(() {
+          _isAutoFollowing = true;
+          _userHasManuallyZoomed = false;
+        });
+        
+        // Center with dynamic zoom level
+        await _mapboxMap!.flyTo(
+          CameraOptions(
+            center: Point.fromJson({"coordinates": [location.longitude, location.latitude]}),
+            zoom: _getZoomLevelBasedOnSpeed(currentPosition.speed),
+            pitch: _isNavigationMode ? MapConfig.NAVIGATION_TILT : MapConfig.DEFAULT_TILT,
+          ),
+          MapAnimationOptions(duration: 500),
+        );
       } else {
-        // Otherwise get the current location
+        // Otherwise get the current location and use Geolocator for speed
         final currentLocation = await LocationService.getCurrentLocation();
         if (currentLocation != null) {
-          _centerOnLocation(currentLocation);
+          final position = await geo.Geolocator.getCurrentPosition();
+          _centerOnLocation(currentLocation, speed: position.speed);
         }
       }
     } catch (e) {
@@ -255,13 +298,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       setState(() {
         _isLoading = false;
         _isNavigationMode = true;
+        _isAutoFollowing = true;
+        _userHasManuallyZoomed = false; // Reset manual zoom flag
       });
       
-      await _mapboxMap?.flyTo(
+      // After starting navigation, center on the current location with speed-based zoom
+      // Get latest position for speed and heading
+      final position = await geo.Geolocator.getCurrentPosition();
+      await _mapboxMap!.flyTo(
         CameraOptions(
           center: Point.fromJson({"coordinates": [currentLocation.longitude, currentLocation.latitude]}),
-          zoom: MapConfig.DEFAULT_ZOOM,
+          zoom: _getZoomLevelBasedOnSpeed(position.speed),
           pitch: MapConfig.NAVIGATION_TILT,
+          bearing: position.heading,
         ),
         MapAnimationOptions(duration: 500),
       );
@@ -279,21 +328,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Future<void> _followUserLocation(geo.Position position) async {
     if (_mapboxMap == null) return;
     
-    double zoomLevel = MapConfig.DEFAULT_ZOOM;
-    
-    if (position.speed > SpeedThresholds.FAST_DRIVING) {
-      zoomLevel = 13.0;
-    } else if (position.speed > SpeedThresholds.MEDIUM_DRIVING) {
-      zoomLevel = 14.0;
-    } else if (position.speed > SpeedThresholds.SLOW_DRIVING) {
-      zoomLevel = 15.0;
-    } else if (position.speed > SpeedThresholds.BIKING) {
-      zoomLevel = 16.0;
-    } else if (position.speed > SpeedThresholds.WALKING) {
-      zoomLevel = 17.0;
-    } else {
-      zoomLevel = 18.0;
-    }
+    // Get zoom level based on speed if auto-following is enabled
+    double zoomLevel = _isAutoFollowing && !_userHasManuallyZoomed
+        ? _getZoomLevelBasedOnSpeed(position.speed)
+        : _userSetZoomLevel;
     
     await _mapboxMap!.flyTo(
       CameraOptions(
@@ -304,6 +342,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       MapAnimationOptions(duration: 300),
     );
+  }
+
+  // Get the appropriate zoom level based on current speed
+  double _getZoomLevelBasedOnSpeed(double speedMps) {
+    return SpeedThresholds.getZoomForSpeed(speedMps);
   }
 
   Future<void> _updateUserRoutePath() async {
@@ -345,7 +388,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         route.startPoint!.longitude!,
       );
       
-      _centerOnLocation(startPoint);
+      // Use a default zoom that works for viewing full routes
+      await _mapboxMap!.flyTo(
+        CameraOptions(
+          center: Point.fromJson({"coordinates": [startPoint.longitude, startPoint.latitude]}),
+          zoom: SpeedThresholds.ZOOM_BIKING, // Middle-range zoom good for route overview
+          pitch: MapConfig.DEFAULT_TILT,
+        ),
+        MapAnimationOptions(duration: 500),
+      );
     }
     
     if (route.startPoint != null && route.endPoint != null) {
@@ -370,6 +421,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   void _showMapLayersBottomSheet(BuildContext context) {
+    // Disable auto-following when user opens map layers
+    if (_isNavigationMode) {
+      setState(() {
+        _isAutoFollowing = false;
+      });
+    }
+    
     BottomSheetService.showSmallBottomSheet(
       context: context,
       content: MapLayersBottomSheet(
@@ -411,6 +469,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       _stopRouteTracking();
     } else {
       Navigator.of(context).pop();
+    }
+  }
+
+  void _updateUserZoomLevel() async {
+    if (_mapboxMap != null) {
+      try {
+        // Get current camera state to retrieve the zoom level
+        CameraState cameraState = await _mapboxMap!.getCameraState();
+        setState(() {
+          _userSetZoomLevel = cameraState.zoom;
+          _userHasManuallyZoomed = true; // Mark that user has manually zoomed
+        });
+        
+        // This doesn't affect auto-following since it's only the zoom that changed
+      } catch (e) {
+        print('Error getting zoom level: $e');
+      }
     }
   }
 }

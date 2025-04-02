@@ -18,6 +18,26 @@ class SpeedThresholds {
   static const double SLOW_DRIVING = 19.4;
   static const double MEDIUM_DRIVING = 27.8;
   static const double FAST_DRIVING = 33.3;
+  
+  // Corresponding zoom levels for each speed threshold
+  static const double ZOOM_STATIONARY = 18.0;
+  static const double ZOOM_WALKING = 17.0;
+  static const double ZOOM_RUNNING = 16.0;
+  static const double ZOOM_BIKING = 15.0;
+  static const double ZOOM_SLOW_DRIVING = 14.0;
+  static const double ZOOM_MEDIUM_DRIVING = 13.0;
+  static const double ZOOM_FAST_DRIVING = 11.5;
+  
+  // Get appropriate zoom level based on current speed
+  static double getZoomForSpeed(double speed) {
+    if (speed < WALKING) return ZOOM_STATIONARY;
+    if (speed < RUNNING) return ZOOM_WALKING;
+    if (speed < BIKING) return ZOOM_RUNNING;
+    if (speed < SLOW_DRIVING) return ZOOM_BIKING;
+    if (speed < MEDIUM_DRIVING) return ZOOM_SLOW_DRIVING;
+    if (speed < FAST_DRIVING) return ZOOM_MEDIUM_DRIVING;
+    return ZOOM_FAST_DRIVING;
+  }
 }
 
 // Map UI configuration
