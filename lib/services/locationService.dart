@@ -35,10 +35,18 @@ class LocationService {
         throw Exception('Location permissions are permanently denied.');
       }
 
-      // Start listening to location updates
-      _positionSubscription = Geolocator.getPositionStream().listen(
+      // Configure location settings for more frequent updates
+      const LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 2, // Update every 2 meters (instead of default 5)
+      //  timeLimit: Duration(seconds: 1), // Ensure we get updates at least once per second
+      );
+
+      // Start listening to location updates with the custom settings
+      _positionSubscription = Geolocator.getPositionStream(
+        locationSettings: locationSettings
+      ).listen(
         (position) {
-          print("Speed: ${position.speed} m/s");
           _locationUpdatesController.add(position);
         },
         onError: (error) {

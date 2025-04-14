@@ -35,138 +35,6 @@ UI Components <-> Providers <-> Services <-> Local Database (Isar) / Remote API
 
 ## Project Structure
 
-lib/
-```
-│   main.dart
-│   
-├───common
-│   └───widgets
-│           activity_feed_item.dart
-│           event_card.dart
-│           route_card.dart
-│           
-├───models
-│       activity.dart
-│       activity.g.dart
-│       enum.dart
-│       event.dart
-│       event.g.dart
-│       geoLocationInfo.dart
-│       geoLocationInfo.g.dart
-│       group.dart
-│       group.g.dart
-│       mapMarker.dart
-│       notification.dart
-│       notification.g.dart
-│       register_model.dart
-│       register_model.g.dart
-│       route.dart
-│       route.g.dart
-│       sample_routes.dart
-│       subscriber.dart
-│       theme_preferences.dart
-│       theme_preferences.g.dart
-│       userModel.dart
-│       userModel.g.dart
-│       
-├───providers
-│       activity_provider.dart
-│       create_event_provider.dart
-│       events_provider.dart
-│       event_details_provider.dart
-│       event_participants_provider.dart
-│       home_screen_provider.dart
-│       routes_provider.dart
-│       
-├───routing
-│       InitialRoute.dart
-│       routeGenerator.dart
-│       routes.dart
-│       
-├───screens
-│       create_event_screen.dart
-│       discover_routes_screen.dart
-│       event_details_screen.dart
-│       homeScreen.dart
-│       loginScreen.dart
-│       mapScreen.dart
-│       routeDetailsScreen.dart
-│       saveRouteScreen.dart
-│       singupScreen.dart
-│       step1.dart
-│       theme_settings_screen.dart
-│       userProfileScreen.dart
-│       
-├───services
-│   │   activity_service.dart
-│   │   authService.dart
-│   │   bottomSheetServices.dart
-│   │   distanceFormatter.dart
-│   │   events_service.dart
-│   │   httpClient.dart
-│   │   loctionService.dart
-│   │   routesService.dart
-│   │   service_locator.dart
-│   │   userRouteService.dart
-│   │   userService.dart
-│   │   
-│   └───isar
-│           isar_activity.dart
-│           isar_event.dart
-│           isar_geo_location.dart
-│           isar_initializer.dart
-│           isar_repository.dart
-│           isar_route_repository.dart
-│           isar_theme_preferences.dart
-│           isar_user_info.dart
-│           repository_provider.dart
-│           
-├───theme
-│   │   app_theme.dart
-│   │   theme_provider.dart
-│   │   
-│   └───themes
-│           adventure_theme.dart
-│           community_adventure_theme.dart
-│           modern_explorer_theme.dart
-│           technical_equipment_theme.dart
-│           trail_map_theme.dart
-│           
-├───utilities
-│       apiEndPoints.dart
-│       appIcons.dart
-│       assetLoader.dart
-│       duration_formatter.dart
-│       isarConverters.dart
-│       
-└───widgets
-    │   active_route_details.dart
-    │   bottomNavigation.dart
-    │   customTextFromField.dart
-    │   dropdown.dart
-    │   event_item_form.dart
-    │   event_participant_list.dart
-    │   event_stages_list.dart
-    │   event_stage_form.dart
-    │   expandableFAB.dart
-    │   ExpandablePanel.dart
-    │   loading_indicator.dart
-    │   mapbox_widget.dart
-    │   mapButtons.dart
-    │   map_controls_widget.dart
-    │   map_layers_bottom_sheet.dart
-    │   pending_participant_list.dart
-    │   selecetMapProvider.dart
-    │   start_route_button.dart
-    │   theme_switcher.dart
-    │   wayPointBottomSheet.dart
-    │   
-    └───dialogs
-            chooseRouteTypeDialog.dart
-            confirmation_dialog.dart
-            stopRoutedialog.dart
-```
-
 ## Detailed Screen Implementations
 
 ### 1. Authentication Screens
@@ -418,12 +286,7 @@ The application communicates with the MotoMeet backend API for data operations. 
 
 ## Local Data Persistence
 
-The app uses multiple strategies for local data:
-
-1. **Isar Database** - For complex structured data like user profiles, routes, and offline content
-2. **Shared Preferences** - For user settings and session information
-3. **Secure Storage** - For sensitive data like authentication tokens
-4. **File System** - For cached media and map data
+ 
 
 ## Performance Considerations
 
@@ -442,7 +305,6 @@ The app uses multiple strategies for local data:
 - Certificate pinning for API communication
 - Input validation and sanitization
 - Permission-based UI adaptations
-- Biometric authentication option
 
 ## Offline Capabilities
 

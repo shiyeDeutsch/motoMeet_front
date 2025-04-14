@@ -27,8 +27,8 @@ class MapScreen extends ConsumerStatefulWidget {
   ConsumerState<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends ConsumerState<MapScreen> {
-  // Mapbox controller
+class _MapScreenState extends ConsumerState<MapScreen> with TickerProviderStateMixin {
+  // Map controller
   MapboxMap? _mapboxMap;
 
   // Map style
@@ -37,65 +37,81 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   // State tracking
   bool _isLoading = true;
   bool _isNavigationMode = false;
-  bool _isAutoFollowing = true; // Track if map is auto-following user
-  double _userSetZoomLevel =
-      MapConfig.DEFAULT_ZOOM; // Track user-set zoom level
-  bool _userHasManuallyZoomed = false; // Track if user has manually zoomed
+  bool _isAutoFollowing = true;
+  double _userSetZoomLevel = MapConfig.DEFAULT_ZOOM;
 
-  // Annotation managers
-  CircleAnnotationManager? _circleAnnotationManager;
-  CircleAnnotation? _userLocationMarker;
-  PolylineAnnotationManager? _polylineManager;
-  PolylineAnnotation? _routePolyline;
+  // Camera constraints
+  final _defaultEdgeInsets = MbxEdgeInsets(top: 100, left: 100, bottom: 100, right: 100);
 
-  // Last processed position to avoid duplicate updates
-  geo.Position? _lastProcessedPosition;
+  // Layer & Source IDs
+  final String _userRouteLayerId = 'user-route-layer';
+  final String _userRouteSourceId = 'user-route-source';
+  final String _baseRouteLayerId = 'base-route-layer';
+  final String _baseRouteSourceId = 'base-route-source';
+
+  // Animation controller for route drawing
+  AnimationController? _routeAnimationController;
+  Animation<double>? _routeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize animation controller
+    _routeAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+  }
 
   @override
   void dispose() {
+    _routeAnimationController?.dispose();
     _mapboxMap?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the current user route and route notifier
+    // Watch providers for reactive updates
     final userRoute = ref.watch(routeCreationProvider);
-    final routeNotifier = ref.watch(routeCreationProvider.notifier);
-    final currentPosition = routeNotifier.currentPosition;
+    final userLocation = ref.watch(userLocationProvider);
 
-    // Only update map UI if position changed and we're recording
-    if (currentPosition != null && userRoute != null) {
-      final bool positionChanged = _lastProcessedPosition == null ||
-          _lastProcessedPosition!.latitude != currentPosition.latitude ||
-          _lastProcessedPosition!.longitude != currentPosition.longitude;
-
-      if (positionChanged) {
-        _lastProcessedPosition = currentPosition;
-
-        // Use post-frame callback to ensure the map is ready
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _updateUserLocationMarker(
-              currentPosition.latitude, currentPosition.longitude);
-
-          if (_isNavigationMode && _isAutoFollowing) {
-            _followUserLocation(currentPosition);
-          }
-
-          _updateUserRoutePath();
-        });
-      }
+    // Update map when userLocation changes
+    if (userLocation != null && _mapboxMap != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_isNavigationMode && _isAutoFollowing) {
+          _followUserLocation(userLocation);
+        }
+      });
     }
+
+    // Listen for route updates and update the path
+    ref.listen<app_models.UserRoute?>(
+      routeCreationProvider, 
+      (previous, next) {
+        if (next != null && _mapboxMap != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateUserRoutePath();
+    });
+        }
+      }
+    );
 
     return Scaffold(
       body: Stack(
         children: [
+          // Map Widget
           _buildMapView(),
+          
+          // Controls overlay
           MapControlsWidget(
             onBackPressed: () => _handleBackPress(context),
             onCenterLocationPressed: _centerOnCurrentLocation,
             onLayersPressed: () => _showMapLayersBottomSheet(context),
           ),
+          
+          // Route action button
           if (userRoute == null && !_isLoading)
             StartRouteButton(
               onPressed: () => _startNewRouteFlow(context),
@@ -103,6 +119,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ? 'Start Following Route'
                   : 'Start New Route',
             ),
+          
+          // Active route details
           if (userRoute != null)
             Positioned(
               bottom: 0,
@@ -111,11 +129,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               child: ActiveRouteDetails(
                 currentUserRoute: userRoute,
                 baseRoute: widget.baseRoute,
-                currentPosition: currentPosition,
+                currentPosition: userLocation,
                 onStopPressed: _stopRouteTracking,
                 context: context,
               ),
             ),
+          
+          // Loading indicator
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),
@@ -133,6 +153,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         key: const ValueKey("mapWidget"),
         styleUri: _currentMapStyle,
         onMapCreated: _onMapCreated,
+        onStyleLoadedListener: _onStyleLoadedCallback,
         cameraOptions: CameraOptions(
           center: Point.fromJson({
             "coordinates": [0.0, 0.0]
@@ -142,44 +163,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           pitch: MapConfig.DEFAULT_TILT,
         ),
         onScrollListener: (_) => _onUserMapInteraction(),
-        onZoomListener: (_) => _updateUserZoomLevel(),
       ),
     );
   }
 
-  void _onUserMapInteraction() {
-    // Disable auto-following when user manually interacts with the map
-    if (_isNavigationMode && _isAutoFollowing) {
-      setState(() {
-        _isAutoFollowing = false;
-      });
-    }
-  }
-
-  void _onMapCreated(MapboxMap mapboxMap) async {
+  Future<void> _onMapCreated(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
     try {
-      _circleAnnotationManager =
-          await _mapboxMap!.annotations.createCircleAnnotationManager();
-      _polylineManager =
-          await _mapboxMap!.annotations.createPolylineAnnotationManager();
+      // Request location permissions
+      await _requestLocationPermission();
 
-      // Initialize default zoom level
-      _userSetZoomLevel = MapConfig.DEFAULT_ZOOM;
-
-      final currentLocation = await LocationService.getCurrentLocation();
-      if (currentLocation != null) {
-        // Get position for speed
-        final position = await geo.Geolocator.getCurrentPosition();
-        _centerOnLocation(currentLocation, speed: position.speed);
-        await _updateUserLocationMarker(
-            currentLocation.latitude, currentLocation.longitude);
-      }
-
-      if (widget.baseRoute != null) {
-        _drawBaseRoute();
-      }
+      // Initialize location component
+      await _initializeLocationComponent();
 
       setState(() {
         _isLoading = false;
@@ -192,37 +188,108 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  Future<void> _updateUserLocationMarker(
-      double latitude, double longitude) async {
-    if (_mapboxMap == null || _circleAnnotationManager == null) return;
+  Future<void> _onStyleLoadedCallback(StyleLoadedEventData data) async {
+    // Add necessary sources and layers
+    await _addRouteLayers();
+    
+    // If base route exists, draw it
+    if (widget.baseRoute != null) {
+      await _drawBaseRoute();
+    }
 
-    try {
-      if (_userLocationMarker != null) {
-        await _circleAnnotationManager!.delete(_userLocationMarker!);
-      }
+    // Get and center on user's location
+    final currentLocation = await LocationService.getCurrentLocation();
+    if (currentLocation != null) {
+      await _centerOnLocation(currentLocation);
+    }
+  }
 
-      final options = CircleAnnotationOptions(
-        geometry: Point.fromJson({
-          "coordinates": [longitude, latitude]
-        }),
-        circleRadius: 5.0,
-        circleColor: Colors.blue.toARGB32(),
-        circleStrokeWidth: 2.0,
-        circleStrokeColor: Colors.white.toARGB32(),
-      );
+  Future<void> _requestLocationPermission() async {
+    await geo.Geolocator.requestPermission();
+  }
 
-      _userLocationMarker = await _circleAnnotationManager!.create(options);
-    } catch (e) {
-      print('Error updating user location marker: $e');
+  Future<void> _initializeLocationComponent() async {
+    await _mapboxMap?.location.updateSettings(
+      LocationComponentSettings(
+        enabled: true,
+        puckBearingEnabled: true,
+        showAccuracyRing: true,
+        accuracyRingColor: Colors.blue.withOpacity(0.1).value,
+        accuracyRingBorderColor: Colors.blue.value,
+        pulsingEnabled: true,
+        pulsingColor: Colors.blue.value,
+        pulsingMaxRadius: 50,
+        locationPuck: LocationPuck(
+          locationPuck2D: DefaultLocationPuck2D(
+            topImage: null,
+            bearingImage: null,
+            shadowImage: null,
+            scaleExpression: null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addRouteLayers() async {
+    // Add source and layer for user route
+    await _mapboxMap?.style.addSource(
+      GeoJsonSource(id: _userRouteSourceId, lineMetrics: true),
+    );
+    
+    await _mapboxMap?.style.addLayer(
+      LineLayer(
+        id: _userRouteLayerId,
+        sourceId: _userRouteSourceId,
+        lineCap: LineCap.ROUND,
+        lineJoin: LineJoin.ROUND,
+        lineWidth: 4.0,
+        lineColor: Colors.red.value,
+      ),
+    );
+
+    // Add source and layer for base route
+    await _mapboxMap?.style.addSource(
+      GeoJsonSource(id: _baseRouteSourceId, lineMetrics: true),
+    );
+    
+    await _mapboxMap?.style.addLayer(
+      LineLayer(
+        id: _baseRouteLayerId,
+        sourceId: _baseRouteSourceId,
+        lineCap: LineCap.ROUND,
+        lineJoin: LineJoin.ROUND,
+        lineWidth: 4.0,
+        lineColor: Colors.blue.value,
+        lineOpacity: 0.7,
+      ),
+    );
+  }
+
+  void _onUserMapInteraction() {
+    // Disable auto-following when user manually interacts with map
+    if (_isNavigationMode && _isAutoFollowing) {
+      setState(() {
+        _isAutoFollowing = false;
+      });
+    }
+  }
+
+  void _onCameraChanged(CameraChangedEventData event) {
+    // Update user set zoom level when camera updates
+    if (_mapboxMap != null) {
+      _mapboxMap!.getCameraState().then((cameraState) {
+        _userSetZoomLevel = cameraState.zoom;
+      });
     }
   }
 
   Future<void> _centerOnLocation(LatLng location, {double? speed}) async {
     if (_mapboxMap == null) return;
 
-    // Use dynamic zoom based on speed if available and not manually zoomed
+    // Determine zoom level based on speed (if provided)
     double zoomLevel;
-    if (speed != null && !_userHasManuallyZoomed && _isAutoFollowing) {
+    if (speed != null && _isAutoFollowing) {
       zoomLevel = _getZoomLevelBasedOnSpeed(speed);
     } else {
       zoomLevel = _userSetZoomLevel;
@@ -238,50 +305,149 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ? MapConfig.NAVIGATION_TILT
             : MapConfig.DEFAULT_TILT,
       ),
-      MapAnimationOptions(duration: 500),
+      MapAnimationOptions(duration: 300),
+    );
+  }
+
+  Future<void> _followUserLocation(geo.Position position) async {
+    if (_mapboxMap == null) return;
+
+    // Determine zoom level based on speed
+    double zoomLevel = _isAutoFollowing 
+        ? _getZoomLevelBasedOnSpeed(position.speed) 
+        : _userSetZoomLevel;
+
+    await _mapboxMap!.flyTo(
+      CameraOptions(
+        center: Point.fromJson({
+          "coordinates": [position.longitude, position.latitude]
+        }),
+        zoom: zoomLevel,
+        pitch: MapConfig.NAVIGATION_TILT,
+        bearing: _isNavigationMode ? position.heading : 0,
+      ),
+      MapAnimationOptions(duration: 300),
     );
   }
 
   Future<void> _centerOnCurrentLocation() async {
     try {
-      final currentPosition =
-          ref.read(routeCreationProvider.notifier).currentPosition;
+      final currentPosition = ref.read(userLocationProvider);
+      
       if (currentPosition != null) {
-        // Use the position from the provider if available (when tracking a route)
-        final location =
-            LatLng(currentPosition.latitude, currentPosition.longitude);
-
-        // Reset to auto-follow mode and determine zoom based on speed
+        // Reset auto-follow mode
         setState(() {
           _isAutoFollowing = true;
-          _userHasManuallyZoomed = false;
         });
 
-        // Center with dynamic zoom level
-        await _mapboxMap!.flyTo(
-          CameraOptions(
-            center: Point.fromJson({
-              "coordinates": [location.longitude, location.latitude]
-            }),
-            zoom: _getZoomLevelBasedOnSpeed(currentPosition.speed),
-            pitch: _isNavigationMode
-                ? MapConfig.NAVIGATION_TILT
-                : MapConfig.DEFAULT_TILT,
-          ),
-          MapAnimationOptions(duration: 500),
-        );
+        // Center map on current position
+        await _followUserLocation(currentPosition);
       } else {
-        // Otherwise get the current location and use Geolocator for speed
         final currentLocation = await LocationService.getCurrentLocation();
         if (currentLocation != null) {
           final position = await geo.Geolocator.getCurrentPosition();
-          _centerOnLocation(currentLocation, speed: position.speed);
+          await _centerOnLocation(currentLocation, speed: position.speed);
         }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not get current location: $e')),
       );
+    }
+  }
+
+  double _getZoomLevelBasedOnSpeed(double speedMps) {
+    return SpeedThresholds.getZoomForSpeed(speedMps);
+  }
+
+  Future<void> _updateUserRoutePath() async {
+    if (_mapboxMap == null) return;
+
+    try {
+      final committedPoints = ref.read(routeCreationProvider.notifier).committedPoints;
+      
+      if (committedPoints.length < 2) return;
+
+      final List<List<double>> coordinates = committedPoints
+          .map((point) => [point.longitude!, point.latitude!])
+          .toList();
+
+      final lineString = LineString.fromJson({"coordinates": coordinates});
+      final jsonString = '{"type":"LineString","coordinates":${lineString.coordinates}}';
+      
+      // Update the GeoJSON source
+      final source = await _mapboxMap!.style.getSource(_userRouteSourceId);
+      (source as GeoJsonSource).updateGeoJSON(jsonString);
+
+      // Animate the line (optional)
+      _animateRoute();
+    } catch (e) {
+      print('Error updating route path: $e');
+    }
+  }
+
+  void _animateRoute() {
+    // Reset animation controller
+    _routeAnimationController?.reset();
+    
+    // Configure animation
+    _routeAnimation = Tween<double>(begin: 0, end: 1.0).animate(_routeAnimationController!)
+      ..addListener(() {
+        _mapboxMap?.style.setStyleLayerProperty(
+          _userRouteLayerId, 
+          "line-trim-offset", 
+          [0, _routeAnimation?.value ?? 1.0]
+        );
+      });
+    
+    // Start animation
+    _routeAnimationController?.forward();
+  }
+
+  Future<void> _drawBaseRoute() async {
+    if (_mapboxMap == null || widget.baseRoute == null) return;
+
+    final route = widget.baseRoute!;
+
+    // Center map on route start point
+    if (route.startPoint != null) {
+      final startPoint = LatLng(
+        route.startPoint!.latitude!,
+        route.startPoint!.longitude!,
+      );
+
+      await _mapboxMap!.flyTo(
+        CameraOptions(
+          center: Point.fromJson({
+            "coordinates": [startPoint.longitude, startPoint.latitude]
+          }),
+          zoom: SpeedThresholds.ZOOM_BIKING,
+          pitch: MapConfig.DEFAULT_TILT,
+        ),
+        MapAnimationOptions(duration: 500),
+      );
+    }
+
+    try {
+      // Get route points
+      final routePointsList = route.routePoints.toList();
+
+      if (routePointsList.isNotEmpty) {
+        List<List<double>> coordinates = routePointsList
+            .map((point) => [point.point!.longitude!, point.point!.latitude!])
+            .toList();
+
+        if (coordinates.isNotEmpty) {
+          final lineString = LineString.fromJson({"coordinates": coordinates});
+          final jsonString = '{"type":"LineString","coordinates":${lineString.coordinates}}';
+          
+          // Update the GeoJSON source
+          final source = await _mapboxMap!.style.getSource(_baseRouteSourceId);
+          (source as GeoJsonSource).updateGeoJSON(jsonString);
+        }
+      }
+    } catch (e) {
+      print('Error drawing base route: $e');
     }
   }
 
@@ -318,10 +484,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _isLoading = false;
         _isNavigationMode = true;
         _isAutoFollowing = true;
-        _userHasManuallyZoomed = false; // Reset manual zoom flag
       });
 
-      // After starting navigation, center on the current location with speed-based zoom
+      // Initialize the route path
+      await _updateUserRoutePath();
+
       // Get latest position for speed and heading
       final position = await geo.Geolocator.getCurrentPosition();
       await _mapboxMap!.flyTo(
@@ -343,138 +510,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         SnackBar(content: Text('Error starting route: $e')),
       );
     }
-  }
-
-  Future<void> _followUserLocation(geo.Position position) async {
-    if (_mapboxMap == null) return;
-
-    // Get zoom level based on speed if auto-following is enabled
-    double zoomLevel = _isAutoFollowing && !_userHasManuallyZoomed
-        ? _getZoomLevelBasedOnSpeed(position.speed)
-        : _userSetZoomLevel;
-
-    await _mapboxMap!.flyTo(
-      CameraOptions(
-        center: Point.fromJson({
-          "coordinates": [position.longitude, position.latitude]
-        }),
-        zoom: zoomLevel,
-        pitch: MapConfig.NAVIGATION_TILT,
-        bearing: position.heading,
-      ),
-      MapAnimationOptions(duration: 300),
-    );
-  }
-
-  // Get the appropriate zoom level based on current speed
-  double _getZoomLevelBasedOnSpeed(double speedMps) {
-    return SpeedThresholds.getZoomForSpeed(speedMps);
-  }
-
-  Future<void> _updateUserRoutePath() async {
-    if (_mapboxMap == null || _polylineManager == null) return;
-
-    try {
-      final committedPoints =
-          ref.read(routeCreationProvider.notifier).committedPoints;
-
-      if (committedPoints.length < 2) return;
-
-      if (_routePolyline != null) {
-        await _polylineManager!.delete(_routePolyline!);
-      }
-
-      final List<List<double>> coordinates = committedPoints
-          .map((point) => [point.longitude!, point.latitude!])
-          .toList();
-
-      final options = PolylineAnnotationOptions(
-        geometry: LineString.fromJson({"coordinates": coordinates}),
-        lineWidth: 4.0,
-        lineColor: Colors.red.value,
-      );
-
-      _routePolyline = await _polylineManager!.create(options);
-    } catch (e) {
-      print('Error updating route path: $e');
-    }
-  }
-
-  Future<void> _drawBaseRoute() async {
-    if (_mapboxMap == null ||
-        widget.baseRoute == null ||
-        _polylineManager == null) return;
-
-    final route = widget.baseRoute!;
-
-    if (route.startPoint != null) {
-      final startPoint = LatLng(
-        route.startPoint!.latitude!,
-        route.startPoint!.longitude!,
-      );
-
-      // Use a default zoom that works for viewing full routes
-      await _mapboxMap!.flyTo(
-        CameraOptions(
-          center: Point.fromJson({
-            "coordinates": [startPoint.longitude, startPoint.latitude]
-          }),
-          zoom: SpeedThresholds
-              .ZOOM_BIKING, // Middle-range zoom good for route overview
-          pitch: MapConfig.DEFAULT_TILT,
-        ),
-        MapAnimationOptions(duration: 500),
-      );
-    }
-
-    try {
-      // Get all route points and sort by sequence number
-      final routePointsList = route.routePoints.toList();
-
-      List<List<double>> coordinates = [];
-
-      // Use route points if available
-      if (routePointsList.isNotEmpty) {
-        coordinates = routePointsList
-            .map((point) => [point.point!.longitude!, point.point!.latitude!])
-            .toList();
-      }
-        
-
-      if (coordinates.isNotEmpty) {
-        final options = PolylineAnnotationOptions(
-          geometry: LineString.fromJson({"coordinates": coordinates}),
-          lineWidth: 4.0,
-          lineColor: Colors.blue.toARGB32(),
-          lineOpacity: 0.7,
-        );
-
-        await _polylineManager!.create(options);
-      }
-    } catch (e) {
-      print('Error drawing base route: $e');
-    }
-  }
-
-  void _showMapLayersBottomSheet(BuildContext context) {
-    // Disable auto-following when user opens map layers
-    if (_isNavigationMode) {
-      setState(() {
-        _isAutoFollowing = false;
-      });
-    }
-
-    BottomSheetService.showSmallBottomSheet(
-      context: context,
-      content: MapLayersBottomSheet(
-        onMapStyleSelected: (style) {
-          setState(() {
-            _currentMapStyle = style;
-          });
-          _mapboxMap?.loadStyleURI(style);
-        },
-      ),
-    );
   }
 
   Future<void> _stopRouteTracking() async {
@@ -508,20 +543,24 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  void _updateUserZoomLevel() async {
-    if (_mapboxMap != null) {
-      try {
-        // Get current camera state to retrieve the zoom level
-        CameraState cameraState = await _mapboxMap!.getCameraState();
+  void _showMapLayersBottomSheet(BuildContext context) {
+    // Disable auto-following when user opens map layers
+    if (_isNavigationMode) {
         setState(() {
-          _userSetZoomLevel = cameraState.zoom;
-          _userHasManuallyZoomed = true; // Mark that user has manually zoomed
-        });
-
-        // This doesn't affect auto-following since it's only the zoom that changed
-      } catch (e) {
-        print('Error getting zoom level: $e');
-      }
+        _isAutoFollowing = false;
+      });
     }
+
+    BottomSheetService.showSmallBottomSheet(
+      context: context,
+      content: MapLayersBottomSheet(
+        onMapStyleSelected: (style) {
+          setState(() {
+            _currentMapStyle = style;
+          });
+          _mapboxMap?.loadStyleURI(style);
+        },
+      ),
+    );
   }
 }

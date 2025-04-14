@@ -15,14 +15,19 @@ import '../constants/app_constants.dart';
 /// Provider for route creation state management
 final routeCreationProvider =
     StateNotifierProvider<RouteCreationNotifier, UserRoute?>((ref) {
-  return RouteCreationNotifier();
+  return RouteCreationNotifier(ref);
 });
+
+/// Provider for real-time user location updates
+final userLocationProvider = StateProvider<Position?>((ref) => null);
 
 /// Notifier for managing route creation state
 class RouteCreationNotifier extends StateNotifier<UserRoute?> {
-  RouteCreationNotifier() : super(null);
+  RouteCreationNotifier(this.ref) : super(null);
 
-  final RouteCreationService _routeCreationService = GetIt.I<RouteCreationService>();
+  final Ref ref;
+  final RouteCreationService _routeCreationService =
+      GetIt.I<RouteCreationService>();
   StreamSubscription<Position>? _locationUpdatesSubscription;
 
   // List of threshold-validated points for the current trip
@@ -66,7 +71,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       distance: 0,
       elevationGain: 0,
     );
-    
+
     state = userRoute;
 
     // If we have a starting point from the route, add it
@@ -81,7 +86,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
     // Start a timer to force updates every minute
     _startTimer();
-    
+
     // Save the initial UserRoute to local database
     await _routeCreationService.saveUserRouteToLocalDb(state!);
   }
@@ -106,16 +111,17 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       routeType: routeType,
       startDate: DateTime.now().toUtc(),
     );
-    
+
     // 2. Save the Route to server to get an ID
     _baseRoute = await _routeCreationService.saveRouteToServer(route);
     if (_baseRoute == null) {
       // If server save fails, save locally only
-      final localRouteId = await _routeCreationService.saveRouteToLocalDb(route);
+      final localRouteId =
+          await _routeCreationService.saveRouteToLocalDb(route);
       route.id = localRouteId;
       _baseRoute = route;
     }
-    
+
     // 3. Create a UserRoute linked to the Route
     final userRoute = UserRoute(
       dateTraveled: DateTime.now().toUtc(),
@@ -124,12 +130,12 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       distance: 0,
       elevationGain: 0,
     );
-    
+
     state = userRoute;
-    
+
     // 4. Save the UserRoute to local database
     await _routeCreationService.saveUserRouteToLocalDb(userRoute);
-    
+
     // Add the starting point
     _committedPoints.add(startPoint);
 
@@ -148,7 +154,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
       return;
     }
-    
+
     switch (routeType) {
       case RouteType.hiking:
         _distanceFactor = MapConfig.HIKING_THRESHOLD;
@@ -168,31 +174,33 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   void _onLocationUpdate(Position newLocation) {
     _currentPosition = newLocation;
 
-    // Threshold check
-    final lastPoint = _committedPoints.last;
-    final distance = _routeCreationService.calculateDistanceInMeters(
-      lastPoint.toLatLng(),
-      LatLng(newLocation.latitude, newLocation.longitude),
-    );
+    // Update the userLocationProvider with real-time location
+    ref.read(userLocationProvider.notifier).state = newLocation;
 
-    if (distance >= _distanceFactor || _forceStateUpdate) {
-      _pathLength += distance;
-      _committedPoints.add(
-        GeoPoint(
-          latitude: newLocation.latitude,
-          longitude: newLocation.longitude,
-          altitude: newLocation.altitude,
-        ),
+    // Threshold check for route tracking
+    if (_committedPoints.isNotEmpty) {
+      final lastPoint = _committedPoints.last;
+      final distance = _routeCreationService.calculateDistanceInMeters(
+        lastPoint.toLatLng(),
+        LatLng(newLocation.latitude, newLocation.longitude),
       );
-      _updateUserRouteState();
-      _forceStateUpdate = false;
-      
-      // Save the point to the database
-      _routeCreationService.saveUserRoutePointToLocalDb(
-        _committedPoints.last, 
-        _committedPoints.length - 1,
-        state!.id
-      );
+
+      if (distance >= _distanceFactor || _forceStateUpdate) {
+        _pathLength += distance;
+        _committedPoints.add(
+          GeoPoint(
+            latitude: newLocation.latitude,
+            longitude: newLocation.longitude,
+            altitude: newLocation.altitude,
+          ),
+        );
+        _updateUserRouteState();
+        _forceStateUpdate = false;
+
+        // Save the point to the database
+        _routeCreationService.saveUserRoutePointToLocalDb(
+            _committedPoints.last, _committedPoints.length - 1, state!.id);
+      }
     }
   }
 
@@ -210,11 +218,11 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     if (state == null) return;
 
     final updated = state!.copyWith(
-      distance: _pathLength,
-      durationMinutes: _routeDuration.inMinutes,
-    );
+        distance: _pathLength,
+        durationMinutes: _routeDuration.inMinutes,
+        routePoints: _committedPoints);
     state = updated;
-    
+
     // Save the updated UserRoute to local database
     _routeCreationService.saveUserRouteToLocalDb(state!);
   }
@@ -228,7 +236,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     LocationService.dispose();
 
     if (state == null) return;
-    
+
     // Mark route as completed with final stats
     final finalUserRoute = state!.copyWith(
       distance: _pathLength,
@@ -236,10 +244,10 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     );
 
     state = finalUserRoute;
-    
+
     // Save the final UserRoute to local database
     await _routeCreationService.saveUserRouteToLocalDb(finalUserRoute);
-    
+
     // Optionally, update the base Route with new information
     if (_baseRoute != null) {
       // Update the base route with end point if it doesn't have one
@@ -248,10 +256,10 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
           endPoint: _committedPoints.last,
           endDate: DateTime.now().toUtc(),
         );
-        
+
         // Save the updated base Route
         await _routeCreationService.updateRouteInLocalDb(_baseRoute!);
-        
+
         // Optionally sync with server
         await _routeCreationService.saveRouteToServer(_baseRoute!);
       }
@@ -273,35 +281,26 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       description: description,
       // We would need to convert tags to Tag objects and link them
     );
-    
+
     _baseRoute = updatedRoute;
-    
+
     // Save locally
     await _routeCreationService.updateRouteInLocalDb(updatedRoute);
-    
+
     // Save to server
-    final serverRoute = await _routeCreationService.saveRouteToServer(updatedRoute);
+    final serverRoute =
+        await _routeCreationService.saveRouteToServer(updatedRoute);
     return serverRoute ?? updatedRoute;
   }
 
   /// Add a point of interest to the route
-  Future<void> addPointOfInterest(
-    GeoPoint location,
-    String name,
-    String description,
-    WaypointType waypointType,
-    [String? imageUrl]
-  ) async {
+  Future<void> addPointOfInterest(GeoPoint location, String name,
+      String description, WaypointType waypointType,
+      [String? imageUrl]) async {
     if (_baseRoute == null || _baseRoute!.id == null) return;
-    
+
     await _routeCreationService.addPointOfInterest(
-      _baseRoute!.id!,
-      location,
-      name,
-      description,
-      waypointType,
-      imageUrl
-    );
+        _baseRoute!.id!, location, name, description, waypointType, imageUrl);
   }
 
   @override
@@ -317,7 +316,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   Position? get currentPosition => _currentPosition;
   List<GeoPoint> get committedPoints => _committedPoints;
   Route? get baseRoute => _baseRoute;
-  
+
   // Computed properties
   Duration get routeDuration => _routeDuration;
   double get distance => _pathLength;
