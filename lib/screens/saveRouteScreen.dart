@@ -25,10 +25,11 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
 
-  // List of all possible tags
-  final List<TagEnum> _allTags = TagEnum.values;
-  // The user's current selection
-  final Set<TagEnum> _selectedTags = {};
+  // State for Difficulty Level
+  DifficultyLevelEnum? _selectedDifficulty = DifficultyLevelEnum.Easy;
+
+  // State for isLoop
+  bool _isLoop = false;
 
   @override
   void initState() {
@@ -45,15 +46,6 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
-  }
-
-  /// Toggles a tag in the set
-  void _toggleTag(TagEnum tag) {
-    setState(() {
-      _selectedTags.contains(tag)
-          ? _selectedTags.remove(tag)
-          : _selectedTags.add(tag);
-    });
   }
 
   /// Format a Duration (e.g., 2h 05m)
@@ -141,38 +133,40 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
     );
   }
 
-  /// Builds the tag picker row
-  Widget _buildTagPicker() {
-    return SizedBox(
-      height: 50.0,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _allTags.length,
-        itemBuilder: (context, index) {
-          final tag = _allTags[index];
-          final isSelected = _selectedTags.contains(tag);
-          return GestureDetector(
-            onTap: () => _toggleTag(tag),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.blue : Colors.grey[300],
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              child: Center(
-                child: Text(
-                  tag.name,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
+  /// Builds the difficulty selector
+  Widget _buildDifficultySelector() {
+    return DropdownButtonFormField<DifficultyLevelEnum>(
+      value: _selectedDifficulty,
+      decoration: const InputDecoration(
+        labelText: 'Difficulty Level',
+        border: OutlineInputBorder(),
       ),
+      items: DifficultyLevelEnum.values.map((DifficultyLevelEnum value) {
+        return DropdownMenuItem<DifficultyLevelEnum>(
+          value: value,
+          child: Text(value.name),
+        );
+      }).toList(),
+      onChanged: (DifficultyLevelEnum? newValue) {
+        setState(() {
+          _selectedDifficulty = newValue;
+        });
+      },
+      validator: (value) => value == null ? 'Please select a difficulty' : null,
+    );
+  }
+
+  /// Builds the isLoop toggle
+  Widget _buildIsLoopToggle() {
+    return SwitchListTile(
+      title: const Text('Is this a loop route?'),
+      value: _isLoop,
+      onChanged: (bool value) {
+        setState(() {
+          _isLoop = value;
+        });
+      },
+      secondary: const Icon(Icons.loop),
     );
   }
 
@@ -180,28 +174,69 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
   Future<void> _onSavePressed() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Get the UserRouteService
-    final userRouteService = ref.read(routeCreationProvider.notifier);
+    final routeNotifier = ref.read(routeCreationProvider.notifier);
+    final difficulty = _selectedDifficulty != null 
+        ? app_models.DifficultyLevel(level: _selectedDifficulty!.name) 
+        : null;
 
-    // Finalize the route with user-provided data
-    final updatedRoute = await userRouteService.finalizeRoute(
-      _nameController.text,
-      _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
-      _selectedTags.isNotEmpty ? _selectedTags.toList() : null,
-    );
+    bool success = false;
+    String successMessage = '';
+    String errorMessage = '';
 
-    if (updatedRoute != null) {
-      // Show a success dialog
+    // Determine if this is the initial finalization of a new route
+    // A simple heuristic: base route length is null before first finalization
+    bool isInitialFinalization = widget.route.length == null;
+
+    try {
+      if (isInitialFinalization) {
+        // Finalize the BASE route (only done once)
+        final finalizedRoute = await routeNotifier.finalizeBaseRoute(
+          _nameController.text,
+          _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          difficulty, // Difficulty set for the base route from first user
+          _isLoop,    // isLoop set for the base route from first user
+        );
+        if (finalizedRoute != null) {
+          success = true;
+          successMessage = 'New route finalized and saved!';
+        } else {
+          errorMessage = 'Failed to finalize the new base route.';
+        }
+      } else {
+        // Update the specific USER route's difficulty from this trip
+        if (widget.userRoute?.id == null) {
+          errorMessage = 'Cannot update difficulty: UserRoute ID is missing.';
+        } else if (difficulty == null) {
+           errorMessage = 'Cannot update difficulty: Difficulty level not selected.';
+        } else {
+           await routeNotifier.updateUserRouteDifficulty(
+              widget.userRoute!.id!, 
+              difficulty
+           );
+           success = true; // Assume success if no exception
+           successMessage = 'Journey difficulty updated!';
+           // Note: We might want more robust error handling from updateUserRouteDifficulty
+        }
+      }
+    } catch (e) {
+       errorMessage = 'An error occurred: $e';
+       success = false;
+    }
+
+    // Show feedback
+    if (!mounted) return;
+
+    if (success) {
       showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text('Route Saved'),
-          content: const Text('Your route has been successfully saved.'),
+          title: const Text('Success'),
+          content: Text(successMessage),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // close dialog
-                Navigator.of(context).pop(); // go back to previous screen
+                Navigator.of(context).pop(); // go back from SaveRouteScreen
               },
               child: const Text('OK'),
             ),
@@ -209,9 +244,8 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
         ),
       );
     } else {
-      // Optionally handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save the route')),
+        SnackBar(content: Text(errorMessage.isNotEmpty ? errorMessage : 'An unknown error occurred.')),
       );
     }
   }
@@ -229,7 +263,9 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
             children: [
               _buildForm(),
               const SizedBox(height: 20),
-              _buildTagPicker(),
+              _buildDifficultySelector(),
+              const SizedBox(height: 10),
+              _buildIsLoopToggle(),
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: _onSavePressed,

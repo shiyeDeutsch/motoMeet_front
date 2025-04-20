@@ -105,6 +105,18 @@ class RouteCreationService {
     }
   }
 
+  /// Get a UserRoute by its ID
+  Future<UserRoute?> getUserRouteById(int id) async {
+    try {
+      return await _repoProvider.userRouteRepository.getById(id);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting UserRoute by ID $id: $e');
+      }
+      return null;
+    }
+  }
+
   /// Link a UserRoute to its parent Route
   Future<void> linkUserRouteToRoute(int userRouteId, int routeId) async {
     // This would require additional code to establish the link in Isar

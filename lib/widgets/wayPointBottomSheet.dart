@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 
 import '../models/enum.dart';
 import '../models/route.dart';
+import '../providers/route_creation_provider.dart';
 import '../services/locationService.dart';
 import '../services/routesService.dart';
 
@@ -264,9 +265,10 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
         return [];
     }
   }
-
-  Future<Map<String, String>?> _showLandmarkDetailsDialog() async {
-    return showDialog<Map<String, String>>(
+ 
+  
+  Future<WaypointDetails?> _showLandmarkDetailsDialog() async {
+    return showDialog<WaypointDetails>(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -336,13 +338,18 @@ class _WayPointBottomSheetState extends State<WayPointBottomSheet> {
 
     final waypoint = PointOfInterest(
       location: GeoPoint.fromLatLng(location!, null),
-      name: details['name'] ?? '',
-      description: details['description']??'',
+      name: details.name ,
+      description: details.description  ,
       waypointType: type,
     );
-  //  final routeService = ref.read(routeServiceProvider.notifier);
+    final routeService = ref.read(routeCreationProvider.notifier);
 
-  //   routeService.addWaypoint(waypoint);
+    routeService.addPointOfInterest(
+      waypoint.location!, 
+      waypoint.name!, 
+      waypoint.description!, 
+      waypoint.waypointType!
+    );
   }
 
 void _showLandmarkDetailsBottomSheet(BuildContext parentContext , WidgetRef ref) {
@@ -510,3 +517,9 @@ class _LandmarkDetailsSheetState extends State<LandmarkDetailsSheet> {
     });
   }
 }
+ class WaypointDetails {
+    final String name;
+    final String description;
+    
+    WaypointDetails({required this.name, required this.description});
+  }

@@ -28,7 +28,7 @@ void main() async {
   }
 
   // Set Mapbox access token globally
-  MapboxOptions.setAccessToken(MapboxConfig.ACCESS_TOKEN);
+  MapboxOptions.setAccessToken(MapboxStyle.ACCESS_TOKEN);
 
   // Initialize services
   await setupLocator();

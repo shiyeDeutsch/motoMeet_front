@@ -234,3 +234,12 @@ enum SocialActivityType {
   TrackDay,
   Other
 }
+
+
+ // New enum for difficulty levels
+      enum DifficultyLevelEnum
+    {
+        Easy,
+        Medium,
+        Hard
+    }

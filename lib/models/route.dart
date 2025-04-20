@@ -39,9 +39,6 @@ class Route {
   IsarLinks<Review> reviews = IsarLinks<Review>();
   
   @JsonKey(ignore: true)
-  IsarLinks<Tag> tags = IsarLinks<Tag>();
-  
-  @JsonKey(ignore: true)
   IsarLinks<UserRoute> userRoutes = IsarLinks<UserRoute>();
   
   @JsonKey(ignore: true)
@@ -252,29 +249,6 @@ class Review {
       rating: rating ?? this.rating,
       comment: comment ?? this.comment,
       date: date ?? this.date,
-    );
-  }
-}
-
-@collection
-@JsonSerializable()
-class Tag {
-  Id? id;
-  String? name;
-
-  Tag({this.id, this.name});
-
-  factory Tag.fromJson(Map<String, dynamic> json) => _$TagFromJson(json);
-
-  Map<String, dynamic> toJson() => _$TagToJson(this);
-
-  Tag copyWith({
-    Id? id,
-    String? name,
-  }) {
-    return Tag(
-      id: id ?? this.id,
-      name: name ?? this.name,
     );
   }
 }
