@@ -10,7 +10,7 @@ import '../models/enum.dart';
 import '../models/route.dart';
 import '../services/locationService.dart';
 import '../services/route_creation_service.dart';
-import '../constants/app_constants.dart';
+import '../constants/map_utilties.dart';
 
 /// Provider for route creation state management
 final routeCreationProvider =

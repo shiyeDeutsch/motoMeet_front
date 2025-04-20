@@ -11,7 +11,7 @@ import 'routing/InitialRoute.dart';
 import 'routing/routeGenerator.dart';
 import 'services/service_locator.dart';
 import 'theme/theme_provider.dart';
-import 'constants/app_constants.dart';
+import 'constants/map_utilties.dart';
 
 final providerContainer = ProviderContainer();
 
