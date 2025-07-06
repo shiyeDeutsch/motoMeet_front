@@ -267,7 +267,7 @@ class UserRoute {
   double? elevationGain;
 
   @JsonKey(ignore: true)
-  IsarLinks<UserRoutePoint> userRoutePoints = IsarLinks<UserRoutePoint>();
+  IsarLinks<RoutePoint>? userRoutePoints ;
 
   UserRoute({
     this.id,
@@ -277,6 +277,7 @@ class UserRoute {
     this.durationMinutes,
     this.distance,
     this.elevationGain,
+    this.userRoutePoints,
   });
 
   factory UserRoute.fromJson(Map<String, dynamic> json) =>
@@ -285,7 +286,7 @@ class UserRoute {
   Map<String, dynamic> toJson() => _$UserRouteToJson(this);
 
   UserRoute copyWith({
-    List<GeoPoint>? routePoints,
+  //  List<GeoPoint>? routePoints,
     Id? id,
     DifficultyLevel? difficultyLevel,
     RouteType? routeType,
@@ -293,6 +294,7 @@ class UserRoute {
     int? durationMinutes,
     double? distance,
     double? elevationGain,
+     List<RoutePoint>? userRoutePoints,
   }) {
     return UserRoute(
       id: id ?? this.id,
@@ -302,37 +304,42 @@ class UserRoute {
       durationMinutes: durationMinutes ?? this.durationMinutes,
       distance: distance ?? this.distance,
       elevationGain: elevationGain ?? this.elevationGain,
+      userRoutePoints: (() {
+        final pointsToCopy = userRoutePoints ?? this.userRoutePoints;
+        if (pointsToCopy == null) return null;
+        return IsarLinks<RoutePoint>()..addAll(pointsToCopy);
+      })(),
     );
   }
 }
 
-@collection
-@JsonSerializable()
-class UserRoutePoint {
-  Id? id;
-  int? sequenceNumber;
-  @Embedded()
-  GeoPoint? point;
+// @collection
+// @JsonSerializable()
+// class UserRoutePoint {
+//   Id? id;
+//   int? sequenceNumber;
+//   @Embedded()
+//   GeoPoint? point;
 
-  UserRoutePoint({this.id, this.sequenceNumber, this.point});
+//   UserRoutePoint({this.id, this.sequenceNumber, this.point});
 
-  factory UserRoutePoint.fromJson(Map<String, dynamic> json) =>
-      _$UserRoutePointFromJson(json);
+//   factory UserRoutePoint.fromJson(Map<String, dynamic> json) =>
+//       _$UserRoutePointFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UserRoutePointToJson(this);
+//   Map<String, dynamic> toJson() => _$UserRoutePointToJson(this);
 
-  UserRoutePoint copyWith({
-    Id? id,
-    int? sequenceNumber,
-    GeoPoint? point,
-  }) {
-    return UserRoutePoint(
-      id: id ?? this.id,
-      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
-      point: point ?? this.point,
-    );
-  }
-}
+//   UserRoutePoint copyWith({
+//     Id? id,
+//     int? sequenceNumber,
+//     GeoPoint? point,
+//   }) {
+//     return UserRoutePoint(
+//       id: id ?? this.id,
+//       sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+//       point: point ?? this.point,
+//     );
+//   }
+// }
 
 @collection
 @JsonSerializable()

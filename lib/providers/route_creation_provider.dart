@@ -34,13 +34,11 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   // List of threshold-validated points for the current trip
   final List<GeoPoint> _committedPoints = [];
 
-  // Keep track of the user's current location for real-time marker
   Position? _currentPosition;
 
-  // Basic route configuration
-  double _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+  double _distanceThreshold = MapConfig.HIKING_THRESHOLD;
   double _pathLength = 0;
-  double _elevationGain = 0.0; // Task 3: Add elevation gain tracker
+  double _elevationGain = 0.0;
   Timer? _timer;
   Duration _routeDuration = const Duration();
 
@@ -53,40 +51,38 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   // Keep track of the ID of the UserRoute being actively tracked
   Id? _currentUserRouteId;
 
-  /// Start a new trip on an existing route
-  Future<void> startExistingRoute(Route route) async {
+  Future<void> startExistingRoute(
+      Route route, RouteType routeType, GeoPoint startPoint) async {
     await _resetState();
     _baseRoute = route;
-    _setDistanceFactorFromRouteType(route.routeType);
+    _setDistanceThresholdFromRouteType(route.routeType);
 
     // Create a new UserRoute for this specific journey
     // Difficulty level is determined *after* the journey
     final userRoute = UserRoute(
       dateTraveled: DateTime.now().toUtc(),
-      routeType: route.routeType,
-    
+      routeType: routeType,
       durationMinutes: 0,
       distance: 0,
       elevationGain: 0,
     );
 
-    // Save the initial UserRoute 
+    // Save the initial UserRoute
     await _routeCreationService.saveUserRouteToLocalDb(userRoute);
     // ID is auto-assigned by Isar upon saving
-    _currentUserRouteId = userRoute.id; 
+    _currentUserRouteId = userRoute.id;
     if (_currentUserRouteId == null) {
       // Handle error: Saving failed or ID not assigned
       if (kDebugMode) {
-        print("Error: Failed to get ID for new UserRoute in startExistingRoute");
+        print(
+            "Error: Failed to get ID for new UserRoute in startExistingRoute");
       }
       await _resetState();
       return;
     }
     state = userRoute; // Update state now that we have the ID
 
-    if (route.startPoint != null) {
-      _committedPoints.add(route.startPoint!); 
-    }
+    _committedPoints.add(startPoint);
 
     _startLocationUpdates();
     _startTimer();
@@ -95,7 +91,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   /// Start a brand new route (creates both Route and UserRoute)
   Future<void> startNewRoute(RouteType routeType, GeoPoint startPoint) async {
     await _resetState();
-    _setDistanceFactorFromRouteType(routeType);
+    _setDistanceThresholdFromRouteType(routeType);
 
     // 1. Create a new Route object (will be finalized later)
     final newBaseRoute = Route(
@@ -107,7 +103,8 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     );
 
     // Save the initial Route locally to get an ID (server save happens on finalize)
-    final localRouteId = await _routeCreationService.saveRouteToLocalDb(newBaseRoute);
+    final localRouteId =
+        await _routeCreationService.saveRouteToLocalDb(newBaseRoute);
     newBaseRoute.id = localRouteId;
     _baseRoute = newBaseRoute;
 
@@ -121,13 +118,13 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       elevationGain: 0,
     );
 
-    // Save the initial UserRoute 
+    // Save the initial UserRoute
     await _routeCreationService.saveUserRouteToLocalDb(userRoute);
     // ID is auto-assigned by Isar upon saving
     _currentUserRouteId = userRoute.id;
-     if (_currentUserRouteId == null) {
+    if (_currentUserRouteId == null) {
       // Handle error: Saving failed or ID not assigned
-       if (kDebugMode) {
+      if (kDebugMode) {
         print("Error: Failed to get ID for new UserRoute in startNewRoute");
       }
       await _resetState();
@@ -163,33 +160,32 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   }
 
   /// Helper method to set the distance factor based on route type
-  void _setDistanceFactorFromRouteType(RouteType? routeType) {
+  void _setDistanceThresholdFromRouteType(RouteType? routeType) {
     if (routeType == null) {
-      _distanceFactor = MapConfig.HIKING_THRESHOLD; // Default
+      _distanceThreshold = MapConfig.HIKING_THRESHOLD; // Default
       return;
     }
 
     switch (routeType) {
       case RouteType.hiking:
-        _distanceFactor = MapConfig.HIKING_THRESHOLD;
+        _distanceThreshold = MapConfig.HIKING_THRESHOLD;
         break;
       case RouteType.biking:
-        _distanceFactor = MapConfig.BIKING_THRESHOLD;
+        _distanceThreshold = MapConfig.BIKING_THRESHOLD;
         break;
       case RouteType.motorcycle:
-        _distanceFactor = MapConfig.MOTORCYCLE_THRESHOLD;
+        _distanceThreshold = MapConfig.MOTORCYCLE_THRESHOLD;
         break;
       case RouteType.jeep:
-        _distanceFactor = MapConfig.JEEP_THRESHOLD;
+        _distanceThreshold = MapConfig.JEEP_THRESHOLD;
         break;
     }
   }
 
   void _onLocationUpdate(Position newLocation) {
     _currentPosition = newLocation;
-    ref.read(userLocationProvider.notifier).state = newLocation;
 
-    if (state == null || _currentUserRouteId == null) return; // Don't process if not tracking
+    if (state == null) return;
 
     final currentGeoPoint = GeoPoint(
       latitude: newLocation.latitude,
@@ -200,25 +196,21 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     bool shouldCommit = false;
     GeoPoint? lastPoint;
 
-    if (_committedPoints.isNotEmpty) {
-      lastPoint = _committedPoints.last;
-      final distance = _routeCreationService.calculateDistanceInMeters(
-        lastPoint.toLatLng(),
-        LatLng(newLocation.latitude, newLocation.longitude),
-      );
-      if (distance >= _distanceFactor || _forceStateUpdate) {
-        _pathLength += distance;
-        shouldCommit = true;
-      }
-    } else {
-      // Commit the very first point
+    lastPoint = _committedPoints.last;
+    final distance = _routeCreationService.calculateDistanceInMeters(
+      lastPoint.toLatLng(),
+      LatLng(newLocation.latitude, newLocation.longitude),
+    );
+    if (distance >= _distanceThreshold) {
+      _pathLength += distance;
       shouldCommit = true;
     }
 
     if (shouldCommit) {
       // Calculate elevation gain if possible
       if (lastPoint?.altitude != null && currentGeoPoint.altitude != null) {
-        final altitudeDifference = currentGeoPoint.altitude! - lastPoint!.altitude!;
+        final altitudeDifference =
+            currentGeoPoint.altitude! - lastPoint.altitude!;
         if (altitudeDifference > 0) {
           _elevationGain += altitudeDifference;
         }
@@ -226,11 +218,10 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
       _committedPoints.add(currentGeoPoint);
       _updateUserRouteState(); // Update state with new point, distance, and gain
-      _forceStateUpdate = false;
 
       // Save the point associated with the *active* UserRoute ID
-      _routeCreationService.saveUserRoutePointToLocalDb(
-          _committedPoints.last, _committedPoints.length - 1, _currentUserRouteId!);
+      _routeCreationService.saveUserRoutePointToLocalDb(_committedPoints.last,
+          _committedPoints.length - 1, _currentUserRouteId!);
     }
   }
 
@@ -238,16 +229,13 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     _timer?.cancel();
     _routeDuration = const Duration();
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      if (state == null) { // Stop timer if tracking stopped
+      if (state == null) {
+        // Stop timer if tracking stopped
         _timer?.cancel();
         return;
       }
-      _forceStateUpdate = true;
       _routeDuration += const Duration(minutes: 1);
-      if (_currentPosition != null) {
-         // Force an update check which might commit the point
-        _onLocationUpdate(_currentPosition!); 
-      }
+      _updateUserRouteState();
     });
   }
 
@@ -256,18 +244,23 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
     // Update the local state holder
     final updated = state!.copyWith(
-        distance: _pathLength,
-        durationMinutes: _routeDuration.inMinutes,
-        elevationGain: _elevationGain,
-        // routePoints are managed in _committedPoints and saved via UserRoutePoint
-        );
+      distance: _pathLength,
+      durationMinutes: _routeDuration.inMinutes,
+      elevationGain: _elevationGain,
+      userRoutePoints: _committedPoints
+          .asMap()
+          .entries
+          .map((entry) =>
+              RoutePoint(point: entry.value, sequenceNumber: entry.key))
+          .toList(),
+    );
     state = updated; // This state reflects the *current* journey progress
 
     // Save progress to the specific UserRoute being tracked
     if (_currentUserRouteId != null) {
-       // We update the existing UserRoute record in DB, 
-       // no need to pass points here as they are saved separately
-      _routeCreationService.saveUserRouteToLocalDb(state!); 
+      // We update the existing UserRoute record in DB,
+      // no need to pass points here as they are saved separately
+      _routeCreationService.saveUserRouteToLocalDb(state!);
     }
   }
 
@@ -299,21 +292,21 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
           endPoint: _committedPoints.last,
           endDate: DateTime.now().toUtc(),
         );
-        await _routeCreationService.updateRouteInLocalDb(_baseRoute!); 
+        await _routeCreationService.updateRouteInLocalDb(_baseRoute!);
       }
     }
-    
+
     // Return the completed UserRoute state (which includes the ID)
     // The difficulty will be added later via updateUserRouteDifficulty
-    final completedUserRoute = state; 
+    final completedUserRoute = state;
 
     // Don't clear state here, SaveRouteScreen needs it
     // _resetState(); // Move reset to finalize/update methods
-    
-    return completedUserRoute; 
+
+    return completedUserRoute;
   }
 
-  /// Finalizes a NEW base route after the first trip. 
+  /// Finalizes a NEW base route after the first trip.
   /// Called from SaveRouteScreen ONLY for initial creation.
   Future<Route?> finalizeBaseRoute(
     String name,
@@ -330,13 +323,13 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     final finalBaseRoute = _baseRoute!.copyWith(
       name: name,
       description: description,
-      difficultyLevel: difficultyLevel, 
-      isLoop: isLoop, 
-      length: completedUserRoute.distance, 
+      difficultyLevel: difficultyLevel,
+      isLoop: isLoop,
+      length: completedUserRoute.distance,
       durationMinutes: completedUserRoute.durationMinutes,
-      elevationGain: completedUserRoute.elevationGain, 
+      elevationGain: completedUserRoute.elevationGain,
       // Ensure endDate is also set if not already
-      endDate: _baseRoute!.endDate ?? DateTime.now().toUtc(), 
+      endDate: _baseRoute!.endDate ?? DateTime.now().toUtc(),
     );
 
     _baseRoute = finalBaseRoute; // Update local reference
@@ -347,7 +340,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
     // Save final base route to server
     final serverRoute =
         await _routeCreationService.saveRouteToServer(finalBaseRoute);
-    
+
     await _resetState(); // Clean up state after finalizing
 
     return serverRoute ?? finalBaseRoute;
@@ -356,25 +349,26 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   /// Updates the difficulty level of a specific completed UserRoute.
   /// Called from SaveRouteScreen after any trip (new or existing).
   Future<void> updateUserRouteDifficulty(
-      Id userRouteId, 
-      DifficultyLevel? difficultyLevel
-  ) async {
-     if (difficultyLevel == null) return; // Or handle error
+      Id userRouteId, DifficultyLevel? difficultyLevel) async {
+    if (difficultyLevel == null) return; // Or handle error
 
     // Fetch the specific UserRoute from the database using the service method
     final userRoute = await _routeCreationService.getUserRouteById(userRouteId);
     if (userRoute == null) {
-       if (kDebugMode) print("Error: Could not find UserRoute with ID $userRouteId to update difficulty");
+      if (kDebugMode)
+        print(
+            "Error: Could not find UserRoute with ID $userRouteId to update difficulty");
       return; // Or handle error
     }
 
     // Update its difficulty level
-    final updatedUserRoute = userRoute.copyWith(difficultyLevel: difficultyLevel);
+    final updatedUserRoute =
+        userRoute.copyWith(difficultyLevel: difficultyLevel);
 
     // Save the update back to the database
     await _routeCreationService.saveUserRouteToLocalDb(updatedUserRoute);
 
-    // Optionally: If this was the *first* trip on a *new* route, 
+    // Optionally: If this was the *first* trip on a *new* route,
     // we might also want to update the baseRoute's difficulty here?
     // This depends on whether baseRoute difficulty should reflect the first user's assessment.
     // Current logic in finalizeBaseRoute already handles this for the first trip.
