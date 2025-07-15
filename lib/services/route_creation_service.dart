@@ -142,7 +142,7 @@ class RouteCreationService {
     if (userRouteId == null) return;
     
     try {
-      final userRoutePoint = UserRoutePoint(
+      final userRoutePoint = RoutePoint(
         point: point,
         sequenceNumber: sequenceNumber,
       );

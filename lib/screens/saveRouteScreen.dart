@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 import '../models/enum.dart';
 import '../models/route.dart' as app_models;
 import '../providers/route_creation_provider.dart';
- 
+
 class SaveRouteScreen extends ConsumerStatefulWidget {
   final app_models.Route route;
   final app_models.UserRoute? userRoute;
@@ -25,20 +24,22 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
 
-  // State for Difficulty Level
-  DifficultyLevelEnum? _selectedDifficulty = DifficultyLevelEnum.Easy;
-
-  // State for isLoop
+  DifficultyLevelEnum _selectedDifficulty = DifficultyLevelEnum.Easy;
   bool _isLoop = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    // Prepopulate fields with existing data if any
     _nameController = TextEditingController(text: widget.route.name);
-    _descriptionController = TextEditingController(
-      text: widget.route.description ?? '',
-    );
+    _descriptionController =
+        TextEditingController(text: widget.route.description ?? '');
+    _isLoop = widget.route.isLoop ?? false;
+    _selectedDifficulty = widget.route.difficultyLevel?.level != null
+        ? DifficultyLevelEnum.values.firstWhere(
+            (e) => e.name == widget.route.difficultyLevel!.level,
+            orElse: () => DifficultyLevelEnum.Easy)
+        : DifficultyLevelEnum.Easy;
   }
 
   @override
@@ -48,7 +49,6 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
     super.dispose();
   }
 
-  /// Format a Duration (e.g., 2h 05m)
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final hours = twoDigits(duration.inHours);
@@ -56,145 +56,39 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
     return '${hours}h ${minutes}m';
   }
 
-  /// Builds the entire form (name, description, route details)
-  Widget _buildForm() {
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Route Name
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Route Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name for the route';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-
-              // Expandable route info
-              ExpansionTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('Route Details'),
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.timer),
-                    title: const Text('Duration'),
-                    subtitle: Text(
-                      widget.userRoute?.durationMinutes != null 
-                          ? _formatDuration(Duration(minutes: widget.userRoute!.durationMinutes!))
-                          : 'Not available',
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.date_range),
-                    title: const Text('Start Date'),
-                    subtitle: Text(
-                      widget.route.startDate != null
-                          ? DateFormat('yyyy-MM-dd – kk:mm').format(widget.route.startDate!.toLocal())
-                          : 'Not set',
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.date_range),
-                    title: const Text('End Date'),
-                    subtitle: Text(
-                        widget.route.endDate != null
-                            ? DateFormat('yyyy-MM-dd – kk:mm').format(widget.route.endDate!.toLocal())
-                            : 'Not set'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the difficulty selector
-  Widget _buildDifficultySelector() {
-    return DropdownButtonFormField<DifficultyLevelEnum>(
-      value: _selectedDifficulty,
-      decoration: const InputDecoration(
-        labelText: 'Difficulty Level',
-        border: OutlineInputBorder(),
-      ),
-      items: DifficultyLevelEnum.values.map((DifficultyLevelEnum value) {
-        return DropdownMenuItem<DifficultyLevelEnum>(
-          value: value,
-          child: Text(value.name),
-        );
-      }).toList(),
-      onChanged: (DifficultyLevelEnum? newValue) {
-        setState(() {
-          _selectedDifficulty = newValue;
-        });
-      },
-      validator: (value) => value == null ? 'Please select a difficulty' : null,
-    );
-  }
-
-  /// Builds the isLoop toggle
-  Widget _buildIsLoopToggle() {
-    return SwitchListTile(
-      title: const Text('Is this a loop route?'),
-      value: _isLoop,
-      onChanged: (bool value) {
-        setState(() {
-          _isLoop = value;
-        });
-      },
-      secondary: const Icon(Icons.loop),
-    );
-  }
-
-  /// Called when the user hits "Save Route"
   Future<void> _onSavePressed() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a name for your route'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
 
     final routeNotifier = ref.read(routeCreationProvider.notifier);
-    final difficulty = _selectedDifficulty != null 
-        ? app_models.DifficultyLevel(level: _selectedDifficulty!.name) 
-        : null;
+    final difficulty = app_models.DifficultyLevel(level: _selectedDifficulty.name);
 
     bool success = false;
     String successMessage = '';
     String errorMessage = '';
 
-    // Determine if this is the initial finalization of a new route
-    // A simple heuristic: base route length is null before first finalization
     bool isInitialFinalization = widget.route.length == null;
 
     try {
       if (isInitialFinalization) {
-        // Finalize the BASE route (only done once)
         final finalizedRoute = await routeNotifier.finalizeBaseRoute(
-          _nameController.text,
-          _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
-          difficulty, // Difficulty set for the base route from first user
-          _isLoop,    // isLoop set for the base route from first user
+          _nameController.text.trim(),
+          _descriptionController.text.trim().isNotEmpty
+              ? _descriptionController.text.trim()
+              : null,
+          difficulty,
+          _isLoop,
         );
         if (finalizedRoute != null) {
           success = true;
@@ -203,27 +97,24 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
           errorMessage = 'Failed to finalize the new base route.';
         }
       } else {
-        // Update the specific USER route's difficulty from this trip
         if (widget.userRoute?.id == null) {
           errorMessage = 'Cannot update difficulty: UserRoute ID is missing.';
-        } else if (difficulty == null) {
-           errorMessage = 'Cannot update difficulty: Difficulty level not selected.';
         } else {
-           await routeNotifier.updateUserRouteDifficulty(
-              widget.userRoute!.id!, 
-              difficulty
-           );
-           success = true; // Assume success if no exception
-           successMessage = 'Journey difficulty updated!';
-           // Note: We might want more robust error handling from updateUserRouteDifficulty
+          await routeNotifier.updateUserRouteDifficulty(
+              widget.userRoute!.id!, difficulty);
+          success = true;
+          successMessage = 'Journey difficulty updated!';
         }
       }
     } catch (e) {
-       errorMessage = 'An error occurred: $e';
-       success = false;
+      errorMessage = 'An error occurred: $e';
+      success = false;
     }
 
-    // Show feedback
+    setState(() {
+      _isSaving = false;
+    });
+
     if (!mounted) return;
 
     if (success) {
@@ -245,7 +136,11 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage.isNotEmpty ? errorMessage : 'An unknown error occurred.')),
+        SnackBar(
+            content: Text(errorMessage.isNotEmpty
+                ? errorMessage
+                : 'An unknown error occurred.'),
+            backgroundColor: Colors.red),
       );
     }
   }
@@ -253,28 +148,273 @@ class _SaveRouteScreenState extends ConsumerState<SaveRouteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Save Your Route'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _buildForm(),
-              const SizedBox(height: 20),
-              _buildDifficultySelector(),
-              const SizedBox(height: 10),
-              _buildIsLoopToggle(),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _onSavePressed,
-                icon: const Icon(Icons.save),
-                label: const Text('Save Route'),
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 300,
+            child: Image.network(
+              'https://static.motiffcontent.com/private/resource/image/19675f812cf032f-94571d58-11a0-485e-b893-8394b5b1f45b.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Back Button
+          Positioned(
+            top: 56,
+            left: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ),
+
+          // Main Content
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 250.0), // Adjust to reveal image
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(24)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Name your adventure',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF212121),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            hintText: 'E.g., Morning Forest Trail',
+                            hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Color(0xFFD1D5DB)),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.blue),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter a name for the route';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        TextFormField(
+                          controller: _descriptionController,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: 'What made this route special?',
+                            fillColor: const Color(0xFFF5F5F5),
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        const Text('Difficulty',
+                            style: const TextStyle(
+                                color: Color(0xFF4B5563), fontSize: 14)),
+                        const SizedBox(height: 8),
+                        _buildDifficultySelector(),
+                        const SizedBox(height: 24),
+                        _buildIsLoopToggle(),
+                        const SizedBox(height: 26),
+                        _buildRouteStatistics(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // Save Button
+          Positioned(
+            bottom: 32,
+            right: 24,
+            child: FloatingActionButton(
+              onPressed: _isSaving ? null : _onSavePressed,
+              backgroundColor: _isSaving ? Colors.grey : const Color(0xFF2196F3),
+              child: _isSaving 
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.check, color: Colors.white, size: 32),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifficultySelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(9999),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: DifficultyLevelEnum.values.map((level) {
+          bool isSelected = _selectedDifficulty == level;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedDifficulty = level;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF2196F3) : Colors.transparent,
+                borderRadius: BorderRadius.circular(9999),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    : [],
+              ),
+              child: Text(
+                level.name,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF374151),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildIsLoopToggle() {
+    return Row(
+      children: [
+        const Icon(Icons.loop, color: Color(0xFF2196F3)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text('Loop Route',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              Text('This route ends at the starting point',
+                  style: TextStyle(fontSize: 14, color: Color(0xFF4B5563))),
             ],
           ),
         ),
+        Switch(
+          value: _isLoop,
+          onChanged: (value) {
+            setState(() {
+              _isLoop = value;
+            });
+          },
+          activeColor: const Color(0xFF2196F3),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildRouteStatistics() {
+    return ExpansionTile(
+      title: const Text('Route Statistics', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+      children: [
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 2.5,
+          children: [
+             _buildStatItem(Icons.timer_outlined, 'Duration', widget.userRoute?.durationMinutes != null ? _formatDuration(Duration(minutes: widget.userRoute!.durationMinutes!)) : 'N/A'),
+             _buildStatItem(Icons.directions_run, 'Distance', widget.route.length != null ? '${(widget.route.length! / 1000).toStringAsFixed(1)} km' : 'N/A'),
+             _buildStatItem(Icons.access_time, 'Start', widget.route.startDate != null ? DateFormat('kk:mm').format(widget.route.startDate!.toLocal()) : 'N/A'),
+             _buildStatItem(Icons.access_time_filled, 'End', widget.route.endDate != null ? DateFormat('kk:mm').format(widget.route.endDate!.toLocal()) : 'N/A'),
+             _buildStatItem(Icons.arrow_upward, 'Elevation Gain', '${widget.route.elevationGain?.toStringAsFixed(0) ?? 'N/A'} m'),
+             _buildStatItem(Icons.speed, 'Avg. Pace', '10:15/km'), // Placeholder
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildStatItem(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(9999),
+            ),
+            child: Icon(icon, color: const Color(0xFF2196F3), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+              Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            ],
+          )
+        ],
       ),
     );
   }

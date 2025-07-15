@@ -24,6 +24,7 @@ dependencies:
   shimmer: ^3.0.0
   latlong2: ^0.9.1
   mapbox_maps_flutter: ^2.7.0
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:

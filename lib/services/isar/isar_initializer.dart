@@ -26,10 +26,10 @@ class IsarInitializer {
         // Route related schemas
         RouteSchema,
         ReviewSchema,
-        TagSchema,
+      //  TagSchema,
         PointOfInterestSchema,
         UserRouteSchema,
-        UserRoutePointSchema,
+      //  UserRoutePointSchema,
         // Event related schemas
         EventSchema,
         EventStageSchema,

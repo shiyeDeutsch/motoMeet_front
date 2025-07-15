@@ -18,9 +18,11 @@ final routeCreationProvider =
     StateNotifierProvider<RouteCreationNotifier, UserRoute?>((ref) {
   return RouteCreationNotifier(ref);
 });
-
+ 
 /// Provider for real-time user location updates
 final userLocationProvider = StateProvider<Position?>((ref) => null);
+
+  
 
 /// Notifier for managing route creation state
 class RouteCreationNotifier extends StateNotifier<UserRoute?> {
@@ -46,10 +48,16 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   Route? _baseRoute;
 
   // Used to force an update (e.g., if we want a time-based commit)
-  bool _forceStateUpdate = false;
+ bool _forceStateUpdate = false;
 
   // Keep track of the ID of the UserRoute being actively tracked
   Id? _currentUserRouteId;
+
+  Future<void> initializeLocation() async {
+   // LocationService.startListening();
+   // _currentPosition = await LocationService.getCurrentPosition();
+  
+  }
 
   Future<void> startExistingRoute(
       Route route, RouteType routeType, GeoPoint startPoint) async {
@@ -65,6 +73,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       durationMinutes: 0,
       distance: 0,
       elevationGain: 0,
+      routePoints: IsarLinks<RoutePoint>(),
     );
 
     // Save the initial UserRoute
@@ -95,7 +104,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
 
     // 1. Create a new Route object (will be finalized later)
     final newBaseRoute = Route(
-      name: 'New Route', // Temporary name
+      name: '', // Temporary name
       startPoint: startPoint,
       routeType: routeType,
       startDate: DateTime.now().toUtc(),
@@ -116,6 +125,7 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       durationMinutes: 0,
       distance: 0,
       elevationGain: 0,
+      routePoints: IsarLinks<RoutePoint>(),
     );
 
     // Save the initial UserRoute
@@ -153,8 +163,9 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
   }
 
   /// Helper to start location listening
-  void _startLocationUpdates() {
+  Future<void> _startLocationUpdates() async {
     LocationService.startListening();
+    _currentPosition = await LocationService.getCurrentPosition();
     _locationUpdatesSubscription =
         LocationService.locationUpdates.listen(_onLocationUpdate);
   }
@@ -247,12 +258,17 @@ class RouteCreationNotifier extends StateNotifier<UserRoute?> {
       distance: _pathLength,
       durationMinutes: _routeDuration.inMinutes,
       elevationGain: _elevationGain,
-      userRoutePoints: _committedPoints
-          .asMap()
-          .entries
-          .map((entry) =>
-              RoutePoint(point: entry.value, sequenceNumber: entry.key))
-          .toList(),
+      routePoints: () {
+        final isarLinks = IsarLinks<RoutePoint>();
+        final points = _committedPoints
+            .asMap()
+            .entries
+            .map((entry) =>
+                RoutePoint(point: entry.value, sequenceNumber: entry.key))
+            .toList();
+        isarLinks.addAll(points);
+        return isarLinks;
+      }(),
     );
     state = updated; // This state reflects the *current* journey progress
 

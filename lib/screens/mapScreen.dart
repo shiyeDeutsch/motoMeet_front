@@ -41,6 +41,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   @override
   void initState() {
     super.initState();
+    LocationService.startListening();
     _mapController = MapController(
       onError: _showError,
       onNavStateChanged: (navState) => setState(() => _navState = navState),
@@ -72,11 +73,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
           _buildControls(),
           if (userRoute == null && _navState != NavigationState.loading)
             _buildStartRouteButton(),
-          if (userRoute != null)
-            _buildActiveRouteDetails(
-                userRoute,
-                ref.read(routeCreationProvider.notifier).currentPosition
-                    as geo.Position),
+          if (userRoute != null) _buildActiveRouteDetails(userRoute),
           if (_navState == NavigationState.loading)
             const Center(child: CircularProgressIndicator()),
         ],
@@ -97,18 +94,25 @@ class _MapScreenState extends ConsumerState<MapScreen>
             : 'Start New Route',
       );
 
-  Widget _buildActiveRouteDetails(userRoute, geo.Position userLocation) =>
-      Positioned(
+  Widget _buildActiveRouteDetails(userRoute) => Positioned(
         bottom: 0,
         left: 0,
         right: 0,
-        child: ActiveRouteDetails(
-          currentUserRoute: userRoute,
-          baseRoute: widget.baseRoute,
-          currentPosition: userLocation,
-          onStopPressed: _stopRouteTracking,
-          context: context,
-        ),
+        child: StreamBuilder<geo.Position>(
+            stream: LocationService.locationUpdates,
+            builder: (context, snapshot) {
+              //if (snapshot.connectionState == ConnectionState.) {
+                final position = snapshot.data;
+                return ActiveRouteDetails(
+                  currentUserRoute: userRoute,
+                  baseRoute: widget.baseRoute,
+                  currentPosition: position,
+                  onStopPressed: _stopRouteTracking,
+                  context: context,
+                );
+            //  }
+          //    return const SizedBox.shrink();
+            }),
       );
 
   Widget _buildMapView() {
@@ -146,9 +150,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
       );
 
       if (widget.baseRoute != null) {
-        await ref
-            .read(routeCreationProvider.notifier)
-            .startExistingRoute(widget.baseRoute!);
+        await ref.read(routeCreationProvider.notifier).startExistingRoute(
+            widget.baseRoute!, selectedRouteType, startPoint);
       } else {
         await ref
             .read(routeCreationProvider.notifier)

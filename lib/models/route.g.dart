@@ -121,12 +121,6 @@ const RouteSchema = CollectionSchema(
       target: r'Review',
       single: false,
     ),
-    r'tags': LinkSchema(
-      id: 8295206347869936939,
-      name: r'tags',
-      target: r'Tag',
-      single: false,
-    ),
     r'userRoutes': LinkSchema(
       id: 2474167368100128065,
       name: r'userRoutes',
@@ -376,7 +370,6 @@ List<IsarLinkBase<dynamic>> _routeGetLinks(Route object) {
   return [
     object.routePoints,
     object.reviews,
-    object.tags,
     object.userRoutes,
     object.pointsOfInterest,
     object.routeCreator
@@ -388,7 +381,6 @@ void _routeAttach(IsarCollection<dynamic> col, Id id, Route object) {
   object.routePoints
       .attach(col, col.isar.collection<RoutePoint>(), r'routePoints', id);
   object.reviews.attach(col, col.isar.collection<Review>(), r'reviews', id);
-  object.tags.attach(col, col.isar.collection<Tag>(), r'tags', id);
   object.userRoutes
       .attach(col, col.isar.collection<UserRoute>(), r'userRoutes', id);
   object.pointsOfInterest.attach(
@@ -2047,61 +2039,6 @@ extension RouteQueryLinks on QueryBuilder<Route, Route, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
           r'reviews', lower, includeLower, upper, includeUpper);
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tags(FilterQuery<Tag> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'tags');
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tagsLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'tags', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tagsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'tags', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tagsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'tags', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tagsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'tags', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tagsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'tags', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<Route, Route, QAfterFilterCondition> tagsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'tags', lower, includeLower, upper, includeUpper);
     });
   }
 
@@ -4089,456 +4026,6 @@ extension ReviewQueryProperty on QueryBuilder<Review, Review, QQueryProperty> {
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetTagCollection on Isar {
-  IsarCollection<Tag> get tags => this.collection();
-}
-
-const TagSchema = CollectionSchema(
-  name: r'Tag',
-  id: 4007045862261149568,
-  properties: {
-    r'name': PropertySchema(
-      id: 0,
-      name: r'name',
-      type: IsarType.string,
-    )
-  },
-  estimateSize: _tagEstimateSize,
-  serialize: _tagSerialize,
-  deserialize: _tagDeserialize,
-  deserializeProp: _tagDeserializeProp,
-  idName: r'id',
-  indexes: {},
-  links: {},
-  embeddedSchemas: {},
-  getId: _tagGetId,
-  getLinks: _tagGetLinks,
-  attach: _tagAttach,
-  version: '3.1.0+1',
-);
-
-int _tagEstimateSize(
-  Tag object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  {
-    final value = object.name;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  return bytesCount;
-}
-
-void _tagSerialize(
-  Tag object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.name);
-}
-
-Tag _tagDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = Tag(
-    id: id,
-    name: reader.readStringOrNull(offsets[0]),
-  );
-  return object;
-}
-
-P _tagDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readStringOrNull(offset)) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-Id _tagGetId(Tag object) {
-  return object.id ?? Isar.autoIncrement;
-}
-
-List<IsarLinkBase<dynamic>> _tagGetLinks(Tag object) {
-  return [];
-}
-
-void _tagAttach(IsarCollection<dynamic> col, Id id, Tag object) {
-  object.id = id;
-}
-
-extension TagQueryWhereSort on QueryBuilder<Tag, Tag, QWhere> {
-  QueryBuilder<Tag, Tag, QAfterWhere> anyId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-}
-
-extension TagQueryWhere on QueryBuilder<Tag, Tag, QWhereClause> {
-  QueryBuilder<Tag, Tag, QAfterWhereClause> idEqualTo(Id id) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterWhereClause> idNotEqualTo(Id id) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
-      );
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
-      );
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterWhereClause> idBetween(
-    Id lowerId,
-    Id upperId, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-}
-
-extension TagQueryFilter on QueryBuilder<Tag, Tag, QFilterCondition> {
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> idIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'id',
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> idIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'id',
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> idEqualTo(Id? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> idGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> idLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> idBetween(
-    Id? lower,
-    Id? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'name',
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'name',
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'name',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameContains(String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'name',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameMatches(String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'name',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'name',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterFilterCondition> nameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'name',
-        value: '',
-      ));
-    });
-  }
-}
-
-extension TagQueryObject on QueryBuilder<Tag, Tag, QFilterCondition> {}
-
-extension TagQueryLinks on QueryBuilder<Tag, Tag, QFilterCondition> {}
-
-extension TagQuerySortBy on QueryBuilder<Tag, Tag, QSortBy> {
-  QueryBuilder<Tag, Tag, QAfterSortBy> sortByName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterSortBy> sortByNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.desc);
-    });
-  }
-}
-
-extension TagQuerySortThenBy on QueryBuilder<Tag, Tag, QSortThenBy> {
-  QueryBuilder<Tag, Tag, QAfterSortBy> thenById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterSortBy> thenByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterSortBy> thenByName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Tag, Tag, QAfterSortBy> thenByNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'name', Sort.desc);
-    });
-  }
-}
-
-extension TagQueryWhereDistinct on QueryBuilder<Tag, Tag, QDistinct> {
-  QueryBuilder<Tag, Tag, QDistinct> distinctByName(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
-    });
-  }
-}
-
-extension TagQueryProperty on QueryBuilder<Tag, Tag, QQueryProperty> {
-  QueryBuilder<Tag, int, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<Tag, String?, QQueryOperations> nameProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'name');
-    });
-  }
-}
-
-// coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
-
 extension GetUserRouteCollection on Isar {
   IsarCollection<UserRoute> get userRoutes => this.collection();
 }
@@ -4587,10 +4074,10 @@ const UserRouteSchema = CollectionSchema(
   idName: r'id',
   indexes: {},
   links: {
-    r'userRoutePoints': LinkSchema(
-      id: -2810478038373252303,
-      name: r'userRoutePoints',
-      target: r'UserRoutePoint',
+    r'routePoints': LinkSchema(
+      id: 118542228385114538,
+      name: r'routePoints',
+      target: r'RoutePoint',
       single: false,
     )
   },
@@ -4713,13 +4200,13 @@ Id _userRouteGetId(UserRoute object) {
 }
 
 List<IsarLinkBase<dynamic>> _userRouteGetLinks(UserRoute object) {
-  return [object.userRoutePoints];
+  return [object.routePoints];
 }
 
 void _userRouteAttach(IsarCollection<dynamic> col, Id id, UserRoute object) {
   object.id = id;
-  object.userRoutePoints.attach(
-      col, col.isar.collection<UserRoutePoint>(), r'userRoutePoints', id);
+  object.routePoints
+      .attach(col, col.isar.collection<RoutePoint>(), r'routePoints', id);
 }
 
 extension UserRouteQueryWhereSort
@@ -5360,57 +4847,56 @@ extension UserRouteQueryObject
 
 extension UserRouteQueryLinks
     on QueryBuilder<UserRoute, UserRoute, QFilterCondition> {
-  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> userRoutePoints(
-      FilterQuery<UserRoutePoint> q) {
+  QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition> routePoints(
+      FilterQuery<RoutePoint> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'userRoutePoints');
+      return query.link(q, r'routePoints');
     });
   }
 
   QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
-      userRoutePointsLengthEqualTo(int length) {
+      routePointsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'userRoutePoints', length, true, length, true);
+      return query.linkLength(r'routePoints', length, true, length, true);
     });
   }
 
   QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
-      userRoutePointsIsEmpty() {
+      routePointsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'userRoutePoints', 0, true, 0, true);
+      return query.linkLength(r'routePoints', 0, true, 0, true);
     });
   }
 
   QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
-      userRoutePointsIsNotEmpty() {
+      routePointsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'userRoutePoints', 0, false, 999999, true);
+      return query.linkLength(r'routePoints', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
-      userRoutePointsLengthLessThan(
+      routePointsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'userRoutePoints', 0, true, length, include);
+      return query.linkLength(r'routePoints', 0, true, length, include);
     });
   }
 
   QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
-      userRoutePointsLengthGreaterThan(
+      routePointsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'userRoutePoints', length, include, 999999, true);
+      return query.linkLength(r'routePoints', length, include, 999999, true);
     });
   }
 
   QueryBuilder<UserRoute, UserRoute, QAfterFilterCondition>
-      userRoutePointsLengthBetween(
+      routePointsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -5418,7 +4904,7 @@ extension UserRouteQueryLinks
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
-          r'userRoutePoints', lower, includeLower, upper, includeUpper);
+          r'routePoints', lower, includeLower, upper, includeUpper);
     });
   }
 }
@@ -5636,465 +5122,6 @@ extension UserRouteQueryProperty
   QueryBuilder<UserRoute, RouteType?, QQueryOperations> routeTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'routeType');
-    });
-  }
-}
-
-// coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
-
-extension GetUserRoutePointCollection on Isar {
-  IsarCollection<UserRoutePoint> get userRoutePoints => this.collection();
-}
-
-const UserRoutePointSchema = CollectionSchema(
-  name: r'UserRoutePoint',
-  id: -6034935624626082648,
-  properties: {
-    r'point': PropertySchema(
-      id: 0,
-      name: r'point',
-      type: IsarType.object,
-      target: r'GeoPoint',
-    ),
-    r'sequenceNumber': PropertySchema(
-      id: 1,
-      name: r'sequenceNumber',
-      type: IsarType.long,
-    )
-  },
-  estimateSize: _userRoutePointEstimateSize,
-  serialize: _userRoutePointSerialize,
-  deserialize: _userRoutePointDeserialize,
-  deserializeProp: _userRoutePointDeserializeProp,
-  idName: r'id',
-  indexes: {},
-  links: {},
-  embeddedSchemas: {r'GeoPoint': GeoPointSchema},
-  getId: _userRoutePointGetId,
-  getLinks: _userRoutePointGetLinks,
-  attach: _userRoutePointAttach,
-  version: '3.1.0+1',
-);
-
-int _userRoutePointEstimateSize(
-  UserRoutePoint object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  {
-    final value = object.point;
-    if (value != null) {
-      bytesCount += 3 +
-          GeoPointSchema.estimateSize(value, allOffsets[GeoPoint]!, allOffsets);
-    }
-  }
-  return bytesCount;
-}
-
-void _userRoutePointSerialize(
-  UserRoutePoint object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeObject<GeoPoint>(
-    offsets[0],
-    allOffsets,
-    GeoPointSchema.serialize,
-    object.point,
-  );
-  writer.writeLong(offsets[1], object.sequenceNumber);
-}
-
-UserRoutePoint _userRoutePointDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = UserRoutePoint(
-    id: id,
-    point: reader.readObjectOrNull<GeoPoint>(
-      offsets[0],
-      GeoPointSchema.deserialize,
-      allOffsets,
-    ),
-    sequenceNumber: reader.readLongOrNull(offsets[1]),
-  );
-  return object;
-}
-
-P _userRoutePointDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readObjectOrNull<GeoPoint>(
-        offset,
-        GeoPointSchema.deserialize,
-        allOffsets,
-      )) as P;
-    case 1:
-      return (reader.readLongOrNull(offset)) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-Id _userRoutePointGetId(UserRoutePoint object) {
-  return object.id ?? Isar.autoIncrement;
-}
-
-List<IsarLinkBase<dynamic>> _userRoutePointGetLinks(UserRoutePoint object) {
-  return [];
-}
-
-void _userRoutePointAttach(
-    IsarCollection<dynamic> col, Id id, UserRoutePoint object) {
-  object.id = id;
-}
-
-extension UserRoutePointQueryWhereSort
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QWhere> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterWhere> anyId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-}
-
-extension UserRoutePointQueryWhere
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QWhereClause> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterWhereClause> idEqualTo(
-      Id id) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterWhereClause> idNotEqualTo(
-      Id id) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
-      );
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
-      );
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterWhereClause> idBetween(
-    Id lowerId,
-    Id upperId, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-}
-
-extension UserRoutePointQueryFilter
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QFilterCondition> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      idIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'id',
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      idIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'id',
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition> idEqualTo(
-      Id? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      idGreaterThan(
-    Id? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      idLessThan(
-    Id? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition> idBetween(
-    Id? lower,
-    Id? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      pointIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'point',
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      pointIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'point',
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      sequenceNumberIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'sequenceNumber',
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      sequenceNumberIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'sequenceNumber',
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      sequenceNumberEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'sequenceNumber',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      sequenceNumberGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'sequenceNumber',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      sequenceNumberLessThan(
-    int? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'sequenceNumber',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition>
-      sequenceNumberBetween(
-    int? lower,
-    int? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'sequenceNumber',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-}
-
-extension UserRoutePointQueryObject
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QFilterCondition> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterFilterCondition> point(
-      FilterQuery<GeoPoint> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'point');
-    });
-  }
-}
-
-extension UserRoutePointQueryLinks
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QFilterCondition> {}
-
-extension UserRoutePointQuerySortBy
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QSortBy> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterSortBy>
-      sortBySequenceNumber() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sequenceNumber', Sort.asc);
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterSortBy>
-      sortBySequenceNumberDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sequenceNumber', Sort.desc);
-    });
-  }
-}
-
-extension UserRoutePointQuerySortThenBy
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QSortThenBy> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterSortBy> thenById() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterSortBy> thenByIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterSortBy>
-      thenBySequenceNumber() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sequenceNumber', Sort.asc);
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QAfterSortBy>
-      thenBySequenceNumberDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'sequenceNumber', Sort.desc);
-    });
-  }
-}
-
-extension UserRoutePointQueryWhereDistinct
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QDistinct> {
-  QueryBuilder<UserRoutePoint, UserRoutePoint, QDistinct>
-      distinctBySequenceNumber() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'sequenceNumber');
-    });
-  }
-}
-
-extension UserRoutePointQueryProperty
-    on QueryBuilder<UserRoutePoint, UserRoutePoint, QQueryProperty> {
-  QueryBuilder<UserRoutePoint, int, QQueryOperations> idProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, GeoPoint?, QQueryOperations> pointProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'point');
-    });
-  }
-
-  QueryBuilder<UserRoutePoint, int?, QQueryOperations>
-      sequenceNumberProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'sequenceNumber');
     });
   }
 }
@@ -8177,16 +7204,6 @@ Map<String, dynamic> _$ReviewToJson(Review instance) => <String, dynamic>{
       'date': instance.date?.toIso8601String(),
     };
 
-Tag _$TagFromJson(Map<String, dynamic> json) => Tag(
-      id: (json['id'] as num?)?.toInt(),
-      name: json['name'] as String?,
-    );
-
-Map<String, dynamic> _$TagToJson(Tag instance) => <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-    };
-
 UserRoute _$UserRouteFromJson(Map<String, dynamic> json) => UserRoute(
       id: (json['id'] as num?)?.toInt(),
       difficultyLevel: json['difficultyLevel'] == null
@@ -8210,22 +7227,6 @@ Map<String, dynamic> _$UserRouteToJson(UserRoute instance) => <String, dynamic>{
       'durationMinutes': instance.durationMinutes,
       'distance': instance.distance,
       'elevationGain': instance.elevationGain,
-    };
-
-UserRoutePoint _$UserRoutePointFromJson(Map<String, dynamic> json) =>
-    UserRoutePoint(
-      id: (json['id'] as num?)?.toInt(),
-      sequenceNumber: (json['sequenceNumber'] as num?)?.toInt(),
-      point: json['point'] == null
-          ? null
-          : GeoPoint.fromJson(json['point'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$UserRoutePointToJson(UserRoutePoint instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'sequenceNumber': instance.sequenceNumber,
-      'point': instance.point,
     };
 
 PointOfInterest _$PointOfInterestFromJson(Map<String, dynamic> json) =>

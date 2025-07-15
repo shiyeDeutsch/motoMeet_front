@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:rxdart/rxdart.dart';
 
 class LocationService {
-  // StreamController to broadcast location updates
-  static final StreamController<Position> _locationUpdatesController =
-      StreamController<Position>.broadcast();
+  // Use BehaviorSubject to broadcast location updates and retain the last value
+  static final BehaviorSubject<Position> _locationUpdatesController =
+      BehaviorSubject<Position>();
 
   // Public stream to listen for location updates
   static Stream<Position> get locationUpdates =>
@@ -13,9 +14,13 @@ class LocationService {
 
   // Subscription for the location updates stream
   static StreamSubscription<Position>? _positionSubscription;
+  static bool _isListening = false;
 
   /// Starts listening to location updates
   static Future<void> startListening() async {
+    if (_isListening) {
+      return;
+    }
     try {
       // Ensure location services are enabled
       if (!await Geolocator.isLocationServiceEnabled()) {
@@ -53,6 +58,7 @@ class LocationService {
           _locationUpdatesController.addError(error);
         },
       );
+      _isListening = true;
     } catch (e) {
       print("Error starting location updates: $e");
       _locationUpdatesController.addError(e);
@@ -82,6 +88,7 @@ class LocationService {
 
       // Fetch the current position
       Position position = await Geolocator.getCurrentPosition();
+      _locationUpdatesController.add(position);
       return LatLng(position.latitude, position.longitude);
     } catch (e) {
       return Future.error(e);
@@ -92,5 +99,43 @@ class LocationService {
   static void dispose() {
     _positionSubscription?.cancel();
     _locationUpdatesController.close();
+    _isListening = false;
+  }
+
+  static Position? getLastKnownPosition() {
+    return _locationUpdatesController.valueOrNull;
+  }
+
+  static Future<Position?> getCurrentPosition() async {
+    try {
+      // Check if location services are enabled
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled.');
+      }
+
+      // Check and request location permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permissions are denied.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permissions are permanently denied.');
+      }
+
+      // Retrieve the current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      _locationUpdatesController.add(position);
+      return position;
+    } catch (e) {
+      print('Error retrieving current position: $e');
+      return null;
+    }
   }
 }

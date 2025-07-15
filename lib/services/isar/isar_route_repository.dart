@@ -97,7 +97,7 @@ class IsarUserRouteRepository extends BaseRepository<UserRoute> {
   Future<List<UserRoute>> findWithRoutePoints() async {
     final userRoutes = await getAll();
     return userRoutes.where((userRoute) => 
-      userRoute.userRoutePoints.isNotEmpty).toList();
+      userRoute.routePoints.isNotEmpty).toList();
   }
 }
 
@@ -116,11 +116,11 @@ class IsarRoutePointRepository extends BaseRepository<RoutePoint> {
 }
 
 /// Repository for UserRoutePoint entities
-class IsarUserRoutePointRepository extends BaseRepository<UserRoutePoint> {
-  IsarUserRoutePointRepository(Isar isar) : super(isar, isar.userRoutePoints);
+class IsarUserRoutePointRepository extends BaseRepository< RoutePoint> {
+  IsarUserRoutePointRepository(Isar isar) : super(isar, isar.routePoints);
   
   // Find user route points by sequence range
-  Future<List<UserRoutePoint>> findBySequenceRange(int start, int end) async {
+  Future<List< RoutePoint>> findBySequenceRange(int start, int end) async {
     final userRoutePoints = await getAll();
     return userRoutePoints.where((userRoutePoint) => 
       userRoutePoint.sequenceNumber != null && 

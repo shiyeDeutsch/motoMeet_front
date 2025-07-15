@@ -254,7 +254,29 @@ UI Components <-> Providers <-> Services <-> Local Database (Isar) / Remote API
   - Progress indicators for long operations
   - Autosave functionality
 
-### 12. Settings Screen
+### 12. Save Route Screen
+
+- **Purpose**: To save a newly recorded route or update user-specific details for an existing route. This screen allows the user to add metadata like a name, description, difficulty level, and a rating after completing a journey.
+- **Key Components**:
+  - Route name input field with validation.
+  - Route description text area.
+  - Difficulty level selector (e.g., Easy, Medium, Hard).
+  - A 1-5 star rating selector for the user to rank the route.
+  - A toggle to indicate if the route is a loop.
+  - An expandable section showing computed route statistics (e.g., duration, start/end times).
+  - Save button to finalize the route.
+- **Implementation Notes**:
+  - The screen is typically presented after a route recording session is stopped.
+  - It handles two distinct scenarios:
+    - **Initial Finalization**: When saving a brand new route, it sets the base properties like name, description, difficulty, and loop status. The user's rating would be the first rating for this route.
+    - **Updating User Journey**: When a user completes an existing route, it allows them to update their personal experience, such as the perceived difficulty and rating for that specific trip (`UserRoute`).
+  - Utilizes a `Form` widget for input validation.
+  - Communicates with a `routeCreationProvider` to handle the logic of saving or updating the route data.
+  - The submitted rating will be associated with the user's specific journey (`UserRoute`) and can be aggregated to calculate an average rating for the base route.
+  - Provides user feedback (success/error messages) via dialogs or snackbars.
+  - Navigates away from the screen upon successful save.
+
+### 13. Settings Screen
 
 - **Purpose**: Configure app preferences and user settings
 - **Key Components**:

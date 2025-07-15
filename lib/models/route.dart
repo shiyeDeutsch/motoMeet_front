@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
-import  './enum.dart'; 
- import './userModel.dart'; 
-  import 'package:latlong2/latlong.dart';
-  part 'route.g.dart';
-
+import './enum.dart';
+import './userModel.dart';
+import 'package:latlong2/latlong.dart';
+part 'route.g.dart';
 
 @collection
 @JsonSerializable()
@@ -29,18 +28,18 @@ class Route {
   String? country;
   String? region;
   String? imageUrl;
-   DateTime? startDate;   
-  DateTime? endDate;     
+  DateTime? startDate;
+  DateTime? endDate;
 
   @JsonKey(ignore: true)
   IsarLinks<RoutePoint> routePoints = IsarLinks<RoutePoint>();
-  
+
   @JsonKey(ignore: true)
   IsarLinks<Review> reviews = IsarLinks<Review>();
-  
+
   @JsonKey(ignore: true)
   IsarLinks<UserRoute> userRoutes = IsarLinks<UserRoute>();
-  
+
   @JsonKey(ignore: true)
   IsarLinks<PointOfInterest> pointsOfInterest = IsarLinks<PointOfInterest>();
 
@@ -89,7 +88,7 @@ class Route {
     String? imageUrl,
     DateTime? startDate,
     DateTime? endDate,
-   }) {
+  }) {
     return Route(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -108,7 +107,7 @@ class Route {
       imageUrl: imageUrl ?? this.imageUrl,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
-     );
+    );
   }
 }
 
@@ -137,12 +136,13 @@ class GeoPoint {
       altitude: altitude ?? this.altitude,
     );
   }
+
   factory GeoPoint.fromLatLng(LatLng latLng, double? altitude) => GeoPoint(
       latitude: latLng.latitude,
       longitude: latLng.longitude,
       altitude: altitude);
   // Method for converting a GeoPoint instance to a map
-  
+
   LatLng toLatLng() {
     return LatLng(latitude!, longitude!);
   }
@@ -259,7 +259,7 @@ class UserRoute {
   Id? id;
   @Embedded()
   DifficultyLevel? difficultyLevel;
-   @Enumerated(EnumType.name)
+  @Enumerated(EnumType.name)
   RouteType? routeType;
   DateTime? dateTraveled;
   int? durationMinutes;
@@ -267,7 +267,11 @@ class UserRoute {
   double? elevationGain;
 
   @JsonKey(ignore: true)
-  IsarLinks<RoutePoint>? userRoutePoints ;
+  IsarLinks<RoutePoint> routePoints  ;
+  
+  
+  
+  
 
   UserRoute({
     this.id,
@@ -277,16 +281,15 @@ class UserRoute {
     this.durationMinutes,
     this.distance,
     this.elevationGain,
-    this.userRoutePoints,
-  });
+    IsarLinks<RoutePoint>? routePoints,
+  }) : routePoints = routePoints ?? IsarLinks<RoutePoint>();
 
-  factory UserRoute.fromJson(Map<String, dynamic> json) =>
-      _$UserRouteFromJson(json);
+  factory UserRoute.fromJson(Map<String, dynamic> json) => _$UserRouteFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserRouteToJson(this);
 
   UserRoute copyWith({
-  //  List<GeoPoint>? routePoints,
+    //  List<GeoPoint>? routePoints,
     Id? id,
     DifficultyLevel? difficultyLevel,
     RouteType? routeType,
@@ -294,7 +297,7 @@ class UserRoute {
     int? durationMinutes,
     double? distance,
     double? elevationGain,
-     List<RoutePoint>? userRoutePoints,
+    IsarLinks<RoutePoint> ? routePoints ,
   }) {
     return UserRoute(
       id: id ?? this.id,
@@ -304,11 +307,7 @@ class UserRoute {
       durationMinutes: durationMinutes ?? this.durationMinutes,
       distance: distance ?? this.distance,
       elevationGain: elevationGain ?? this.elevationGain,
-      userRoutePoints: (() {
-        final pointsToCopy = userRoutePoints ?? this.userRoutePoints;
-        if (pointsToCopy == null) return null;
-        return IsarLinks<RoutePoint>()..addAll(pointsToCopy);
-      })(),
+      routePoints: routePoints ?? this.routePoints,
     );
   }
 }
@@ -385,4 +384,3 @@ class PointOfInterest {
     );
   }
 }
-
