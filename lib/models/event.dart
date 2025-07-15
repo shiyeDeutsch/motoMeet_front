@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:motomeetfront/models/route.dart'; // Import for GeoPoint
+import 'package:motomeetfront/models/route.dart'; // Import for GeoPoint and UserRoute
 import 'package:motomeetfront/models/userModel.dart'; // Import for UserInfo
 import 'package:motomeetfront/models/group.dart'; // Import for Group
 import 'package:motomeetfront/models/enum.dart'; // Import for enums
@@ -18,6 +18,30 @@ class Event {
   bool? requiresApproval;
   DateTime? startDateTime;
   DateTime? endDateTime;
+  
+  @Enumerated(EnumType.name)
+  EventType? eventType;
+  
+  int? durationInMinutes;
+  
+  @Embedded()
+  GeoPoint? location;
+  String? locationName;
+
+  String? bannerImageUrl;
+
+  @Enumerated(EnumType.name)
+  EventVisibility? visibility;
+  
+  int? maxParticipants;
+  
+  @Enumerated(EnumType.name)
+  ExperienceLevel? experienceLevel;
+
+  bool? allowWaitlist;
+
+  String? emergencyContact;
+  String? safetyNotes;
 
   @JsonKey(ignore: true)
   IsarLink<UserInfo> creator = IsarLink<UserInfo>();
@@ -36,6 +60,9 @@ class Event {
   
   @JsonKey(ignore: true)
   IsarLinks<EventActivity> eventActivities = IsarLinks<EventActivity>();
+  
+  @JsonKey(ignore: true)
+  IsarLink<Route> route = IsarLink<Route>();
 
   Event({
     this.id,
@@ -45,6 +72,17 @@ class Event {
     this.requiresApproval,
     this.startDateTime,
     this.endDateTime,
+    this.eventType,
+    this.durationInMinutes,
+    this.location,
+    this.locationName,
+    this.bannerImageUrl,
+    this.visibility,
+    this.maxParticipants,
+    this.experienceLevel,
+    this.allowWaitlist,
+    this.emergencyContact,
+    this.safetyNotes,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
@@ -59,8 +97,21 @@ class Event {
     bool? requiresApproval,
     DateTime? startDateTime,
     DateTime? endDateTime,
+    EventType? eventType,
+    int? durationInMinutes,
+    GeoPoint? location,
+    String? locationName,
+    String? bannerImageUrl,
+    EventVisibility? visibility,
+    int? maxParticipants,
+    ExperienceLevel? experienceLevel,
+    bool? allowWaitlist,
+    String? emergencyContact,
+    String? safetyNotes,
+    IsarLink<Route>? route,
+    IsarLinks<EventItem>? requiredItems,
   }) {
-    return Event(
+    final newEvent = Event(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
@@ -68,7 +119,31 @@ class Event {
       requiresApproval: requiresApproval ?? this.requiresApproval,
       startDateTime: startDateTime ?? this.startDateTime,
       endDateTime: endDateTime ?? this.endDateTime,
+      eventType: eventType ?? this.eventType,
+      durationInMinutes: durationInMinutes ?? this.durationInMinutes,
+      location: location ?? this.location,
+      locationName: locationName ?? this.locationName,
+      bannerImageUrl: bannerImageUrl ?? this.bannerImageUrl,
+      visibility: visibility ?? this.visibility,
+      maxParticipants: maxParticipants ?? this.maxParticipants,
+      experienceLevel: experienceLevel ?? this.experienceLevel,
+      allowWaitlist: allowWaitlist ?? this.allowWaitlist,
+      emergencyContact: emergencyContact ?? this.emergencyContact,
+      safetyNotes: safetyNotes ?? this.safetyNotes,
     );
+
+    if (route != null) {
+      newEvent.route.value = route.value;
+    } else {
+      newEvent.route.value = this.route.value;
+    }
+
+    if (requiredItems != null) {
+      newEvent.requiredItems.clear();
+      newEvent.requiredItems.addAll(requiredItems);
+    }
+    
+    return newEvent;
   }
 }
 
@@ -202,7 +277,7 @@ class EventStageParticipant {
   IsarLink<EventParticipant> eventParticipant = IsarLink<EventParticipant>();
   
   @JsonKey(ignore: true)
-  IsarLink<UserRoute> userRoute = IsarLink<UserRoute>();
+  IsarLink<Route> userRoute = IsarLink<Route>();
 
   EventStageParticipant({
     this.id,
@@ -272,6 +347,7 @@ class EventItem {
   String? itemName;
   String? description;
   bool? isAssigned;
+  bool? isRecommended;
 
   @JsonKey(ignore: true)
   IsarLink<Event> event = IsarLink<Event>();
@@ -281,6 +357,7 @@ class EventItem {
     this.itemName,
     this.description,
     this.isAssigned,
+    this.isRecommended,
   });
 
   factory EventItem.fromJson(Map<String, dynamic> json) =>
@@ -293,12 +370,14 @@ class EventItem {
     String? itemName,
     String? description,
     bool? isAssigned,
+    bool? isRecommended,
   }) {
     return EventItem(
       id: id ?? this.id,
       itemName: itemName ?? this.itemName,
       description: description ?? this.description,
       isAssigned: isAssigned ?? this.isAssigned,
+      isRecommended: isRecommended ?? this.isRecommended,
     );
   }
 }

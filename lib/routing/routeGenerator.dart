@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:motomeetfront/providers/home_screen_provider.dart';
-import 'package:motomeetfront/screens/create_event_screen.dart';
+import 'package:motomeetfront/screens/create_event/create_event_screen.dart';
 import 'package:motomeetfront/screens/discover_routes_screen.dart';
 import 'package:motomeetfront/screens/loginScreen.dart';
 import 'package:motomeetfront/screens/singupScreen.dart';

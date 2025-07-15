@@ -7,20 +7,7 @@ import '../models/theme_preferences.dart';
 import '../services/isar/repository_provider.dart';
 import '../services/isar/isar_theme_preferences.dart';
 import 'app_theme.dart';
-import 'themes/adventure_theme.dart';
-import 'themes/modern_explorer_theme.dart';
-import 'themes/trail_map_theme.dart';
-import 'themes/community_adventure_theme.dart';
-import 'themes/technical_equipment_theme.dart';
-
-/// Enum representing available themes in the app
-enum AppThemeType {
-  adventure,
-  modernExplorer,
-  trailMap,
-  communityAdventure,
-  technicalEquipment,
-}
+import 'motomeet_theme.dart';
 
 /// Enum representing theme mode (light or dark)
 enum AppThemeMode {
@@ -32,26 +19,22 @@ enum AppThemeMode {
 /// Class for managing theme state
 class ThemeState {
   final AppTheme currentTheme;
-  final AppThemeType themeType;
   final AppThemeMode themeMode;
   final bool isSystemMode;
 
   const ThemeState({
     required this.currentTheme,
-    required this.themeType,
     required this.themeMode,
     this.isSystemMode = false,
   });
 
   ThemeState copyWith({
     AppTheme? currentTheme,
-    AppThemeType? themeType,
     AppThemeMode? themeMode,
     bool? isSystemMode,
   }) {
     return ThemeState(
       currentTheme: currentTheme ?? this.currentTheme,
-      themeType: themeType ?? this.themeType,
       themeMode: themeMode ?? this.themeMode,
       isSystemMode: isSystemMode ?? this.isSystemMode,
     );
@@ -83,8 +66,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
 
   ThemeNotifier(this._themeRepository)
       : super(ThemeState(
-          currentTheme: AdventureTheme(),
-          themeType: AppThemeType.adventure,
+          currentTheme: MotoMeetTheme(),
           themeMode: AppThemeMode.system,
           isSystemMode: true,
         )) {
@@ -94,17 +76,6 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
   Future<void> _loadSavedTheme() async {
     final prefs = await _themeRepository.getThemePreferences();
     
-    AppThemeType themeType = AppThemeType.adventure;
-    if (prefs.themeType.isNotEmpty) {
-      try {
-        final enumString = prefs.themeType.split('.').last;
-        themeType = AppThemeType.values.firstWhere(
-          (e) => e.toString().split('.').last == enumString,
-          orElse: () => AppThemeType.adventure,
-        );
-      } catch (_) {}
-    }
-
     AppThemeMode themeMode = AppThemeMode.system;
     if (prefs.themeMode.isNotEmpty) {
       try {
@@ -116,37 +87,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
       } catch (_) {}
     }
 
-    setTheme(themeType);
     setThemeMode(themeMode);
-  }
-
-  void setTheme(AppThemeType themeType) {
-    AppTheme newTheme;
-
-    switch (themeType) {
-      case AppThemeType.adventure:
-        newTheme = AdventureTheme();
-        break;
-      case AppThemeType.modernExplorer:
-        newTheme = ModernExplorerTheme();
-        break;
-      case AppThemeType.trailMap:
-        newTheme = TrailMapTheme();
-        break;
-      case AppThemeType.communityAdventure:
-        newTheme = CommunityAdventureTheme();
-        break;
-      case AppThemeType.technicalEquipment:
-        newTheme = TechnicalEquipmentTheme();
-        break;
-    }
-
-    state = state.copyWith(
-      currentTheme: newTheme,
-      themeType: themeType,
-    );
-
-    _themeRepository.saveThemeType(themeType.toString());
   }
 
   void setThemeMode(AppThemeMode themeMode) {

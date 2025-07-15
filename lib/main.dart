@@ -73,12 +73,8 @@ class MyApp extends ConsumerWidget {
           theme: themeState.currentTheme.lightTheme,
           darkTheme: themeState.currentTheme.darkTheme,
           themeMode: themeState.flutterThemeMode,
-          home: Scaffold(
-            body: Navigator(
-              initialRoute: initialRoute,
-              onGenerateRoute: RouteGenerator.generateRoute,
-            ),
-          ),
+          initialRoute: initialRoute,
+          onGenerateRoute: RouteGenerator.generateRoute,
         );
       },
     );

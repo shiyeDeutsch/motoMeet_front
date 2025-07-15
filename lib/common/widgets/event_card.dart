@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:motomeetfront/models/event.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class EventCard extends StatelessWidget {
   final Event event;
@@ -16,221 +17,94 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
+      child: Container(
+        width: 240,
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
-        child: SizedBox(
-          width: 280,
-          height: 150,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Date column
-              _buildDateColumn(context),
-              
-              // Divider
-              const VerticalDivider(width: 1, thickness: 1, indent: 8, endIndent: 8),
-              
-              // Event details column
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Event name
-                      Text(
-                        event.name ?? 'Unnamed Event',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      const SizedBox(height: 4),
-                      
-                      // Event description
-                      if (event.description != null)
-                        Expanded(
-                          child: Text(
-                            event.description!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[700],
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      // Event stats
-                      Row(
-                        children: [
-                          // Event time
-                          _buildStat(
-                            Icons.access_time,
-                            _formatTime(event.startDateTime),context,
-                          ),
-                          
-                          const SizedBox(width: 12),
-                          // Participants count
-                          _buildStat(
-                            Icons.people,
-                            '${event.participants.length} joined',context,
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 4),
-                      
-                      // Event tags
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: [
-                          // Event type tags
-                          if (event.eventActivities.isNotEmpty)
-                            ...event.eventActivities.take(2).map((activity) => _buildTag(
-                              activity.activityType?.name ?? 'Activity',
-                              Icons.directions_bike,
-                            )),
-                            
-                          // Show more tag if there are more activities
-                          if (event.eventActivities.length > 2)
-                            _buildTag('+${event.eventActivities.length - 2} more', Icons.more_horiz),
-                          
-                          // Public/Private tag
-                          _buildTag(
-                            event.isPublic??false ? 'Public' : 'Private',
-                            event.isPublic??false ? Icons.public : Icons.lock,
-                          ),
-                          
-                          // Approval tag if required
-                          if (event.requiresApproval??false)
-                            _buildTag('Approval Required', Icons.check_circle_outline),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.network(
+                'https://static.motiffcontent.com/private/resource/image/19691ae8bafdf6b-1b819afb-fd6c-4649-884b-7f1af2813f2a.jpeg', // Placeholder image from design
+                height: 120,
+                width: 240,
+                fit: BoxFit.cover,
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 14, 12, 0),
+              child: Text(
+                event.name ?? 'Event Name',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal, // Design uses normal weight
+                  color: Colors.black,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 6), // Adjusted from 7 to 6 to fix overflow
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  SvgPicture.network(
+                    'https://static.motiffcontent.com/private/resource/image/1980dd8a4766426-6773be93-fb54-4dc6-9c94-9c53a8bfd590.svg',
+                    width: 16,
+                    height: 16,
+                    colorFilter: const ColorFilter.mode(Color(0xFF757575), BlendMode.srcIn),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    event.startDateTime != null
+                        ? DateFormat('E, MMM d').format(event.startDateTime!)
+                        : 'Date',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF757575),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 3),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                   SvgPicture.network(
+                    'https://static.motiffcontent.com/private/resource/image/1980dd8a4776688-36bbbb6f-c761-4412-901c-233f06a13d65.svg',
+                     width: 16,
+                    height: 16,
+                     colorFilter: const ColorFilter.mode(Color(0xFF757575), BlendMode.srcIn),
+
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Mountain Park', // Placeholder from design
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF757575),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Widget _buildDateColumn(BuildContext context) {
-    if (event.startDateTime == null) {
-      return Container(
-        width: 60,
-        color: Colors.grey[200],
-        child: const Center(
-          child: Text('TBD', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
-      );
-    }
-    
-    final now = DateTime.now();
-    final eventDate = event.startDateTime!;
-    final isToday = eventDate.year == now.year && 
-                   eventDate.month == now.month && 
-                   eventDate.day == now.day;
-    final isTomorrow = DateTime(now.year, now.month, now.day + 1).day == eventDate.day &&
-                      now.month == eventDate.month &&
-                      now.year == eventDate.year;
-                      
-    final bgColor = isToday ? Theme.of(context).primaryColor : 
-                  isTomorrow ? Theme.of(context).primaryColorLight : 
-                  Colors.grey[200];
-                  
-    final textColor = isToday || isTomorrow ? Colors.white : Colors.black87;
-    
-    return Container(
-      width: 60,
-      color: bgColor,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            isToday ? 'TODAY' : 
-            isTomorrow ? 'TMRW' : 
-            DateFormat('MMM').format(eventDate).toUpperCase(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          Text(
-            DateFormat('d').format(eventDate),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          Text(
-            isToday || isTomorrow ? '' : DateFormat('E').format(eventDate),
-            style: TextStyle(
-              fontSize: 12,
-              color: textColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStat(IconData icon, String value, BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: Theme.of(context).primaryColorDark),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTag(String text, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 10, color: Colors.grey[700]),
-          const SizedBox(width: 2),
-          Text(
-            text,
-            style: TextStyle(fontSize: 10, color: Colors.grey[800]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(DateTime? dateTime) {
-    if (dateTime == null) return 'TBD';
-    return DateFormat('h:mm a').format(dateTime);
   }
 }

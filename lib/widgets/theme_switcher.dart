@@ -17,39 +17,10 @@ class ThemeSwitcher extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Theme', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            
-            // Theme selection
-            Text('Select Theme', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: AppThemeType.values.map((type) {
-                final isSelected = themeState.themeType == type;
-                return FilterChip(
-                  label: Text(_getThemeDisplayName(type)),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      ref.read(themeProvider.notifier).setTheme(type);
-                    }
-                  },
-                  backgroundColor: isSelected 
-                    ? themeState.currentTheme.primaryColor.withOpacity(0.1)
-                    : null,
-                  checkmarkColor: themeState.currentTheme.primaryColor,
-                  selectedColor: themeState.currentTheme.primaryColor.withOpacity(0.2),
-                );
-              }).toList(),
-            ),
-            
+            Text('Display Mode', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             
             // Theme mode selection
-            Text('Display Mode', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -111,20 +82,5 @@ class ThemeSwitcher extends ConsumerWidget {
       checkmarkColor: themeState.currentTheme.primaryColor,
       selectedColor: themeState.currentTheme.primaryColor.withOpacity(0.2),
     );
-  }
-  
-  String _getThemeDisplayName(AppThemeType type) {
-    switch (type) {
-      case AppThemeType.adventure:
-        return 'Adventure';
-      case AppThemeType.modernExplorer:
-        return 'Modern Explorer';
-      case AppThemeType.trailMap:
-        return 'Trail Map';
-      case AppThemeType.communityAdventure:
-        return 'Community';
-      case AppThemeType.technicalEquipment:
-        return 'Technical';
-    }
   }
 }

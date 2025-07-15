@@ -196,8 +196,7 @@ extension WaypointTypeExtension on WaypointType {
     }
     throw ArgumentError('Invalid route type: $value');
   }
-}
-enum DifficultyEnum {
+}enum DifficultyEnum {
   Easy,
   Moderate,
   Hard,
@@ -233,6 +232,25 @@ enum SocialActivityType {
   OffRoad,
   TrackDay,
   Other
+}
+
+enum EventType {
+  Ride,
+  Hike,
+  Meeting,
+  Race,
+}
+
+enum EventVisibility {
+  Public,
+  Private,
+  FriendsOnly,
+}
+
+enum ExperienceLevel {
+  Beginner,
+  Intermediate,
+  Advanced,
 }
 
 
