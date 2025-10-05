@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:get_it/get_it.dart';
+import '../services/routesService.dart';
 import '../models/route.dart' as app_models;
 import '../models/enum.dart';
-import '../providers/route_creation_provider.dart';
+// import '../providers/route_creation_provider.dart';
 import '../services/distanceFormatter.dart';
 import '../routing/routes.dart';
 
@@ -194,12 +196,49 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
         ],
       ),
       // FAB for "Start Trip" action
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _startTrip,
-        backgroundColor: colorScheme.secondary,
-        foregroundColor: colorScheme.onSecondary,
-        icon: const Icon(Icons.navigation),
-        label: const Text('Start Trip'),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'startTrip',
+            onPressed: _startTrip,
+            backgroundColor: colorScheme.secondary,
+            foregroundColor: colorScheme.onSecondary,
+            icon: const Icon(Icons.navigation),
+            label: const Text('Start Trip'),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: 'downloadOffline',
+            onPressed: () async {
+              try {
+                final routeId = widget.route.id;
+                if (routeId != null) {
+                  final service = GetIt.I<RoutesService>();
+                  await service.downloadRouteForOffline(routeId);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Route saved for offline use')),
+                  );
+                } else {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cannot save: route has no ID')),
+                  );
+                }
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Offline save failed: $e')),
+                );
+              }
+            },
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            icon: const Icon(Icons.download_for_offline),
+            label: const Text('Download'),
+          ),
+        ],
       ),
     );
   }
@@ -484,6 +523,15 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
         ? colorScheme.background.withOpacity(0.7)
         : theme.canvasColor;
     
+    // Build a simple image carousel from route image and POI images
+    final List<String> imageUrls = [
+      if (widget.route.imageUrl != null && widget.route.imageUrl!.isNotEmpty)
+        widget.route.imageUrl!,
+      ...widget.route.pointsOfInterest
+          .where((poi) => poi.imageUrl != null && poi.imageUrl!.isNotEmpty)
+          .map((poi) => poi.imageUrl!),
+    ];
+
     return SliverToBoxAdapter(
       key: _mediaKey,
       child: Container(
@@ -497,32 +545,36 @@ class _RouteDetailsScreenState extends ConsumerState<RouteDetailsScreen>
               style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: List.generate(6, (index) {
-                return Container(
-                  width: 100,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+            if (imageUrls.isEmpty)
+              Container(
+                height: 120,
+                alignment: Alignment.center,
+                child: Text('No media available', style: theme.textTheme.bodyMedium),
+              )
+            else
+              SizedBox(
+                height: 200,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: PageView.builder(
+                    itemCount: imageUrls.length,
+                    controller: PageController(viewportFraction: 0.92),
+                    itemBuilder: (context, index) {
+                      final url = imageUrls[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Container(color: Colors.black12),
+                            Image.network(url, fit: BoxFit.cover),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Media ${index + 1}',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                );
-              }),
-            ),
+                ),
+              ),
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton.icon(

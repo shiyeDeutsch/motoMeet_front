@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/route.dart' as app_models;
 import '../models/enum.dart';
 import '../providers/routes_provider.dart';
 import '../common/widgets/route_card.dart';
@@ -15,6 +15,7 @@ class DiscoverRoutesScreen extends ConsumerStatefulWidget {
 
 class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   bool _isMapView = false;
   RouteType? _selectedRouteType;
   String _sortBy = 'Popular';
@@ -50,6 +51,7 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -148,7 +150,10 @@ class _DiscoverRoutesScreenState extends ConsumerState<DiscoverRoutesScreen> {
           fillColor: Colors.transparent,
         ),
         onChanged: (value) {
-          ref.read(routesProvider.notifier).searchRoutes(value);
+          _debounce?.cancel();
+          _debounce = Timer(const Duration(milliseconds: 350), () {
+            ref.read(routesProvider.notifier).searchRoutes(value);
+          });
         },
       ),
     );

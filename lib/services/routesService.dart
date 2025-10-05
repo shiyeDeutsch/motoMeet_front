@@ -89,6 +89,46 @@ class RoutesService {
       return _getRoutesFromLocalCache(searchQuery, routeType, sortBy);
     }
   }
+
+  /// Get a single route by ID, with offline fallback
+  Future<Route> getRouteById(int id) async {
+    try {
+      final uri = Uri(
+        scheme: ApiEndpoints.scheme,
+        host: ApiEndpoints.host,
+        port: ApiEndpoints.port,
+        path: 'api/routes/$id',
+      );
+
+      final response = await HttpClient.get(uri);
+      if (response.statusCode == 200) {
+        final dynamic routeJson = jsonDecode(response.body);
+        final route = Route.fromJson(routeJson);
+        // Cache route
+        await _saveOrUpdateRoute(route);
+        return route;
+      } else {
+        // Fallback to local cache
+        final cached = await _repoProvider.routeRepository.getById(id);
+        if (cached != null) return cached;
+        throw Exception('Failed to load route: HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching route by id: $e');
+      }
+      final cached = await _repoProvider.routeRepository.getById(id);
+      if (cached != null) return cached;
+      rethrow;
+    }
+  }
+
+  /// Download a route and related basic data for offline use
+  Future<void> downloadRouteForOffline(int id) async {
+    final route = await getRouteById(id);
+    // Future: also fetch and cache points, media, reviews, weather, etc.
+    await _saveOrUpdateRoute(route);
+  }
   
   /// Cache routes locally
   Future<void> _cacheRoutes(List<Route> routes) async {
@@ -106,6 +146,22 @@ class RoutesService {
             print('Error caching route: $e');
           }
         }
+      }
+    }
+  }
+
+  Future<void> _saveOrUpdateRoute(Route route) async {
+    if (route.id == null) return;
+    try {
+      final existingRoute = await _repoProvider.routeRepository.getById(route.id!);
+      if (existingRoute == null) {
+        await _repoProvider.routeRepository.add(route);
+      } else {
+        await _repoProvider.routeRepository.update(route);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving route: $e');
       }
     }
   }

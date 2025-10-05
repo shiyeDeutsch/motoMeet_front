@@ -8,9 +8,12 @@ import 'package:motomeetfront/models/event.dart';
 import 'package:motomeetfront/models/route.dart' as route_model;
 import 'package:motomeetfront/routing/routes.dart';
 import 'package:motomeetfront/services/isar/repository_provider.dart';
+import 'package:motomeetfront/providers/events_provider.dart';
+import 'package:motomeetfront/providers/routes_provider.dart';
+import 'package:motomeetfront/providers/home_screen_provider.dart';
 
 // Mock data for development
-import '../mock/mock_home_data.dart';
+// import '../mock/mock_home_data.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,30 +24,44 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(homeScreenProvider.notifier).initialize();
+    });
+  }
+  @override
   Widget build(BuildContext context) {
-    // Using mock data for UI development
-    final upcomingEvents = mockUpcomingEvents;
-    final recommendedRoutes = mockRecommendedRoutes;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: ListView(
-          children: [
-            const _HomeAppBar(),
-            const _WelcomeHeader(),
-            const SizedBox(height: 21),
-            _buildSectionHeader('Your Upcoming Events', () {}),
-            const SizedBox(height: 12),
-            _buildUpcomingEvents(upcomingEvents, context),
-            const SizedBox(height: 34),
-            _buildSectionHeader('Recommended Routes', () {
-              Navigator.pushNamed(context, Routes.discoverRoutes);
-            }),
-            const SizedBox(height: 12),
-            _buildRecommendedRoutes(recommendedRoutes, context),
-            const SizedBox(height: 80),
-          ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await ref.read(homeScreenProvider.notifier).refreshAll();
+          },
+          child: ListView(
+            children: [
+              const _HomeAppBar(),
+              const _WelcomeHeader(),
+              const SizedBox(height: 21),
+              _buildSectionHeader('Your Upcoming Events', () {}),
+              const SizedBox(height: 12),
+              Consumer(builder: (context, ref, _) {
+                final events = ref.watch(upcomingEventsProvider);
+                return _buildUpcomingEvents(events, context);
+              }),
+              const SizedBox(height: 34),
+              _buildSectionHeader('Recommended Routes', () {
+                Navigator.pushNamed(context, Routes.discoverRoutes);
+              }),
+              const SizedBox(height: 12),
+              Consumer(builder: (context, ref, _) {
+                final routes = ref.watch(recommendedRoutesProvider);
+                return _buildRecommendedRoutes(routes, context);
+              }),
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
       ),
     );

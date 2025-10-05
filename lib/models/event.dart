@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:motomeetfront/models/route.dart'; // Import for GeoPoint and UserRoute
@@ -16,6 +15,7 @@ class Event {
   String? description;
   bool? isPublic;
   bool? requiresApproval;
+  bool? isCancelled;
   DateTime? startDateTime;
   DateTime? endDateTime;
   
@@ -43,25 +43,25 @@ class Event {
   String? emergencyContact;
   String? safetyNotes;
 
-  @JsonKey(ignore: true)
+   @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<UserInfo> creator = IsarLink<UserInfo>();
   
-  @JsonKey(ignore: true)
+    @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Group> group = IsarLink<Group>();
 
-  @JsonKey(ignore: true)
+   @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLinks<EventItem> requiredItems = IsarLinks<EventItem>();
   
-  @JsonKey(ignore: true)
+   @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLinks<EventParticipant> participants = IsarLinks<EventParticipant>();
   
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLinks<EventStage> stages = IsarLinks<EventStage>();
   
-  @JsonKey(ignore: true)
+    @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLinks<EventActivity> eventActivities = IsarLinks<EventActivity>();
   
-  @JsonKey(ignore: true)
+   @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Route> route = IsarLink<Route>();
 
   Event({
@@ -70,6 +70,7 @@ class Event {
     this.description,
     this.isPublic,
     this.requiresApproval,
+    this.isCancelled,
     this.startDateTime,
     this.endDateTime,
     this.eventType,
@@ -95,6 +96,7 @@ class Event {
     String? description,
     bool? isPublic,
     bool? requiresApproval,
+    bool? isCancelled,
     DateTime? startDateTime,
     DateTime? endDateTime,
     EventType? eventType,
@@ -117,6 +119,7 @@ class Event {
       description: description ?? this.description,
       isPublic: isPublic ?? this.isPublic,
       requiresApproval: requiresApproval ?? this.requiresApproval,
+      isCancelled: isCancelled ?? this.isCancelled,
       startDateTime: startDateTime ?? this.startDateTime,
       endDateTime: endDateTime ?? this.endDateTime,
       eventType: eventType ?? this.eventType,
@@ -163,10 +166,10 @@ class EventStage {
   @Embedded()
   GeoPoint? location;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Event> event = IsarLink<Event>();
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLinks<EventStageParticipant> stageParticipants =
       IsarLinks<EventStageParticipant>();
 
@@ -225,13 +228,13 @@ class EventParticipant {
   bool? isActive;
   DateTime? joinedOn;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<UserInfo> person = IsarLink<UserInfo>();
   
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Event> event = IsarLink<Event>();
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLinks<EventStageParticipant> stageParticipants =
       IsarLinks<EventStageParticipant>();
 
@@ -270,13 +273,13 @@ class EventStageParticipant {
   DateTime? finishedAt;
   bool? isCompleted;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<EventStage> eventStage = IsarLink<EventStage>();
   
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<EventParticipant> eventParticipant = IsarLink<EventParticipant>();
   
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Route> userRoute = IsarLink<Route>();
 
   EventStageParticipant({
@@ -306,8 +309,6 @@ class EventStageParticipant {
   }
 }
 
-
-
 @collection
 @JsonSerializable()
 class EventActivity {
@@ -316,7 +317,7 @@ class EventActivity {
   @Enumerated(EnumType.name)
   SocialActivityType? activityType;
   
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Event> event = IsarLink<Event>();
 
   EventActivity({
@@ -349,7 +350,7 @@ class EventItem {
   bool? isAssigned;
   bool? isRecommended;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   IsarLink<Event> event = IsarLink<Event>();
 
   EventItem({
